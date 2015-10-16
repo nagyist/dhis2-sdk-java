@@ -28,48 +28,56 @@
 
 package org.hisp.dhis.sdk.java.optionset;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.DbUtils;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
-import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
+
 import org.hisp.dhis.java.sdk.models.optionset.Option;
 import org.hisp.dhis.java.sdk.models.optionset.OptionSet;
+import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class OptionSetController extends ResourceController<OptionSet> {
 
     private final static String OPTIONSETS = "optionSets";
-    private final IDhisApi mDhisApi;
+    private final IOptionSetApiClient optionSetApiClient;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ITransactionManager transactionManager;
 
     private final IOptionStore mOptionStore;
     private final IIdentifiableObjectStore<OptionSet> mOptionSetStore;
 
-    public OptionSetController(IDhisApi dhisApi, IOptionStore mOptionStore,
-                               IIdentifiableObjectStore<OptionSet> mOptionSetStore) {
-        this.mDhisApi = dhisApi;
+
+    public OptionSetController(IOptionSetApiClient optionSetApiClient ,IOptionStore mOptionStore,
+                               IIdentifiableObjectStore<OptionSet> mOptionSetStore,
+                               ISystemInfoApiClient systemInfoApiClient,
+                               ILastUpdatedPreferences lastUpdatedPreferences,
+                               ITransactionManager transactionManager) {
+        this.optionSetApiClient = optionSetApiClient;
         this.mOptionStore = mOptionStore;
         this.mOptionSetStore = mOptionSetStore;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.transactionManager = transactionManager;
     }
 
-    private void getOptionSetDataFromServer() throws APIException {
-        ResourceType resource = ResourceType.OPTIONSETS;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
-        List<OptionSet> allOptionSets = NetworkUtils.unwrapResponse(mDhisApi
-                .getOptionSets(getBasicQueryMap()), OPTIONSETS);
-        List<OptionSet> updatedOptionSets = NetworkUtils.unwrapResponse(mDhisApi
-                .getOptionSets(getAllFieldsQueryMap(lastUpdated)), OPTIONSETS);
+    private void getOptionSetDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.OPTION_SETS;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
+        List<OptionSet> allOptionSets = optionSetApiClient.getBasicOptionSets(null);
+        List<OptionSet> updatedOptionSets = optionSetApiClient.getFullOptionSets(lastUpdated);
         linkOptionsWithOptionSets(updatedOptionSets);
         List<OptionSet> existingPersistedAndUpdatedOptionSets =
                 merge(allOptionSets, updatedOptionSets, mOptionSetStore.queryAll());
@@ -88,14 +96,14 @@ public final class OptionSetController extends ResourceController<OptionSet> {
                 } else {
                     persistedOptions = new ArrayList<>();
                 }
-                operations.addAll(DbUtils.createOperations(mOptionStore, persistedOptions, optionSet.getOptions()));
+                operations.addAll(createOpeations(mOptionStore, persistedOptions, optionSet.getOptions()));
             }
         }
         operations.addAll(DbUtils.createOperations(mOptionSetStore, persistedOptionSets, existingPersistedAndUpdatedOptionSets));
 
-        DbUtils.applyBatch(operations);
-        DateTimeManager.getInstance()
-                .setLastUpdated(resource, serverTime);
+//        DbUtils.applyBatch(operations);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(ResourceType.OPTION_SETS, serverTime);
     }
 
     private void linkOptionsWithOptionSets(List<OptionSet> optionSets) {
@@ -119,7 +127,7 @@ public final class OptionSetController extends ResourceController<OptionSet> {
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getOptionSetDataFromServer();
     }
 }

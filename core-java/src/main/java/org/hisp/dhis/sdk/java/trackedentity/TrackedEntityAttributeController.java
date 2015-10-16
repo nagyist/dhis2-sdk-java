@@ -43,20 +43,21 @@ import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.m
 
 public final class TrackedEntityAttributeController extends ResourceController<TrackedEntityAttribute> {
 
-    private final static String TRACKED_ENTITY_ATTRIBUTES = "trackedEntityAttributes";
-    private final IIdentifiableObjectStore<TrackedEntityAttribute> mTrackedEntityAttributeStore;
-    private final ITrackedEntityApiClient trackedEntityApiClient;
+
+    private final static String TRACKEDENTITYATTRIBUTES = "trackedEntityAttributes";
+    private final ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
+    private final IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore;
 
-    public TrackedEntityAttributeController(IIdentifiableObjectStore<TrackedEntityAttribute> mTrackedEntityAttributeStore,
-                                            ITrackedEntityApiClient trackedEntityApiClient,
+    public TrackedEntityAttributeController(ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient,
                                             ILastUpdatedPreferences lastUpdatedPreferences,
+                                            IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore,
                                             ISystemInfoApiClient systemInfoApiClient) {
-        this.trackedEntityApiClient = trackedEntityApiClient;
-        this.mTrackedEntityAttributeStore = mTrackedEntityAttributeStore;
+        this.trackedEntityAttributeApiClient = trackedEntityAttributeApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.systemInfoApiClient = systemInfoApiClient;
+        this.trackedEntityAttributeStore = trackedEntityAttributeStore;
     }
 
     private void getProgramRulesDataFromServer() throws ApiException {
@@ -66,21 +67,18 @@ public final class TrackedEntityAttributeController extends ResourceController<T
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<TrackedEntityAttribute> allTrackedEntityAttributes =
-                trackedEntityApiClient.getBasicTrackedEntityAttributes(null);
+
+        List<TrackedEntityAttribute> allTrackedEntityAttributes = trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null);
 
         //fetch all updated items
-        List<TrackedEntityAttribute> updatedTrackedEntityAttributes =
-                trackedEntityApiClient.getFullTrackedEntityAttributes(lastUpdated);
+        List<TrackedEntityAttribute> updatedTrackedEntityAttributes = trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated);
 
         //merging updated items with persisted items, and removing ones not present in server.
         List<TrackedEntityAttribute> existingPersistedAndUpdatedTrackedEntityAttributes =
-                merge(allTrackedEntityAttributes, updatedTrackedEntityAttributes,
-                        mTrackedEntityAttributeStore.queryAll());
-
-        saveResourceDataFromServer(resource, mTrackedEntityAttributeStore,
-                existingPersistedAndUpdatedTrackedEntityAttributes, mTrackedEntityAttributeStore.queryAll(),
-                serverTime);
+                merge(allTrackedEntityAttributes, updatedTrackedEntityAttributes, trackedEntityAttributeStore.
+                        queryAll());
+        saveResourceDataFromServer(resource, trackedEntityAttributeStore,
+                existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll(), serverTime);
     }
 
     @Override

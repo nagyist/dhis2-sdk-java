@@ -28,55 +28,60 @@
 
 package org.hisp.dhis.sdk.java;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.constant.Constant;
+import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class ConstantController extends ResourceController<Constant> {
 
     private final static String CONSTANTS = "constants";
-    private final IDhisApi mDhisApi;
-    private final IIdentifiableObjectStore<Constant> mConstantStore;
+    private final IConstantApiClient constantApiClient;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final IIdentifiableObjectStore<Constant> constantStore;
 
-    public ConstantController(IDhisApi mDhisApi, IIdentifiableObjectStore<Constant> constantStore) {
-        this.mDhisApi = mDhisApi;
-        this.mConstantStore = constantStore;
+    public ConstantController(IConstantApiClient constantApiClient,
+                              ISystemInfoApiClient systemInfoApiClient,
+                              ILastUpdatedPreferences lastUpdatedPreferences,
+                              IIdentifiableObjectStore<Constant> constantStore) {
+        this.constantApiClient = constantApiClient;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.constantStore = constantStore;
     }
 
-    private void getConstantsDataFromServer() throws APIException {
+    private void getConstantsDataFromServer() throws ApiException {
         ResourceType resource = ResourceType.CONSTANTS;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<Constant> allConstants = NetworkUtils.unwrapResponse(mDhisApi
-                .getConstants(getBasicQueryMap()), CONSTANTS);
+        List<Constant> allConstants = constantApiClient.getBasicConstants(null);
+
         //fetch all updated items
-        List<Constant> updatedConstants = NetworkUtils.unwrapResponse(mDhisApi
-                .getConstants(getAllFieldsQueryMap(lastUpdated)), CONSTANTS);
+        List<Constant> updatedConstants = constantApiClient.getFullConstants(lastUpdated);
+
         //merging updated items with persisted items, and removing ones not present in server.
         List<Constant> existingPersistedAndUpdatedConstants =
-                merge(allConstants, updatedConstants, mConstantStore.
+                merge(allConstants, updatedConstants, constantStore.
                         queryAll());
-        saveResourceDataFromServer(resource, mConstantStore,
-                existingPersistedAndUpdatedConstants, mConstantStore.queryAll(),
+        saveResourceDataFromServer(resource, constantStore,
+                existingPersistedAndUpdatedConstants, constantStore.queryAll(),
                 serverTime);
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getConstantsDataFromServer();
     }
 }
