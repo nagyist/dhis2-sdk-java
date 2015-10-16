@@ -99,7 +99,6 @@ public final class EventController extends PushableDataController implements IEv
         String extraIdentifier = organisationUnitUid + programUid;
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, extraIdentifier);
         List<Event> updatedEvents = eventApiClient.getFullEvents(programUid, organisationUnitUid, count, lastUpdated);
-        //List<Event> updatedEvents = getEvents(updatedEventsResponse);
         saveResourceDataFromServer(resourceType, extraIdentifier, updatedEvents,
                 eventStore.query(organisationUnitStore.queryByUid(organisationUnitUid),
                         programStore.queryByUid(programUid)), serverDateTime);
@@ -115,25 +114,14 @@ public final class EventController extends PushableDataController implements IEv
         if (enrollment == null) {
             return;
         }
-        ResourceType resourceType = ResourceType.EVENTS;
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, enrollment.getEnrollmentUid());
-                //DateTimeManager.getInstance()
-                //.getLastUpdated(ResourceType.EVENTS, enrollment.getEnrollmentUid());
         DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
         Program program = programStore.queryByUid(enrollment.getProgram());
         if (program == null || program.getUId() == null) {
             return;
         }
-        List<Event> existingEvents = eventApiClient.getBasicEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), null);/*mDhisApi
-                .getEventsForEnrollment(program.getUId(), enrollment.getStatus(),
-                        enrollment.getTrackedEntityInstanceUid(),
-                        getBasicQueryMap());*/
-        //List<Event> existingEvents = getEvents(existingEventsResponse);
-        List<Event> updatedEvents = eventApiClient.getFullEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), lastUpdated);/*mDhisApi
-                .getEventsForEnrollment(program.getUId(), enrollment.getStatus(),
-                        enrollment.getTrackedEntityInstanceUid(),
-                        getAllFieldsQueryMap(lastUpdated));*/
-        //List<Event> updatedEvents = getEvents(updatedEventsResponse);
+        List<Event> existingEvents = eventApiClient.getBasicEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), null);
+        List<Event> updatedEvents = eventApiClient.getFullEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), lastUpdated);
         List<Event> existingPersistedAndUpdatedEvents = merge(existingEvents, updatedEvents, eventStore.query(enrollment));
         for (Event event : updatedEvents) {
             event.setEnrollment(enrollment);
@@ -150,12 +138,7 @@ public final class EventController extends PushableDataController implements IEv
      * @throws ApiException
      */
     private void getEventDataFromServer(String uid) throws ApiException {
-        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, uid);
-//        DateTimeManager.getInstance()
-//                .getLastUpdated(ResourceType.EVENTS, uid);
         DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
-//                mDhisApi.getSystemInfo()
-//                .getServerDate();
 
         Event updatedEvent = eventApiClient.getFullEvent(uid, null);//mDhisApi.getEvent(uid, getAllFieldsQueryMap(null));
         //todo: delete the event if it has been deleted on server.
@@ -207,40 +190,6 @@ public final class EventController extends PushableDataController implements IEv
         }
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-
-//    private static List<Event> getEvents(JsonNode jsonNode) {
-//        TypeReference<List<Event>> typeRef =
-//                new TypeReference<List<Event>>() {
-//                };
-//        List<Event> events;
-//        try {
-//            if (jsonNode.has("events")) {
-//                events = ObjectMapperProvider.getInstance().
-//                        readValue(jsonNode.get("events").traverse(), typeRef);
-//            } else {
-//                events = new ArrayList<>();
-//            }
-//        } catch (IOException e) {
-//            events = new ArrayList<>();
-//            e.printStackTrace();
-//        }
-//        return events;
-//    }
-
-//    private Map<String, String> getBasicQueryMap() {
-//        final Map<String, String> map = new HashMap<>();
-//        map.put("fields", "event");
-//        return map;
-//    }
-//
-//    private Map<String, String> getAllFieldsQueryMap(DateTime lastUpdated) {
-//        final Map<String, String> map = new HashMap<>();
-//        map.put("fields", "[:all]");
-//        if (lastUpdated != null) {
-//            map.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
-//        }
-//        return map;
-//    }
 
     /**
      * This utility method allows to determine which type of operation to apply to
@@ -523,7 +472,6 @@ public final class EventController extends PushableDataController implements IEv
                     }
                     operations.add(DbOperation.with(eventStore).save(event));
                     transactionManager.transact(operations);
-                    //DbUtils.applyBatch(operations);
                     updateEventTimestamp(event);
                     eventStore.save(event);
                     clearFailedItem(FailedItemType.EVENT, failedItemStore, event.getId());
@@ -565,9 +513,8 @@ public final class EventController extends PushableDataController implements IEv
             // merging updated timestamp to local event model
             event.setCreated(updatedEvent.getCreated());
             event.setLastUpdated(updatedEvent.getLastUpdated());
-            //Models.events().save(event);
         } catch (ApiException ApiException) {
-            //NetworkUtils.handleApiException(ApiException);
+            //NetworkUtils.handleApiException(ApiException); todo
         }
         return event;
     }

@@ -28,105 +28,21 @@
 
 package org.hisp.dhis.sdk.java.common.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import org.hisp.dhis.sdk.java.common.IFailedItemStore;
-import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
-import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.network.ApiResponse;
-import org.hisp.dhis.java.sdk.models.common.importsummary.Conflict;
 import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItem;
+import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
+import org.hisp.dhis.java.sdk.models.common.importsummary.Conflict;
 import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
-import org.hisp.dhis.sdk.java.common.network.Response;
+import org.hisp.dhis.sdk.java.common.IFailedItemStore;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public abstract class PushableDataController {
     public static final String TAG = PushableDataController.class.getSimpleName();
-
-    public static ImportSummary getImportSummary(Response response) {
-        //because the web api almost randomly gives the responses in different forms, this
-        //method checks which one it is that is being returned, and parses accordingly.
-        try {
-            JsonNode node = ObjectMapperProvider.getInstance().
-                    readTree(new StringConverter().fromBody(response.getBody(), String.class));
-            if(node == null) {
-                return null;
-            }
-            if(node.has("response")) {
-                return getPutImportSummary(response);
-            } else {
-                return getPostImportSummary(response);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ConversionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static ImportSummary getPostImportSummary(Response response) {
-        ImportSummary importSummary = null;
-        try {
-            String body = new StringConverter().fromBody(response.getBody(), String.class);
-            Log.d(TAG, body);
-            importSummary = ObjectMapperProvider.getInstance().
-                    readValue(body, ImportSummary.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ConversionException e) {
-            e.printStackTrace();
-        }
-        return importSummary;
-    }
-
-    private static ImportSummary getPutImportSummary(Response response) {
-        ApiResponse apiResponse;
-        try {
-            String body = new StringConverter().fromBody(response.getBody(), String.class);
-            Log.d(TAG, body);
-            apiResponse = ObjectMapperProvider.getInstance().
-                    readValue(body, ApiResponse.class);
-            List<ImportSummary> importSummaries = null;
-            Map<String, Object> responseMap = apiResponse.getResponse();
-                try {
-                    String responseType = (String) responseMap.get("responseType");
-                    if (responseType.equals( ApiResponse.RESPONSE_TYPE_IMPORT_SUMMARIES)) {
-                        TypeReference<List<ImportSummary>> typeRef =
-                                new TypeReference<List<ImportSummary>>() {
-                                };
-                        importSummaries = ObjectMapperProvider.getInstance().
-                                convertValue(responseMap.get("importSummaries"), typeRef);
-                    } else if (responseType.equals( ApiResponse.RESPONSE_TYPE_IMPORT_SUMMARY)) {
-                        ImportSummary importSummary = ObjectMapperProvider.getInstance()
-                                .convertValue(response, ImportSummary.class);
-                        importSummaries = new ArrayList<>();
-                        importSummaries.add(importSummary);
-                    }
-                } catch ( Exception e ) {
-                    e.printStackTrace();
-                }
-
-            if(importSummaries!=null && !importSummaries.isEmpty()) {
-                return(importSummaries.get(0));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ConversionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public static void handleImportSummary(ImportSummary importSummary, IFailedItemStore failedItemStore, FailedItemType type, long id) {
         if ( ImportSummary.Status.ERROR.equals(importSummary.getStatus()) ){
@@ -167,11 +83,7 @@ public abstract class PushableDataController {
                 FailedItem failedItem = new FailedItem();
                 if (apiException.getResponse() != null) {
                     failedItem.setHttpStatusCode(apiException.getResponse().getStatus());
-                    try {
-                        failedItem.setErrorMessage(new StringConverter().fromBody(apiException.getResponse().getBody(), String.class));
-                    } catch (ConversionException e) {
-                        e.printStackTrace();
-                    }
+                    failedItem.setErrorMessage(new String(apiException.getResponse().getBody()));
                 }
                 failedItem.setItemId(id);
                 failedItem.setItemFailedItemType(type);
