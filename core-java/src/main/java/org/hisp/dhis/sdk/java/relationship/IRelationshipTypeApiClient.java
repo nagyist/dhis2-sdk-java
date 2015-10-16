@@ -25,34 +25,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.hisp.dhis.sdk.java.relationship;
 
-package org.hisp.dhis.sdk.java.common.preferences;
+import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
+import org.joda.time.DateTime;
 
-public enum ResourceType {
-    /* Dashboard app resources */
-    DASHBOARDS_CONTENT,
-    INTERPRETATIONS,
-    DASHBOARDS,
+import java.util.List;
 
-    RELATIONSHIP_TYPES,
-    ORGANISATION_UNITS,
-    DATA_ELEMENTS,
-    OPTION_SETS,
-    CONSTANTS,
-    USERS,
+public interface IRelationshipTypeApiClient {
+    List<RelationshipType> getBasicRelationshipTypes(DateTime lastUpdated);
 
-    /* Event and Tracker capture resources */
-    PROGRAM_RULE_VARIABLES,
-    PROGRAM_RULE_ACTIONS,
-    ASSIGNED_PROGRAMS,
-    PROGRAM_RULES,
-    PROGRAMS,
-    PROGRAM,
-
-    TRACKED_ENTITY_ATTRIBUTES,
-    TRACKED_ENTITY_INSTANCE,
-    ENROLLMENTS,
-    ENROLLMENT,
-    EVENTS,
-    EVENT,
+    List<RelationshipType> getFullRelationshipTypes(DateTime lastUpdated);
 }

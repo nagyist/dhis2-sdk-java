@@ -29,44 +29,49 @@
 package org.hisp.dhis.sdk.java.relationship;
 
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class RelationshipTypeController extends ResourceController<RelationshipType> {
 
     private final static String RELATIONSHIPTYPES = "relationshipTypes";
-    private final IDhisApi mDhisApi;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final IRelationshipTypeApiClient relationshipTypeApiClient;
+    private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore;
 
-    public RelationshipTypeController(IDhisApi mDhisApi,
-                                      IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore) {
-        this.mDhisApi = mDhisApi;
+    public RelationshipTypeController(IRelationshipTypeApiClient relationshipApiClient,
+                                      IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore,
+                                      ILastUpdatedPreferences lastUpdatedPreferences,
+                                      ISystemInfoApiClient systemInfoApiClient) {
+        this.relationshipTypeApiClient = relationshipApiClient;
         this.mRelationshipTypeStore = mRelationshipTypeStore;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.systemInfoApiClient = systemInfoApiClient;
     }
 
-    private void getRelationshipTypesDataFromServer() throws APIException {
-        ResourceType resource = ResourceType.RELATIONSHIPTYPES;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+    private void getRelationshipTypesDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.RELATIONSHIP_TYPES;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<RelationshipType> allRelationshipTypes = NetworkUtils.unwrapResponse(mDhisApi
-                .getRelationshipTypes(getBasicQueryMap()), RELATIONSHIPTYPES);
+        List<RelationshipType> allRelationshipTypes = relationshipTypeApiClient.getBasicRelationshipTypes(null);
+
+
         //fetch all updated relationshiptypes
-        List<RelationshipType> updatedRelationshipTypes = NetworkUtils.unwrapResponse(mDhisApi
-                .getRelationshipTypes(getAllFieldsQueryMap(lastUpdated)), RELATIONSHIPTYPES);
+        List<RelationshipType> updatedRelationshipTypes = relationshipTypeApiClient.getFullRelationshipTypes(lastUpdated);
+
         //merging updated items with persisted items, and removing ones not present in server.
         List<RelationshipType> existingPersistedAndUpdatedRelationshipTypes =
                 merge(allRelationshipTypes, updatedRelationshipTypes, mRelationshipTypeStore.
@@ -77,7 +82,7 @@ public final class RelationshipTypeController extends ResourceController<Relatio
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getRelationshipTypesDataFromServer();
     }
 }
