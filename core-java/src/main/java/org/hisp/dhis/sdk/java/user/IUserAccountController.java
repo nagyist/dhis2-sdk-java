@@ -28,15 +28,9 @@
 
 package org.hisp.dhis.sdk.java.user;
 
-import com.squareup.okhttp.HttpUrl;
-
-import org.hisp.dhis.java.sdk.common.IController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.models.Credentials;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
+import org.hisp.dhis.sdk.java.common.controllers.IController;
 
 public interface IUserAccountController extends IController<UserAccount> {
-    UserAccount logIn(HttpUrl serverUrl, UserC credentials) throws APIException;
-
-    UserAccount updateAccount() throws APIException;
+    UserAccount updateAccount();
 }

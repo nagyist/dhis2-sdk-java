@@ -28,55 +28,21 @@
 
 package org.hisp.dhis.sdk.java.user;
 
-import org.hisp.dhis.sdk.java.common.network.UserCredentials;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 
 public final class UserAccountController implements IUserAccountController {
-    private final IDhisApi dhisApi;
+    private final IUserApiClient userApiClient;
     private final IUserAccountStore userAccountStore;
 
-    public UserAccountController(IDhisApi dhisApi, IUserAccountStore userAccountStore) {
-        this.dhisApi = dhisApi;
+    public UserAccountController(IUserApiClient userApiClient, IUserAccountStore userAccountStore) {
+        this.userApiClient = userApiClient;
         this.userAccountStore = userAccountStore;
     }
 
     @Override
-    public UserAccount logIn(HttpUrl serverUrl, UserCredentials credentials) throws APIException {
-        final Map<String, String> QUERY_PARAMS = new HashMap<>();
-        QUERY_PARAMS.put("fields", "id,created,lastUpdated,name,displayName," +
-                "firstName,surname,gender,birthday,introduction," +
-                "education,employer,interests,jobTitle,languages,email,phoneNumber," +
-                "organisationUnits[id]");
-
-        UserAccount userAccount = dhisApi
-                .getCurrentUserAccount(QUERY_PARAMS);
-
-        // if we got here, it means http
-        // request was executed successfully
-
-        /* save user credentials */
-        Session session = new Session(serverUrl, credentials);
-        LastUpdatedManager.getInstance().put(session);
-
-        /* save user account details */
-        userAccountStore.save(userAccount);
-
-        return userAccount;
-    }
-
-    @Override
-    public UserAccount updateAccount() throws APIException {
-        final Map<String, String> QUERY_PARAMS = new HashMap<>();
-        QUERY_PARAMS.put("fields", "id,created,lastUpdated,name,displayName," +
-                "firstName,surname,gender,birthday,introduction," +
-                "education,employer,interests,jobTitle,languages,email,phoneNumber," +
-                "organisationUnits[id]");
-
-        UserAccount userAccount =
-                dhisApi.getCurrentUserAccount(QUERY_PARAMS);
+    public UserAccount updateAccount() throws ApiException {
+        UserAccount userAccount = userApiClient.getUserAccount();
 
         // update userAccount in database
         userAccountStore.save(userAccount);

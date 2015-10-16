@@ -28,55 +28,63 @@
 
 package org.hisp.dhis.sdk.java.trackedentity;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
+import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class TrackedEntityAttributeController extends ResourceController<TrackedEntityAttribute> {
 
-    private final static String TRACKEDENTITYATTRIBUTES = "trackedEntityAttributes";
-    private final IDhisApi mDhisApi;
+    private final static String TRACKED_ENTITY_ATTRIBUTES = "trackedEntityAttributes";
     private final IIdentifiableObjectStore<TrackedEntityAttribute> mTrackedEntityAttributeStore;
+    private final ITrackedEntityApiClient trackedEntityApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ISystemInfoApiClient systemInfoApiClient;
 
-    public TrackedEntityAttributeController(IDhisApi mDhisApi, IIdentifiableObjectStore<TrackedEntityAttribute> mTrackedEntityAttributeStore) {
-        this.mDhisApi = mDhisApi;
+    public TrackedEntityAttributeController(IIdentifiableObjectStore<TrackedEntityAttribute> mTrackedEntityAttributeStore,
+                                            ITrackedEntityApiClient trackedEntityApiClient,
+                                            ILastUpdatedPreferences lastUpdatedPreferences,
+                                            ISystemInfoApiClient systemInfoApiClient) {
+        this.trackedEntityApiClient = trackedEntityApiClient;
         this.mTrackedEntityAttributeStore = mTrackedEntityAttributeStore;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.systemInfoApiClient = systemInfoApiClient;
     }
 
-    private void getProgramRulesDataFromServer() throws APIException {
-        ResourceType resource = ResourceType.TRACKEDENTITYATTRIBUTES;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+    private void getProgramRulesDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.TRACKED_ENTITY_ATTRIBUTES;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<TrackedEntityAttribute> allTrackedEntityAttributes = NetworkUtils.unwrapResponse(mDhisApi
-                .getTrackedEntityAttributes(getBasicQueryMap()), TRACKEDENTITYATTRIBUTES);
+        List<TrackedEntityAttribute> allTrackedEntityAttributes =
+                trackedEntityApiClient.getBasicTrackedEntityAttributes(null);
+
         //fetch all updated items
-        List<TrackedEntityAttribute> updatedTrackedEntityAttributes = NetworkUtils.unwrapResponse(mDhisApi
-                .getTrackedEntityAttributes(getAllFieldsQueryMap(lastUpdated)), TRACKEDENTITYATTRIBUTES);
+        List<TrackedEntityAttribute> updatedTrackedEntityAttributes =
+                trackedEntityApiClient.getFullTrackedEntityAttributes(lastUpdated);
+
         //merging updated items with persisted items, and removing ones not present in server.
         List<TrackedEntityAttribute> existingPersistedAndUpdatedTrackedEntityAttributes =
-                merge(allTrackedEntityAttributes, updatedTrackedEntityAttributes, mTrackedEntityAttributeStore.
-                        queryAll());
+                merge(allTrackedEntityAttributes, updatedTrackedEntityAttributes,
+                        mTrackedEntityAttributeStore.queryAll());
+
         saveResourceDataFromServer(resource, mTrackedEntityAttributeStore,
                 existingPersistedAndUpdatedTrackedEntityAttributes, mTrackedEntityAttributeStore.queryAll(),
                 serverTime);
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getProgramRulesDataFromServer();
     }
 }

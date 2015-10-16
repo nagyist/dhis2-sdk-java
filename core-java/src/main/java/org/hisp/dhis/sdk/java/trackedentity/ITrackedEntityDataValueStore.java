@@ -37,5 +37,6 @@ import java.util.List;
 
 public interface ITrackedEntityDataValueStore extends IStore<TrackedEntityDataValue> {
     List<TrackedEntityDataValue> query(Event event);
+
     TrackedEntityDataValue query(DataElement dataElement, Event event);
 }

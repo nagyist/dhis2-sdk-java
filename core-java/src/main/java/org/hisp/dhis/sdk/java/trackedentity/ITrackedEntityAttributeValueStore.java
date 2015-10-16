@@ -37,7 +37,10 @@ import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import java.util.List;
 
 public interface ITrackedEntityAttributeValueStore extends IStore<TrackedEntityAttributeValue> {
-    TrackedEntityAttributeValue query(TrackedEntityInstance trackedEntityInstance, TrackedEntityAttribute trackedEntityAttribute);
+    TrackedEntityAttributeValue query(TrackedEntityInstance trackedEntityInstance,
+                                      TrackedEntityAttribute trackedEntityAttribute);
+
     List<TrackedEntityAttributeValue> query(TrackedEntityInstance trackedEntityInstance);
+
     List<TrackedEntityAttributeValue> query(Enrollment enrollment);
 }
