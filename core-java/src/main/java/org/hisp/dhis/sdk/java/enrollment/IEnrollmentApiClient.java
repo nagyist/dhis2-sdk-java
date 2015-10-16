@@ -1,5 +1,6 @@
 package org.hisp.dhis.sdk.java.enrollment;
 
+import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
 import org.hisp.dhis.sdk.java.common.network.Response;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.joda.time.DateTime;
@@ -15,7 +16,7 @@ public interface IEnrollmentApiClient {
 
     Enrollment getBasicEnrollment(String uid, DateTime lastUpdated);
 
-    Response postEnrollment(Enrollment enrollment);
+    ImportSummary postEnrollment(Enrollment enrollment);
 
-    Response putEnrollment(Enrollment enrollment);
+    ImportSummary putEnrollment(Enrollment enrollment);
 }
