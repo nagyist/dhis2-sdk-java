@@ -28,16 +28,12 @@
 
 package org.hisp.dhis.sdk.java.common.controllers;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.hisp.dhis.sdk.java.common.IFailedItemStore;
-import org.hisp.dhis.java.sdk.common.StringConverter;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.api.utils.ObjectMapperProvider;
 import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.network.ApiResponse;
 import org.hisp.dhis.java.sdk.models.common.importsummary.Conflict;
 import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItem;
@@ -45,6 +41,7 @@ import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
+import org.hisp.dhis.sdk.java.common.network.Response;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -52,9 +49,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import retrofit.client.Response;
-import retrofit.converter.ConversionException;
 
 public abstract class PushableDataController {
     public static final String TAG = PushableDataController.class.getSimpleName();
@@ -140,19 +134,19 @@ public abstract class PushableDataController {
         }
     }
 
-    public static void handleTrackedEntityInstanceSendException(APIException apiException, IFailedItemStore failedItemStore, TrackedEntityInstance trackedEntityInstance) {
+    public static void handleTrackedEntityInstanceSendException(ApiException apiException, IFailedItemStore failedItemStore, TrackedEntityInstance trackedEntityInstance) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
     }
 
-    public static void handleEnrollmentSendException(APIException apiException, IFailedItemStore failedItemStore, Enrollment enrollment) {
+    public static void handleEnrollmentSendException(ApiException apiException, IFailedItemStore failedItemStore, Enrollment enrollment) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
     }
 
-    public static void handleEventSendException(APIException apiException, IFailedItemStore failedItemStore, Event event) {
+    public static void handleEventSendException(ApiException apiException, IFailedItemStore failedItemStore, Event event) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.EVENT, event.getId());
     }
 
-    private static void handleSerializableItemException(APIException apiException, IFailedItemStore failedItemStore, FailedItemType type, long id) {
+    private static void handleSerializableItemException(ApiException apiException, IFailedItemStore failedItemStore, FailedItemType type, long id) {
         switch (apiException.getKind()) {
             case NETWORK: {
                 FailedItem failedItem = new FailedItem();
