@@ -28,18 +28,18 @@
 
 package org.hisp.dhis.sdk.java.trackedentity;
 
-import org.hisp.dhis.java.sdk.core.network.APIException;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 
 import java.util.List;
 
 public interface ITrackedEntityInstanceController {
-    public void sync() throws APIException;
-    public TrackedEntityInstance sync(String uid, boolean getEnrollments) throws APIException;
-    public void sync(List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments) throws APIException;
-    public List<TrackedEntityInstance> queryServerTrackedEntityInstances(String organisationUnitUid,
-                                                                         String programUid,
-                                                                         String queryString,
-                                                                         TrackedEntityAttributeValue... params) throws APIException;
+    void sync();
+
+    TrackedEntityInstance sync(String uid, boolean getEnrollments);
+
+    void sync(List<TrackedEntityInstance> trackedEntityInstances, boolean getEnrollments);
+
+    List<TrackedEntityInstance> queryServerTrackedEntityInstances(String organisationUnitUid, String programUid,
+                                                                  String queryString, TrackedEntityAttributeValue... params);
 }

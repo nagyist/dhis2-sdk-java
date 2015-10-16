@@ -70,8 +70,9 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
     private final static String TRACKEDENTITYINSTANCES = "trackedEntityInstances";
 
     private final IDhisApi mDhisApi;
-    private final IEnrollmentController enrollmentController;
     private final ITrackedEntityInstanceStore trackedEntityInstanceStore;
+
+    private final IEnrollmentController enrollmentController;
     private final IStateStore stateStore;
     private final IFailedItemStore failedItemStore;
     private final IRelationshipStore relationshipStore;
@@ -79,8 +80,9 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
     private final IEnrollmentStore enrollmentStore;
 
     public TrackedEntityInstanceController(IDhisApi dhisApi,
-                                           IEnrollmentController enrollmentController,
                                            ITrackedEntityInstanceStore trackedEntityInstanceStore,
+
+                                           IEnrollmentController enrollmentController,
                                            IStateStore stateStore, IFailedItemStore failedItemStore,
                                            IRelationshipStore relationshipStore,
                                            ITrackedEntityAttributeValueStore trackedEntityAttributeValueStore,
