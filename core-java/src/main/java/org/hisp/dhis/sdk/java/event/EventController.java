@@ -28,19 +28,8 @@
 
 package org.hisp.dhis.sdk.java.event;
 
-import android.net.Uri;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.hisp.dhis.sdk.java.common.controllers.PushableDataController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.ObjectMapperProvider;
-import org.hisp.dhis.java.sdk.core.api.utils.DbUtils;
-import org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.IStore;
 import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
 import org.hisp.dhis.sdk.java.common.IFailedItemStore;
@@ -51,14 +40,17 @@ import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.sdk.java.program.IProgramStore;
 import org.hisp.dhis.java.sdk.models.program.Program;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.hisp.dhis.sdk.java.trackedentity.ITrackedEntityDataValueStore;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityDataValue;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,11 +59,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import retrofit.client.Header;
-import retrofit.client.Response;
-
 public final class EventController extends PushableDataController implements IEventController {
-    private final IDhisApi mDhisApi;
+    private final IEventApiClient eventApiClient;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ITransactionManager transactionManager;
     private final IStateStore stateStore;
     private final IEventStore eventStore;
     private final ITrackedEntityDataValueStore trackedEntityDataValueStore;
@@ -79,8 +71,11 @@ public final class EventController extends PushableDataController implements IEv
     private final IProgramStore programStore;
     private final IFailedItemStore failedItemStore;
 
-    public EventController(IDhisApi dhisApi, IStateStore stateStore, IEventStore eventStore, ITrackedEntityDataValueStore trackedEntityDataValueStore, IOrganisationUnitStore organisationUnitStore, IProgramStore programStore, IFailedItemStore failedItemStore) {
-        mDhisApi = dhisApi;
+    public EventController(IEventApiClient eventApiClient, ISystemInfoApiClient systemInfoApiClient, ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IStateStore stateStore, IEventStore eventStore, ITrackedEntityDataValueStore trackedEntityDataValueStore, IOrganisationUnitStore organisationUnitStore, IProgramStore programStore, IFailedItemStore failedItemStore) {
+        this.eventApiClient = eventApiClient;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.transactionManager = transactionManager;
         this.stateStore = stateStore;
         this.eventStore = eventStore;
         this.trackedEntityDataValueStore = trackedEntityDataValueStore;
@@ -97,16 +92,14 @@ public final class EventController extends PushableDataController implements IEv
      * @param organisationUnitUid
      * @param programUid
      * @param serverDateTime
-     * @throws APIException
+     * @throws ApiException
      */
-    private void getEventsDataFromServer(String organisationUnitUid, String programUid, DateTime serverDateTime) throws APIException {
+    private void getEventsDataFromServer(String organisationUnitUid, String programUid, int count, DateTime serverDateTime) throws ApiException {
         ResourceType resourceType = ResourceType.EVENTS;
         String extraIdentifier = organisationUnitUid + programUid;
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resourceType, extraIdentifier);
-        JsonNode updatedEventsResponse = mDhisApi.getEvents(programUid, organisationUnitUid, 200,
-                getAllFieldsQueryMap(lastUpdated));
-        List<Event> updatedEvents = getEvents(updatedEventsResponse);
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, extraIdentifier);
+        List<Event> updatedEvents = eventApiClient.getFullEvents(programUid, organisationUnitUid, count, lastUpdated);
+        //List<Event> updatedEvents = getEvents(updatedEventsResponse);
         saveResourceDataFromServer(resourceType, extraIdentifier, updatedEvents,
                 eventStore.query(organisationUnitStore.queryByUid(organisationUnitUid),
                         programStore.queryByUid(programUid)), serverDateTime);
@@ -118,29 +111,29 @@ public final class EventController extends PushableDataController implements IEv
      * @param enrollment
      */
     @Override
-    public void getEventsDataFromServer(Enrollment enrollment) throws APIException {
+    public void getEventsDataFromServer(Enrollment enrollment) throws ApiException {
         if (enrollment == null) {
             return;
         }
         ResourceType resourceType = ResourceType.EVENTS;
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(ResourceType.EVENTS, enrollment.getEnrollmentUid());
-        DateTime serverDateTime = mDhisApi.getSystemInfo()
-                .getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, enrollment.getEnrollmentUid());
+                //DateTimeManager.getInstance()
+                //.getLastUpdated(ResourceType.EVENTS, enrollment.getEnrollmentUid());
+        DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
         Program program = programStore.queryByUid(enrollment.getProgram());
         if (program == null || program.getUId() == null) {
             return;
         }
-        JsonNode existingEventsResponse = mDhisApi
+        List<Event> existingEvents = eventApiClient.getBasicEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), null);/*mDhisApi
                 .getEventsForEnrollment(program.getUId(), enrollment.getStatus(),
                         enrollment.getTrackedEntityInstanceUid(),
-                        getBasicQueryMap());
-        List<Event> existingEvents = getEvents(existingEventsResponse);
-        JsonNode updatedEventsResponse = mDhisApi
+                        getBasicQueryMap());*/
+        //List<Event> existingEvents = getEvents(existingEventsResponse);
+        List<Event> updatedEvents = eventApiClient.getFullEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), lastUpdated);/*mDhisApi
                 .getEventsForEnrollment(program.getUId(), enrollment.getStatus(),
                         enrollment.getTrackedEntityInstanceUid(),
-                        getAllFieldsQueryMap(lastUpdated));
-        List<Event> updatedEvents = getEvents(updatedEventsResponse);
+                        getAllFieldsQueryMap(lastUpdated));*/
+        //List<Event> updatedEvents = getEvents(updatedEventsResponse);
         List<Event> existingPersistedAndUpdatedEvents = merge(existingEvents, updatedEvents, eventStore.query(enrollment));
         for (Event event : updatedEvents) {
             event.setEnrollment(enrollment);
@@ -154,15 +147,17 @@ public final class EventController extends PushableDataController implements IEv
      * Fetches data for a single event by uid from server and saves it (or updates if already existing)
      *
      * @param uid
-     * @throws APIException
+     * @throws ApiException
      */
-    private void getEventDataFromServer(String uid) throws APIException {
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(ResourceType.EVENTS, uid);
-        DateTime serverDateTime = mDhisApi.getSystemInfo()
-                .getServerDate();
+    private void getEventDataFromServer(String uid) throws ApiException {
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, uid);
+//        DateTimeManager.getInstance()
+//                .getLastUpdated(ResourceType.EVENTS, uid);
+        DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
+//                mDhisApi.getSystemInfo()
+//                .getServerDate();
 
-        Event updatedEvent = mDhisApi.getEvent(uid, getAllFieldsQueryMap(null));
+        Event updatedEvent = eventApiClient.getFullEvent(uid, null);//mDhisApi.getEvent(uid, getAllFieldsQueryMap(null));
         //todo: delete the event if it has been deleted on server.
         //todo: be sure to check if the event has ever been on the server, or if it is still pending first time registration sync
 
@@ -185,9 +180,8 @@ public final class EventController extends PushableDataController implements IEv
                     eventStore.query(updatedEvent.getId()), updatedEvent,
                     trackedEntityDataValueStore.query(updatedEvent), updatedDataValues));
         }
-        DbUtils.applyBatch(operations);
-        DateTimeManager.getInstance()
-                .setLastUpdated(ResourceType.EVENT, uid, serverDateTime);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(ResourceType.EVENT, serverDateTime, uid);
     }
 
     private void saveResourceDataFromServer(ResourceType resourceType, String extraIdentifier,
@@ -196,7 +190,7 @@ public final class EventController extends PushableDataController implements IEv
                                             DateTime serverDateTime) {
         Queue<IDbOperation> operations = new LinkedList<>();
         operations.addAll(createOperations(eventStore, persistedItems, updatedItems));
-        DbUtils.applyBatch(operations);
+        transactionManager.transact(operations);
         operations.clear();
 
         for (Event event : updatedItems) {
@@ -209,46 +203,44 @@ public final class EventController extends PushableDataController implements IEv
                         eventStore.query(event.getId()), event,
                         trackedEntityDataValueStore.query(event), updatedDataValues));
             }
-            DateTimeManager.getInstance()
-                    .setLastUpdated(ResourceType.EVENT, event.getEventUid(), serverDateTime);
+            lastUpdatedPreferences.save(ResourceType.EVENT, serverDateTime, event.getEventUid());
         }
-        DateTimeManager.getInstance()
-                .setLastUpdated(resourceType, extraIdentifier, serverDateTime);
+        lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
 
-    private static List<Event> getEvents(JsonNode jsonNode) {
-        TypeReference<List<Event>> typeRef =
-                new TypeReference<List<Event>>() {
-                };
-        List<Event> events;
-        try {
-            if (jsonNode.has("events")) {
-                events = ObjectMapperProvider.getInstance().
-                        readValue(jsonNode.get("events").traverse(), typeRef);
-            } else {
-                events = new ArrayList<>();
-            }
-        } catch (IOException e) {
-            events = new ArrayList<>();
-            e.printStackTrace();
-        }
-        return events;
-    }
+//    private static List<Event> getEvents(JsonNode jsonNode) {
+//        TypeReference<List<Event>> typeRef =
+//                new TypeReference<List<Event>>() {
+//                };
+//        List<Event> events;
+//        try {
+//            if (jsonNode.has("events")) {
+//                events = ObjectMapperProvider.getInstance().
+//                        readValue(jsonNode.get("events").traverse(), typeRef);
+//            } else {
+//                events = new ArrayList<>();
+//            }
+//        } catch (IOException e) {
+//            events = new ArrayList<>();
+//            e.printStackTrace();
+//        }
+//        return events;
+//    }
 
-    private Map<String, String> getBasicQueryMap() {
-        final Map<String, String> map = new HashMap<>();
-        map.put("fields", "event");
-        return map;
-    }
-
-    private Map<String, String> getAllFieldsQueryMap(DateTime lastUpdated) {
-        final Map<String, String> map = new HashMap<>();
-        map.put("fields", "[:all]");
-        if (lastUpdated != null) {
-            map.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
-        }
-        return map;
-    }
+//    private Map<String, String> getBasicQueryMap() {
+//        final Map<String, String> map = new HashMap<>();
+//        map.put("fields", "event");
+//        return map;
+//    }
+//
+//    private Map<String, String> getAllFieldsQueryMap(DateTime lastUpdated) {
+//        final Map<String, String> map = new HashMap<>();
+//        map.put("fields", "[:all]");
+//        if (lastUpdated != null) {
+//            map.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
+//        }
+//        return map;
+//    }
 
     /**
      * This utility method allows to determine which type of operation to apply to
@@ -450,7 +442,7 @@ public final class EventController extends PushableDataController implements IEv
         return map;
     }
 
-    private void sendEventChanges() throws APIException {
+    private void sendEventChanges() throws ApiException {
         List<Event> events = getLocallyChangedEvents();
         sendEventChanges(events);
     }
@@ -465,7 +457,7 @@ public final class EventController extends PushableDataController implements IEv
     }
 
     @Override
-    public void sendEventChanges(List<Event> events) throws APIException {
+    public void sendEventChanges(List<Event> events) throws ApiException {
         if (events == null || events.isEmpty()) {
             return;
         }
@@ -493,7 +485,7 @@ public final class EventController extends PushableDataController implements IEv
         }
     }
 
-    private void sendEventChanges(Event event, Action action) throws APIException {
+    private void sendEventChanges(Event event, Action action) throws ApiException {
         if (event == null) {
             return;
         }
@@ -515,23 +507,14 @@ public final class EventController extends PushableDataController implements IEv
         }
     }
 
-    private void postEvent(Event event) throws APIException {
+    private void postEvent(Event event) throws ApiException {
         //setting event to null to avoid sending temporary local reference
         event.setEventUid(null);
         try {
-            Response response = mDhisApi.postEvent(event);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
+            ImportSummary importSummary = eventApiClient.postEvent(event);
+            handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
                 if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                         ImportSummary.Status.OK.equals(importSummary.getStatus())) {
-                    // also, we will need to find UUID of newly created event,
-                    // which is contained inside of HTTP Location header
-                    Header header = NetworkUtils.findLocationHeader(response.getHeaders());
-                    // parse the value of header as URI and extract the id
-                    String eventUid = Uri.parse(header.getValue()).getLastPathSegment();
-                    // set UUID, change state and save event
-                    event.setEventUid(eventUid);
                     stateStore.saveActionForModel(event, Action.SYNCED);
                     List<IDbOperation> operations = new ArrayList<>();
                     for (TrackedEntityDataValue dataValue : event.getTrackedEntityDataValues()) {
@@ -539,22 +522,20 @@ public final class EventController extends PushableDataController implements IEv
                         operations.add(DbOperation.with(trackedEntityDataValueStore).save(dataValue));
                     }
                     operations.add(DbOperation.with(eventStore).save(event));
-                    DbUtils.applyBatch(operations);
+                    transactionManager.transact(operations);
+                    //DbUtils.applyBatch(operations);
                     updateEventTimestamp(event);
                     eventStore.save(event);
                     clearFailedItem(FailedItemType.EVENT, failedItemStore, event.getId());
-                }
             }
-        } catch (APIException apiException) {
+        } catch (ApiException apiException) {
             handleEventSendException(apiException, failedItemStore, event);
         }
     }
 
-    private void putEvent(Event event) throws APIException {
+    private void putEvent(Event event) throws ApiException {
         try {
-            Response response = mDhisApi.putEvent(event.getEventUid(), event);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
+            ImportSummary importSummary = eventApiClient.putEvent(event);
                 handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
                 if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                         ImportSummary.Status.OK.equals(importSummary.getStatus())) {
@@ -566,45 +547,42 @@ public final class EventController extends PushableDataController implements IEv
                         operations.add(DbOperation.with(trackedEntityDataValueStore).save(dataValue));
                     }
                     operations.add(DbOperation.with(eventStore).save(event));
-                    DbUtils.applyBatch(operations);
+                    transactionManager.transact(operations);
                     clearFailedItem(FailedItemType.EVENT, failedItemStore, event.getId());
                     updateEventTimestamp(event);
                     eventStore.save(event);
                 }
-            }
-        } catch (APIException apiException) {
+
+        } catch (ApiException apiException) {
             handleEventSendException(apiException, failedItemStore, event);
         }
     }
 
-    private Event updateEventTimestamp(Event event) throws APIException {
+    private Event updateEventTimestamp(Event event) throws ApiException {
         try {
-            final Map<String, String> QUERY_PARAMS = new HashMap<>();
-            QUERY_PARAMS.put("fields", "created,lastUpdated");
-            Event updatedEvent = mDhisApi
-                    .getEvent(event.getEventUid(), QUERY_PARAMS);
+            Event updatedEvent = eventApiClient.getBasicEvent(event.getEventUid(), null);
 
             // merging updated timestamp to local event model
             event.setCreated(updatedEvent.getCreated());
             event.setLastUpdated(updatedEvent.getLastUpdated());
             //Models.events().save(event);
-        } catch (APIException apiException) {
-            NetworkUtils.handleApiException(apiException);
+        } catch (ApiException ApiException) {
+            //NetworkUtils.handleApiException(ApiException);
         }
         return event;
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
     }
 
     @Override
-    public void sync(String organisationUnitUid, String programUid, DateTime serverDateTime) throws APIException {
-        getEventsDataFromServer(organisationUnitUid, programUid, serverDateTime);
+    public void sync(String organisationUnitUid, String programUid, int count, DateTime serverDateTime) throws ApiException {
+        getEventsDataFromServer(organisationUnitUid, programUid, count, serverDateTime);
     }
 
     @Override
-    public void sync(Enrollment enrollment) throws APIException {
+    public void sync(Enrollment enrollment) throws ApiException {
         getEventsDataFromServer(enrollment);
     }
 }

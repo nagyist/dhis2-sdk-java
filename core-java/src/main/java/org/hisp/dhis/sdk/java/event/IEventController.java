@@ -28,17 +28,17 @@
 
 package org.hisp.dhis.sdk.java.event;
 
-import org.hisp.dhis.java.sdk.core.network.APIException;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.joda.time.DateTime;
 
 import java.util.List;
 
 public interface IEventController {
-    public void sync() throws APIException;
-    public void sync(String organisationUnitUid, String programUid, DateTime serverDateTime) throws APIException;
-    public void sync(Enrollment enrollment) throws APIException;
-    public void getEventsDataFromServer(Enrollment enrollment) throws APIException;
-    public void sendEventChanges(List<Event> events) throws APIException;
+    void sync() throws ApiException;
+    void sync(String organisationUnitUid, String programUid, int count, DateTime serverDateTime) throws ApiException;
+    void sync(Enrollment enrollment) throws ApiException;
+    void getEventsDataFromServer(Enrollment enrollment) throws ApiException;
+    void sendEventChanges(List<Event> events) throws ApiException;
 }
