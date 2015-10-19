@@ -31,7 +31,7 @@ package org.hisp.dhis.sdk.java.program;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.IAssignedProgramApiClient;
 import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
@@ -48,10 +48,10 @@ import java.util.Set;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.getUids;
 
-public final class AssignedProgramsController extends ResourceController<Program> {
+public final class AssignedProgramsController implements IDataController<Program> {
     private final IProgramController programController;
     private final IOrganisationUnitController organisationUnitController;
-
+    private final ITransactionManager transactionManager;
     private final IOrganisationUnitStore organisationUnitStore;
     private final IProgramStore programStore;
 
@@ -68,13 +68,13 @@ public final class AssignedProgramsController extends ResourceController<Program
                                       ILastUpdatedPreferences lastUpdatedPreferences,
                                       ISystemInfoApiClient systemInfoApiClient,
                                       IAssignedProgramApiClient assignedProgramApiClient) {
-        super(transactionManager, lastUpdatedPreferences);
+        this.transactionManager = transactionManager;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.programController = programController;
         this.organisationUnitController = organisationUnitController;
         this.organisationUnitStore = organisationUnitStore;
         this.programStore = programStore;
 
-        this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.systemInfoApiClient = systemInfoApiClient;
         this.assignedProgramApiClient = assignedProgramApiClient;
     }
