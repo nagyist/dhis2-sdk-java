@@ -31,7 +31,7 @@ package org.hisp.dhis.sdk.java.optionset;
 
 import org.hisp.dhis.java.sdk.models.optionset.Option;
 import org.hisp.dhis.java.sdk.models.optionset.OptionSet;
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
@@ -46,7 +46,7 @@ import java.util.List;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class OptionSetController extends ResourceController<OptionSet> {
+public final class OptionSetController implements IDataController<OptionSet> {
 
     private final static String OPTIONSETS = "optionSets";
     private final IOptionSetApiClient optionSetApiClient;
@@ -63,13 +63,12 @@ public final class OptionSetController extends ResourceController<OptionSet> {
                                ISystemInfoApiClient systemInfoApiClient,
                                ILastUpdatedPreferences lastUpdatedPreferences,
                                ITransactionManager transactionManager) {
-        super(transactionManager, lastUpdatedPreferences);
+        this.transactionManager = transactionManager;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.optionSetApiClient = optionSetApiClient;
         this.mOptionStore = mOptionStore;
         this.mOptionSetStore = mOptionSetStore;
         this.systemInfoApiClient = systemInfoApiClient;
-        this.lastUpdatedPreferences = lastUpdatedPreferences;
-        this.transactionManager = transactionManager;
     }
 
     private void getOptionSetDataFromServer() throws ApiException {
