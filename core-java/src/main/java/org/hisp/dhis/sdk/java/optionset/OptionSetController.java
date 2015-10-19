@@ -58,11 +58,13 @@ public final class OptionSetController extends ResourceController<OptionSet> {
     private final IOptionStore mOptionStore;
     private final IIdentifiableObjectStore<OptionSet> mOptionSetStore;
 
-    public OptionSetController(IOptionSetApiClient optionSetApiClient ,IOptionStore mOptionStore,
+
+    public OptionSetController(IOptionSetApiClient optionSetApiClient, IOptionStore mOptionStore,
                                IIdentifiableObjectStore<OptionSet> mOptionSetStore,
                                ISystemInfoApiClient systemInfoApiClient,
                                ILastUpdatedPreferences lastUpdatedPreferences,
                                ITransactionManager transactionManager) {
+        super(transactionManager, lastUpdatedPreferences);
         this.optionSetApiClient = optionSetApiClient;
         this.mOptionStore = mOptionStore;
         this.mOptionSetStore = mOptionSetStore;
@@ -84,13 +86,13 @@ public final class OptionSetController extends ResourceController<OptionSet> {
         List<IDbOperation> operations = new ArrayList<>();
         List<OptionSet> persistedOptionSets = mOptionSetStore.queryAll();
         if (existingPersistedAndUpdatedOptionSets != null && !existingPersistedAndUpdatedOptionSets.isEmpty()) {
-            for (OptionSet optionSet: existingPersistedAndUpdatedOptionSets) {
+            for (OptionSet optionSet : existingPersistedAndUpdatedOptionSets) {
                 if (optionSet == null || optionSet.getOptions() == null) {
                     continue;
                 }
                 OptionSet persistedOptionSet = mOptionSetStore.queryByUid(optionSet.getUId());
                 List<Option> persistedOptions;
-                if(persistedOptionSet != null) {
+                if (persistedOptionSet != null) {
                     persistedOptions = persistedOptionSet.getOptions();
                 } else {
                     persistedOptions = new ArrayList<>();

@@ -39,6 +39,7 @@ import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,9 @@ public final class OrganisationUnitController implements IOrganisationUnitContro
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ITransactionManager transactionManager;
 
-    public OrganisationUnitController(IOrganisationUnitStore mOrganisationUnitStore, ISystemInfoApiClient systemInfoApiClient, IOrganisationUnitApiClient organisationUnitApiClient, ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager) {
+    public OrganisationUnitController(IOrganisationUnitStore mOrganisationUnitStore, ISystemInfoApiClient systemInfoApiClient,
+                                      IOrganisationUnitApiClient organisationUnitApiClient,
+                                      ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager) {
         this.mOrganisationUnitStore = mOrganisationUnitStore;
         this.systemInfoApiClient = systemInfoApiClient;
         this.organisationUnitApiClient = organisationUnitApiClient;
@@ -98,6 +101,11 @@ public final class OrganisationUnitController implements IOrganisationUnitContro
     @Override
     public void sync() throws ApiException {
         getOrganisationUnitsFromServer();
+    }
+
+    @Override
+    public void sync(Collection<String> organisationUnitIds) {
+
     }
 
     public void sync(List<OrganisationUnit> organisationUnits) throws ApiException {
