@@ -28,32 +28,41 @@
 
 package org.hisp.dhis.sdk.java.relationship;
 
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class RelationshipTypeController extends ResourceController<RelationshipType> {
+public final class RelationshipTypeController implements IDataController {
 
     private final static String RELATIONSHIPTYPES = "relationshipTypes";
+    private final ITransactionManager transactionManager;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IRelationshipTypeApiClient relationshipTypeApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore;
 
     public RelationshipTypeController(IRelationshipTypeApiClient relationshipApiClient,
+                                      ITransactionManager transactionManager,
                                       IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore,
                                       ILastUpdatedPreferences lastUpdatedPreferences,
                                       ISystemInfoApiClient systemInfoApiClient) {
         this.relationshipTypeApiClient = relationshipApiClient;
+        this.transactionManager = transactionManager;
         this.mRelationshipTypeStore = mRelationshipTypeStore;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.systemInfoApiClient = systemInfoApiClient;
@@ -76,9 +85,12 @@ public final class RelationshipTypeController extends ResourceController<Relatio
         List<RelationshipType> existingPersistedAndUpdatedRelationshipTypes =
                 merge(allRelationshipTypes, updatedRelationshipTypes, mRelationshipTypeStore.
                         queryAll());
-        saveResourceDataFromServer(resource, mRelationshipTypeStore,
-                existingPersistedAndUpdatedRelationshipTypes, mRelationshipTypeStore.queryAll(),
-                serverTime);
+
+        Queue<IDbOperation> operations = new LinkedList<>();
+        operations.addAll(DbUtils.createOperations(mRelationshipTypeStore, existingPersistedAndUpdatedRelationshipTypes, mRelationshipTypeStore.queryAll()));
+
+        transactionManager.transact(operations);
+
     }
 
     @Override
