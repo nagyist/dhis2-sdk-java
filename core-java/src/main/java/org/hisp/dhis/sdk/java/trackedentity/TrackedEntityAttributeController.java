@@ -29,32 +29,41 @@
 package org.hisp.dhis.sdk.java.trackedentity;
 
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class TrackedEntityAttributeController extends ResourceController<TrackedEntityAttribute> {
+public final class TrackedEntityAttributeController implements IDataController<TrackedEntityAttribute> {
 
 
     private final static String TRACKEDENTITYATTRIBUTES = "trackedEntityAttributes";
     private final ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient;
+    private final ITransactionManager transactionManager;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore;
 
     public TrackedEntityAttributeController(ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient,
+                                            ITransactionManager transactionManager,
                                             ILastUpdatedPreferences lastUpdatedPreferences,
                                             IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore,
                                             ISystemInfoApiClient systemInfoApiClient) {
         this.trackedEntityAttributeApiClient = trackedEntityAttributeApiClient;
+        this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.systemInfoApiClient = systemInfoApiClient;
         this.trackedEntityAttributeStore = trackedEntityAttributeStore;
@@ -79,8 +88,11 @@ public final class TrackedEntityAttributeController extends ResourceController<T
         List<TrackedEntityAttribute> existingPersistedAndUpdatedTrackedEntityAttributes =
                 merge(allTrackedEntityAttributes, updatedTrackedEntityAttributes, trackedEntityAttributeStore.
                         queryAll());
-        saveResourceDataFromServer(resource, trackedEntityAttributeStore,
-                existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll(), serverTime);
+
+        Queue<IDbOperation> operations = new LinkedList<>();
+        operations.addAll(DbUtils.createOperations(trackedEntityAttributeStore, existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
+
+        transactionManager.transact(operations);
     }
 
     @Override

@@ -28,55 +28,61 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.java.sdk.models.program.IProgramRuleApiClient;
 import org.hisp.dhis.java.sdk.models.program.ProgramRule;
+import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class ProgramRuleController extends ResourceController<ProgramRule> {
-
-    private final static String PROGRAMRULES = "programRules";
-    private final IDhisApi mDhisApi;
     private final IIdentifiableObjectStore<ProgramRule> mProgramRuleStore;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final IProgramRuleApiClient programRuleApiClient;
 
-    public ProgramRuleController(IDhisApi mDhisApi, IIdentifiableObjectStore<ProgramRule> mProgramRuleStore) {
-        this.mDhisApi = mDhisApi;
+    public ProgramRuleController(ITransactionManager transactionManager,
+                                 ILastUpdatedPreferences lastUpdatedPreferences,
+                                 IIdentifiableObjectStore<ProgramRule> mProgramRuleStore,
+                                 ISystemInfoApiClient systemInfoApiClient,
+                                 IProgramRuleApiClient programRuleApiClient) {
+        super(transactionManager, lastUpdatedPreferences);
+
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.mProgramRuleStore = mProgramRuleStore;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.programRuleApiClient = programRuleApiClient;
     }
 
-    private void getProgramRulesDataFromServer() throws APIException {
-        ResourceType resource = ResourceType.PROGRAMRULES;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+    private void getProgramRulesDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.PROGRAM_RULES;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
-        //fetching id and name for all items on server. This is needed in case something is
+        // fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<ProgramRule> allProgramRules = NetworkUtils.unwrapResponse(mDhisApi
-                .getProgramRules(getBasicQueryMap()), PROGRAMRULES);
-        //fetch all updated items
-        List<ProgramRule> updatedProgramRules = NetworkUtils.unwrapResponse(mDhisApi
-                .getProgramRules(getAllFieldsQueryMap(lastUpdated)), PROGRAMRULES);
-        //merging updated items with persisted items, and removing ones not present in server.
+        List<ProgramRule> allProgramRules = programRuleApiClient.getBasicProgramRules(null);
+
+        // fetch all updated items
+        List<ProgramRule> updatedProgramRules = programRuleApiClient.getFullProgramRules(lastUpdated);
+
+        // merging updated items with persisted items, and removing ones not present in server.
         List<ProgramRule> existingPersistedAndUpdatedProgramRules =
-                merge(allProgramRules, updatedProgramRules, mProgramRuleStore.
-                        queryAll());
+                merge(allProgramRules, updatedProgramRules, mProgramRuleStore.queryAll());
         saveResourceDataFromServer(resource, mProgramRuleStore,
-                existingPersistedAndUpdatedProgramRules, mProgramRuleStore.queryAll(),
-                serverTime);
+                existingPersistedAndUpdatedProgramRules, mProgramRuleStore.queryAll(), serverTime);
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getProgramRulesDataFromServer();
     }
 }

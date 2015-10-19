@@ -31,12 +31,6 @@ package org.hisp.dhis.sdk.java.program;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.common.StringConverter;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.ObjectMapperProvider;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitController;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
@@ -49,9 +43,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import retrofit.client.Response;
-import retrofit.converter.ConversionException;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
 

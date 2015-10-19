@@ -29,6 +29,7 @@
 package org.hisp.dhis.sdk.java.common.services;
 
 import org.hisp.dhis.sdk.java.common.persistence.IPersistenceModule;
+import org.hisp.dhis.sdk.java.common.services.IServicesModule;
 import org.hisp.dhis.sdk.java.dashboard.DashboardService;
 import org.hisp.dhis.sdk.java.dashboard.IDashboardService;
 

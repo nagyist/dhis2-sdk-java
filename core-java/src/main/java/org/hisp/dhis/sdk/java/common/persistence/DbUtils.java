@@ -46,28 +46,6 @@ public final class DbUtils {
     }
 
     /**
-     * Performs each given DbOperation during one database transaction
-     *
-     * @param operations List of DbOperations to be performed.
-     */
-    /* public void applyBatch(final Collection<IDbOperation> operations) {
-        isNull(operations, "List<DbOperation> object must not be null");
-
-        if (operations.isEmpty()) {
-            return;
-        }
-
-        transactionManager.transact(new Runnable() {
-            @Override
-            public void run() {
-                for (IDbOperation operation : operations) {
-                    operation.execute();
-                }
-            }
-        });
-    } */
-
-    /**
      * This utility method allows to determine which type of operation to apply to
      * each BaseIdentifiableObject$Flow depending on TimeStamp.
      *

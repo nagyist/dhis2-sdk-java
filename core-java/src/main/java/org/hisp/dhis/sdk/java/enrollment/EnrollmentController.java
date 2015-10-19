@@ -28,11 +28,16 @@
 
 package org.hisp.dhis.sdk.java.enrollment;
 
+import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
+import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
+import org.hisp.dhis.java.sdk.models.common.state.Action;
+import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
+import org.hisp.dhis.java.sdk.models.event.Event;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.sdk.java.common.IFailedItemStore;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.controllers.PushableDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.network.Response;
 import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IStore;
@@ -41,22 +46,10 @@ import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.event.IEventController;
 import org.hisp.dhis.sdk.java.event.IEventStore;
-import org.hisp.dhis.java.sdk.models.common.faileditem.FailedItemType;
-import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
-import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
-import org.hisp.dhis.java.sdk.models.event.Event;
-import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 public final class EnrollmentController extends PushableDataController implements IEnrollmentController {
     private final static String ENROLLMENTS = "enrollments";
