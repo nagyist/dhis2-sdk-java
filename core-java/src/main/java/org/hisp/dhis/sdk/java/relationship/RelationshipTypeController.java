@@ -47,7 +47,7 @@ import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class RelationshipTypeController implements IDataController {
+public final class RelationshipTypeController implements IDataController<RelationshipType> {
 
     private final static String RELATIONSHIPTYPES = "relationshipTypes";
     private final ITransactionManager transactionManager;
