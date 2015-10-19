@@ -29,9 +29,9 @@
 package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.hisp.dhis.sdk.java.common.IStateStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +108,7 @@ public class DashboardElementService implements IDashboardElementService {
     }
 
     /* Made this method package private for testing */
-    int getContentCount(DashboardItem dashboardItem) {
+    private int getContentCount(DashboardItem dashboardItem) {
         List<DashboardElement> allDashboardElements =
                 dashboardElementStore.queryByDashboardItem(dashboardItem);
         Map<Long, Action> actionMap = stateStore.queryActionsForModel(DashboardElement.class);

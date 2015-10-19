@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -44,5 +45,24 @@ public class DashboardContentServiceTest {
     public void testGetById() {
         DashboardContent dashboardContent = dashboardItemContentService.get(12);
         assertEquals(dashboardContent, dashboardContentMock);
+    }
+
+    @Test
+    public void testGetByUid() {
+        DashboardContent dashboardContent = dashboardItemContentService.get("123");
+        assertEquals(dashboardContent, dashboardContentMock);
+    }
+
+    @Test
+    public void testList() {
+        List<DashboardContent> dashboardContents = dashboardItemContentService.list();
+        assertEquals(dashboardContents, dashboardContentListMock);
+    }
+
+    @Test
+    public void testListByTypes() {
+        List<DashboardContent> dashboardContents = dashboardItemContentService
+                .list(Arrays.asList("type_one", "type_two"));
+        assertEquals(dashboardContents, dashboardContentListMock);
     }
 }
