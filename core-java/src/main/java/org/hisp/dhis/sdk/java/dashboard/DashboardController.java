@@ -31,7 +31,6 @@ package org.hisp.dhis.sdk.java.dashboard;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.network.Response;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
@@ -116,9 +115,9 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         Queue<IDbOperation> operations = new LinkedList<>();
 
-        operations.addAll(DbUtils.createOperations(dashboardStore,
+        operations.addAll(transactionManager.createOperations(dashboardStore,
                 stateStore.filterModelsByAction(Dashboard.class, Action.TO_POST), dashboards));
-        operations.addAll(DbUtils.createOperations(dashboardItemStore,
+        operations.addAll(transactionManager.createOperations(dashboardItemStore,
                 stateStore.filterModelsByAction(DashboardItem.class, Action.TO_POST), dashboardItems));
         operations.addAll(createOperations(dashboardItems));
 

@@ -33,7 +33,6 @@ import org.hisp.dhis.java.sdk.models.optionset.Option;
 import org.hisp.dhis.java.sdk.models.optionset.OptionSet;
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -97,10 +96,10 @@ public final class OptionSetController extends ResourceController<OptionSet> {
                 } else {
                     persistedOptions = new ArrayList<>();
                 }
-                operations.addAll(DbUtils.createOperations(mOptionStore, persistedOptions, optionSet.getOptions()));
+                operations.addAll(transactionManager.createOperations(mOptionStore, persistedOptions, optionSet.getOptions()));
             }
         }
-        operations.addAll(DbUtils.createOperations(mOptionSetStore, persistedOptionSets, existingPersistedAndUpdatedOptionSets));
+        operations.addAll(transactionManager.createOperations(mOptionSetStore, persistedOptionSets, existingPersistedAndUpdatedOptionSets));
 
 //        DbUtils.applyBatch(operations);
         transactionManager.transact(operations);
