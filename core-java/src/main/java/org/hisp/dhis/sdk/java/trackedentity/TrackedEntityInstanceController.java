@@ -39,7 +39,6 @@ import org.hisp.dhis.sdk.java.common.IFailedItemStore;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.controllers.PushableDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.network.Response;
 import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IStore;
@@ -58,7 +57,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
 
     private final static String TRACKEDENTITYINSTANCES = "trackedEntityInstances";
 
-    private final ITrackedEntityApiClient trackedEntityApiClient;
+    private final ITrackedEntityInstanceApiClient trackedEntityInstanceApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ITrackedEntityInstanceStore trackedEntityInstanceStore;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
@@ -71,7 +70,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
     private final ITrackedEntityAttributeValueStore trackedEntityAttributeValueStore;
     private final IEnrollmentStore enrollmentStore;
 
-    public TrackedEntityInstanceController(ITrackedEntityApiClient trackedEntityApiClient,
+    public TrackedEntityInstanceController(ITrackedEntityInstanceApiClient trackedEntityInstanceApiClient,
                                            ISystemInfoApiClient systemInfoApiClient,
                                            ITrackedEntityInstanceStore trackedEntityInstanceStore,
                                            ILastUpdatedPreferences lastUpdatedPreferences,
@@ -81,7 +80,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
                                            IRelationshipStore relationshipStore,
                                            ITrackedEntityAttributeValueStore trackedEntityAttributeValueStore,
                                            IEnrollmentStore enrollmentStore) {
-        this.trackedEntityApiClient = trackedEntityApiClient;
+        this.trackedEntityInstanceApiClient = trackedEntityInstanceApiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.trackedEntityInstanceStore = trackedEntityInstanceStore;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
@@ -132,7 +131,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
             QUERY_MAP_FULL.put("query", "LIKE:" + queryString);//todo: make a map where we can use more than one of each key
         }
         List<TrackedEntityInstance> trackedEntityInstances
-                = trackedEntityApiClient.getBasicTrackedEntityInstances(organisationUnitUid, null);
+                = trackedEntityInstanceApiClient.getBasicTrackedEntityInstances(organisationUnitUid, null);
         return trackedEntityInstances;
     }
 
@@ -161,7 +160,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
 
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
         TrackedEntityInstance updatedTrackedEntityInstance =
-                trackedEntityApiClient.getFullTrackedEntityInstance(uid, null);
+                trackedEntityInstanceApiClient.getFullTrackedEntityInstance(uid, null);
         TrackedEntityInstance persistedTrackedEntityInstance =
                 trackedEntityInstanceStore.query(uid);
 
@@ -314,29 +313,14 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
 
     private void postTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
         try {
-            Response response = trackedEntityApiClient.postTrackedEntityInstance(trackedEntityInstance);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
-                if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                        ImportSummary.Status.OK.equals(importSummary.getStatus())) {
+            ImportSummary importSummary = trackedEntityInstanceApiClient.postTrackedEntityInstance(trackedEntityInstance);
+            handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
+            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
+                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
 
-                    // also, we will need to find UUID of newly created trackedentityinstance,
-                    // which is contained inside of HTTP Location header
-                    // Header header = NetworkUtils.findLocationHeader(response.getHeaders());
-
-                    // parse the value of header as URI and extract the id
-                    // String trackedEntityInstanceUid = Uri.parse(header.getValue()).getLastPathSegment();
-
-                    // set UUID, change state and save trackedentityinstance
-                    // String oldUid = trackedEntityInstance.getTrackedEntityInstanceUid();
-                    // trackedEntityInstance.setTrackedEntityInstanceUid(trackedEntityInstanceUid);
-
-                    stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
-                    // trackedEntityInstanceStore.save(trackedEntityInstance);
-                    clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
-                    UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
-                }
+                stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
+                clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
+                UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
             }
         } catch (ApiException apiException) {
             handleTrackedEntityInstanceSendException(apiException, failedItemStore, trackedEntityInstance);
@@ -345,18 +329,15 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
 
     private void putTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
         try {
-            Response response = trackedEntityApiClient.putTrackedEntityInstance(trackedEntityInstance);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
-                if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                        ImportSummary.Status.OK.equals(importSummary.getStatus())) {
-                    stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
-                    trackedEntityInstanceStore.save(trackedEntityInstance);
-                    clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
-                    UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
-                }
-            }
+            ImportSummary importSummary = trackedEntityInstanceApiClient.putTrackedEntityInstance(trackedEntityInstance);
+            handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
+            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
+                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
+                stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
+                trackedEntityInstanceStore.save(trackedEntityInstance);
+                clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
+                UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
+        }
         } catch (ApiException apiException) {
             handleTrackedEntityInstanceSendException(apiException, failedItemStore, trackedEntityInstance);
         }
@@ -366,7 +347,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         try {
             final Map<String, String> QUERY_PARAMS = new HashMap<>();
             QUERY_PARAMS.put("fields", "created,lastUpdated");
-            TrackedEntityInstance updatedTrackedEntityInstance = trackedEntityApiClient
+            TrackedEntityInstance updatedTrackedEntityInstance = trackedEntityInstanceApiClient
                     .getFullTrackedEntityInstance(trackedEntityInstance.getTrackedEntityInstanceUid(), null);
 
             // merging updated timestamp to local trackedentityinstance model
