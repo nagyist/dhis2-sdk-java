@@ -28,48 +28,55 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.DbUtils;
-import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
-import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.java.sdk.models.program.ProgramIndicator;
 import org.hisp.dhis.java.sdk.models.program.ProgramStage;
 import org.hisp.dhis.java.sdk.models.program.ProgramStageDataElement;
 import org.hisp.dhis.java.sdk.models.program.ProgramStageSection;
 import org.hisp.dhis.java.sdk.models.program.ProgramTrackedEntityAttribute;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
-
-public final class ProgramController extends ResourceController<Program> implements IProgramController {
+public final class ProgramController implements IProgramController, IDataController<Program> {
 
     private final static String PROGRAMS = "programs";
-    private final IDhisApi mDhisApi;
-
     private final IProgramStore mProgramStore;
+    private final IProgramApiClient programApiClient;
+    private final ITransactionManager transactionManager;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ISystemInfoApiClient systemInfoApiClient;
     private final IProgramIndicatorStore mProgramIndicatorsStore;
     private final IProgramStageDataElementStore mProgramStageDataElementStore;
     private final IProgramTrackedEntityAttributeStore mProgramTrackedEntityAttributeStore;
     private final IProgramStageStore mProgramStageStore;
     private final IProgramStageSectionStore mProgramStageSectionStore;
 
-    public ProgramController(IDhisApi mDhisApi, IProgramStore mProgramStore,
+    public ProgramController(IProgramApiClient programApiClient,
+                             ITransactionManager transactionManager,
+                             ILastUpdatedPreferences lastUpdatedPreferences,
+                             ISystemInfoApiClient systemInfoApiClient, IProgramStore mProgramStore,
                              IProgramIndicatorStore mProgramIndicatorsStore,
                              IProgramStageDataElementStore mProgramStageDataElementStore,
                              IProgramTrackedEntityAttributeStore mProgramTrackedEntityAttributeStore,
                              IProgramStageStore mProgramStageStore,
                              IProgramStageSectionStore mProgramStageSectionStore) {
-        this.mDhisApi = mDhisApi;
+        this.programApiClient = programApiClient;
+        this.transactionManager = transactionManager;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.systemInfoApiClient = systemInfoApiClient;
         this.mProgramStore = mProgramStore;
         this.mProgramIndicatorsStore = mProgramIndicatorsStore;
         this.mProgramStageDataElementStore = mProgramStageDataElementStore;
@@ -79,77 +86,73 @@ public final class ProgramController extends ResourceController<Program> impleme
     }
 
 
-    private void getProgramsDataFromServer() throws APIException {
+    private void getProgramsDataFromServer() throws ApiException {
         ResourceType resource = ResourceType.PROGRAMS;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
-        List<Program> allProgramsOnServer = NetworkUtils.unwrapResponse(mDhisApi
-                .getPrograms(getBasicQueryMap()), PROGRAMS);
-        List<Program> updatedPrograms = NetworkUtils.unwrapResponse(mDhisApi
-                .getPrograms(getFullQueryMap(lastUpdated)), PROGRAMS);
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
+
+        List<Program> allProgramsOnServer = programApiClient.getBasicPrograms(null);
+
+        List<Program> updatedPrograms = programApiClient.getFullPrograms(lastUpdated);
+
         List<IDbOperation> operations = new ArrayList<>();
-        for(Program program : updatedPrograms) {
+        for (Program program : updatedPrograms) {
             operations.addAll(generateUpdateProgramDbOperations(program));
         }
         //deleting programs that are stored on device, but are removed on server
         Map<String, Program> programsOnServerMap = new HashMap<>();
-        for(Program program : allProgramsOnServer) {
+        for (Program program : allProgramsOnServer) {
             programsOnServerMap.put(program.getUId(), program);
         }
-        for(Program persistedProgram : mProgramStore.queryAll()) {
-            if(!programsOnServerMap.containsKey(persistedProgram.getUId())) {
+        for (Program persistedProgram : mProgramStore.queryAll()) {
+            if (!programsOnServerMap.containsKey(persistedProgram.getUId())) {
                 operations.addAll(genereDeleteProgramDbOperations(persistedProgram, true));
             }
         }
-        DbUtils.applyBatch(operations);
 
-        DateTimeManager.getInstance()
-                .setLastUpdated(resource, serverTime);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resource, serverTime);
     }
 
-    private void getProgramsDataFromServer(List<String> programUidsToLoad) throws APIException {
-        List<Program> allProgramsOnServer = NetworkUtils.unwrapResponse(mDhisApi
-                .getPrograms(getBasicQueryMap()), PROGRAMS);
+    private void getProgramsDataFromServer(Collection<String> programUidsToLoad) throws ApiException {
+        List<Program> allProgramsOnServer = programApiClient.getBasicPrograms(null);
+
         Map<String, Program> programsOnServerMap = new HashMap<>();
-        for(Program program : allProgramsOnServer) {
+        for (Program program : allProgramsOnServer) {
             programsOnServerMap.put(program.getUId(), program);
         }
         //verifying that the programs we want to load exist on the server
         List<String> existingProgramUidsToLoad = new ArrayList<>();
-        for(String programUidToLoad : programUidsToLoad) {
-            if(programsOnServerMap.containsKey(programUidToLoad)) {
+        for (String programUidToLoad : programUidsToLoad) {
+            if (programsOnServerMap.containsKey(programUidToLoad)) {
                 existingProgramUidsToLoad.add(programUidToLoad);
             }
         }
-        for(String programUidToLoad : existingProgramUidsToLoad) {
+        for (String programUidToLoad : existingProgramUidsToLoad) {
             getProgramDataFromServer(programUidToLoad);
         }
         //deleting previously loaded programs that are removed from server
         List<Program> persistedPrograms = mProgramStore.queryAll();
-        for(Program persistedProgram : persistedPrograms) {
-            if(!existingProgramUidsToLoad.contains(persistedProgram.getUId())) {
+        for (Program persistedProgram : persistedPrograms) {
+            if (!existingProgramUidsToLoad.contains(persistedProgram.getUId())) {
                 genereDeleteProgramDbOperations(persistedProgram, true);
             }
         }
     }
 
-    private void getProgramDataFromServer(String uid) throws APIException {
+    private void getProgramDataFromServer(String uid) throws ApiException {
         ResourceType resource = ResourceType.PROGRAM;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         // program with content.
-        Program updatedProgram = mDhisApi.getProgram(uid, getFullQueryMap(lastUpdated));
-        if(updatedProgram.getUId() == null) {
+        Program updatedProgram = programApiClient.getFullProgram(uid, lastUpdated);
+        if (updatedProgram.getUId() == null) {
             return;
         }
         List<IDbOperation> operations = generateUpdateProgramDbOperations(updatedProgram);
-        DbUtils.applyBatch(operations);
-
-        DateTimeManager.getInstance()
-                .setLastUpdated(resource, serverTime);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resource, serverTime);
     }
 
     private List<IDbOperation> generateUpdateProgramDbOperations(Program updatedProgram) {
@@ -216,7 +219,7 @@ public final class ProgramController extends ResourceController<Program> impleme
         for (ProgramIndicator programIndicator : mProgramIndicatorsStore.query(persistedProgram)) {
             operations.add(DbOperation.with(mProgramIndicatorsStore).delete(programIndicator));
         }
-        if(deleteProgram) {
+        if (deleteProgram) {
             operations.add(DbOperation.with(mProgramStore).delete(persistedProgram));
         }
         return operations;
@@ -237,12 +240,13 @@ public final class ProgramController extends ResourceController<Program> impleme
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getProgramsDataFromServer();
     }
 
     @Override
-    public void sync(List programUids) {
+    public void sync(Collection<String> programUids) {
         getProgramsDataFromServer(programUids);
     }
+
 }
