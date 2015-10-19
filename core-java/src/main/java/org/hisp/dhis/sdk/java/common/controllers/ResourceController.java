@@ -28,21 +28,27 @@
 
 package org.hisp.dhis.sdk.java.common.controllers;
 
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
-import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.joda.time.DateTime;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 
 public abstract class ResourceController<T extends IdentifiableObject> implements IDataController<T> {
+    private final ITransactionManager transactionManager;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+
+    public ResourceController(ITransactionManager transactionManager,
+                              ILastUpdatedPreferences lastUpdatedPreferences) {
+        this.transactionManager = transactionManager;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+    }
 
     public void saveResourceDataFromServer(ResourceType resourceType, IIdentifiableObjectStore<T> store,
                                            List<T> updatedItems, List<T> persistedItems, DateTime serverDateTime) {
@@ -53,8 +59,8 @@ public abstract class ResourceController<T extends IdentifiableObject> implement
                                            List<T> updatedItems, List<T> persistedItems, DateTime serverDateTime) {
         Queue<IDbOperation> operations = new LinkedList<>();
         operations.addAll(DbUtils.createOperations(store, persistedItems, updatedItems));
-        DbUtils.applyBatch(operations);
-        DateTimeManager.getInstance().setLastUpdated(resourceType, extraIdentifier, serverDateTime);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
 
     public Map<String, String> getBasicQueryMap() {

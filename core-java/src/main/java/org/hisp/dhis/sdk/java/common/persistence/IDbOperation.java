@@ -30,6 +30,8 @@ package org.hisp.dhis.sdk.java.common.persistence;
 
 public interface IDbOperation<T> {
     T getModel();
+
     DbAction getAction();
+
     void execute();
 }
