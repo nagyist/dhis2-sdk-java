@@ -29,31 +29,40 @@
 package org.hisp.dhis.sdk.java;
 
 import org.hisp.dhis.java.sdk.models.constant.Constant;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class ConstantController extends ResourceController<Constant> {
+public final class ConstantController implements IDataController<Constant> {
 
     private final static String CONSTANTS = "constants";
     private final IConstantApiClient constantApiClient;
+    private final ITransactionManager transactionManager;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<Constant> constantStore;
 
     public ConstantController(IConstantApiClient constantApiClient,
+                              ITransactionManager transactionManager,
                               ISystemInfoApiClient systemInfoApiClient,
                               ILastUpdatedPreferences lastUpdatedPreferences,
                               IIdentifiableObjectStore<Constant> constantStore) {
         this.constantApiClient = constantApiClient;
+        this.transactionManager = transactionManager;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.constantStore = constantStore;
@@ -75,9 +84,13 @@ public final class ConstantController extends ResourceController<Constant> {
         List<Constant> existingPersistedAndUpdatedConstants =
                 merge(allConstants, updatedConstants, constantStore.
                         queryAll());
-        saveResourceDataFromServer(resource, constantStore,
-                existingPersistedAndUpdatedConstants, constantStore.queryAll(),
-                serverTime);
+
+        Queue<IDbOperation> operations = new LinkedList<>();
+        operations.addAll(DbUtils.createOperations(constantStore, existingPersistedAndUpdatedConstants, constantStore.queryAll()));
+
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resource, serverTime, null);
+
     }
 
     @Override
