@@ -31,7 +31,6 @@ package org.hisp.dhis.sdk.java.trackedentity;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -89,7 +88,8 @@ public final class TrackedEntityAttributeController implements IDataController<T
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(DbUtils.createOperations(trackedEntityAttributeStore, existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(trackedEntityAttributeStore,
+                existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);
