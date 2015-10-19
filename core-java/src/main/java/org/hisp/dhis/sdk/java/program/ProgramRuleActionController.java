@@ -28,55 +28,70 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.program.ProgramRuleAction;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class ProgramRuleActionController extends ResourceController<ProgramRuleAction> {
+public final class ProgramRuleActionController implements IDataController<ProgramRuleAction> {
 
     private final static String PROGRAMRULEACTIONS = "programRuleActions";
-    private final IDhisApi mDhisApi;
+    private final IProgramRuleActionApiClient programRuleActionApiClient;
+    private final ITransactionManager transactionManager;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore;
 
-    public ProgramRuleActionController(IDhisApi mDhisApi, IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore) {
-        this.mDhisApi = mDhisApi;
+    public ProgramRuleActionController(IProgramRuleActionApiClient programRuleActionApiClient,
+                                       ITransactionManager transactionManager,
+                                       ISystemInfoApiClient systemInfoApiClient,
+                                       ILastUpdatedPreferences lastUpdatedPreferences,
+                                       IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore) {
+        this.programRuleActionApiClient = programRuleActionApiClient;
+        this.transactionManager = transactionManager;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.mProgramRuleActionStore = mProgramRuleActionStore;
     }
 
-    private void getProgramRuleVariablesDataFromServer() throws APIException {
-        ResourceType resource = ResourceType.PROGRAMRULEACTIONS;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
+    private void getProgramRuleVariablesDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.PROGRAM_RULE_ACTIONS;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<ProgramRuleAction> allProgramRuleActions = NetworkUtils.unwrapResponse(mDhisApi
-                .getProgramRuleActions(getBasicQueryMap()), PROGRAMRULEACTIONS);
+        List<ProgramRuleAction> allProgramRuleActions = programRuleActionApiClient.getBasicProgramRuleActions(null);
+
         //fetch all updated items
-        List<ProgramRuleAction> updatedProgramRuleActions = NetworkUtils.unwrapResponse(mDhisApi
-                .getProgramRuleActions(getAllFieldsQueryMap(lastUpdated)), PROGRAMRULEACTIONS);
+        List<ProgramRuleAction> updatedProgramRuleActions = programRuleActionApiClient.getFullProgramRuleActions(lastUpdated);
         //merging updated items with persisted items, and removing ones not present in server.
         List<ProgramRuleAction> existingPersistedAndUpdatedProgramRuleActions =
                 merge(allProgramRuleActions, updatedProgramRuleActions, mProgramRuleActionStore.
                         queryAll());
-        saveResourceDataFromServer(resource, mProgramRuleActionStore,
-                existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll(),
-                serverTime);
+
+        Queue<IDbOperation> operations = new LinkedList<>();
+        operations.addAll(DbUtils.createOperations(mProgramRuleActionStore, existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
+
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resource, serverTime, null);
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getProgramRuleVariablesDataFromServer();
     }
 }
