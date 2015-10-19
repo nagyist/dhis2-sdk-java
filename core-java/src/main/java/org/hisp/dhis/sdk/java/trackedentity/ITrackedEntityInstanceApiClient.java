@@ -1,5 +1,6 @@
 package org.hisp.dhis.sdk.java.trackedentity;
 
+import org.hisp.dhis.java.sdk.models.common.importsummary.ImportSummary;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.sdk.java.common.network.Response;
@@ -7,7 +8,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-public interface ITrackedEntityApiClient {
+public interface ITrackedEntityInstanceApiClient {
     List<TrackedEntityAttribute> getBasicTrackedEntityAttributes(DateTime lastUpdated);
 
     List<TrackedEntityAttribute> getFullTrackedEntityAttributes(DateTime lastUpdated);
@@ -18,7 +19,7 @@ public interface ITrackedEntityApiClient {
 
     TrackedEntityInstance getBasicTrackedEntityInstance(String uid, DateTime lastUpdated);
 
-    Response postTrackedEntityInstance(TrackedEntityInstance instance);
+    ImportSummary postTrackedEntityInstance(TrackedEntityInstance instance);
 
-    Response putTrackedEntityInstance(TrackedEntityInstance instance);
+    ImportSummary putTrackedEntityInstance(TrackedEntityInstance instance);
 }
