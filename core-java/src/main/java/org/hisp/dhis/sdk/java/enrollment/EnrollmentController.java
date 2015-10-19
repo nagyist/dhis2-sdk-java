@@ -61,8 +61,6 @@ import java.util.Queue;
 public final class EnrollmentController extends PushableDataController implements IEnrollmentController {
     private final static String ENROLLMENTS = "enrollments";
 
-    // private final IDhisApi mDhisApi;
-
     private final IEnrollmentApiClient enrollmentApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
 
@@ -78,7 +76,6 @@ public final class EnrollmentController extends PushableDataController implement
     public EnrollmentController(IEnrollmentApiClient apiClient, ISystemInfoApiClient systemInfoApiClient, ILastUpdatedPreferences preferences,
                                 ITransactionManager transactionManager, IEventController eventController, IEnrollmentStore enrollmentStore,
                                 IEventStore eventStore, IStateStore stateStore, IFailedItemStore failedItemStore) {
-        // mDhisApi = dhisApi;
         this.enrollmentApiClient = apiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = preferences;
@@ -162,23 +159,6 @@ public final class EnrollmentController extends PushableDataController implement
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-
-    /*
-    private Map<String, String> getBasicQueryMap() {
-        final Map<String, String> map = new HashMap<>();
-        map.put("fields", "enrollment");
-        return map;
-    }
-
-    private Map<String, String> getAllFieldsQueryMap(DateTime lastUpdated) {
-        final Map<String, String> map = new HashMap<>();
-        map.put("fields", "[:all]");
-        if (lastUpdated != null) {
-            map.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
-        }
-        return map;
-    }
-    */
 
     /**
      * This utility method allows to determine which type of operation to apply to
@@ -366,29 +346,16 @@ public final class EnrollmentController extends PushableDataController implement
 
     private void postEnrollment(Enrollment enrollment) throws ApiException {
         try {
-            Response response = enrollmentApiClient.postEnrollment(enrollment);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
+            ImportSummary importSummary = enrollmentApiClient.postEnrollment(enrollment);
+            handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
 
-                if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                        ImportSummary.Status.OK.equals(importSummary.getStatus())) {
-                    // also, we will need to find UUID of newly created enrollment,
-                    // which is contained inside of HTTP Location header
+            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
+                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
 
-                    // Header header = NetworkUtils.findLocationHeader(response.getHeaders());
-                    // parse the value of header as URI and extract the id
-                    //String enrollmentUid = Uri.parse(header.getValue()).getLastPathSegment();
-
-                    // set UUID, change state and save enrollment
-                    // enrollment.setEnrollmentUid(enrollmentUid);
-
-                    stateStore.saveActionForModel(enrollment, Action.SYNCED);
-                    enrollmentStore.save(enrollment);
-                    clearFailedItem(FailedItemType.ENROLLMENT, failedItemStore, enrollment.getId());
-                    //updateEnrollmentReferences(enrollment.getId(), enrollmentUid);
-                    UpdateEnrollmentTimestamp(enrollment);
-                }
+                stateStore.saveActionForModel(enrollment, Action.SYNCED);
+                enrollmentStore.save(enrollment);
+                clearFailedItem(FailedItemType.ENROLLMENT, failedItemStore, enrollment.getId());
+                UpdateEnrollmentTimestamp(enrollment);
             }
         } catch (ApiException apiException) {
             handleEnrollmentSendException(apiException, failedItemStore, enrollment);
@@ -397,19 +364,16 @@ public final class EnrollmentController extends PushableDataController implement
 
     private void putEnrollment(Enrollment enrollment) throws ApiException {
         try {
-            Response response = enrollmentApiClient.putEnrollment(enrollment);
-            if (response.getStatus() == 200) {
-                ImportSummary importSummary = getImportSummary(response);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
+            ImportSummary importSummary = enrollmentApiClient.putEnrollment(enrollment);
+            handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
 
-                if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                        ImportSummary.Status.OK.equals(importSummary.getStatus())) {
+            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
+                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
 
-                    stateStore.saveActionForModel(enrollment, Action.SYNCED);
-                    enrollmentStore.save(enrollment);
-                    clearFailedItem(FailedItemType.ENROLLMENT, failedItemStore, enrollment.getId());
-                    UpdateEnrollmentTimestamp(enrollment);
-                }
+                stateStore.saveActionForModel(enrollment, Action.SYNCED);
+                enrollmentStore.save(enrollment);
+                clearFailedItem(FailedItemType.ENROLLMENT, failedItemStore, enrollment.getId());
+                UpdateEnrollmentTimestamp(enrollment);
             }
         } catch (ApiException apiException) {
             handleEnrollmentSendException(apiException, failedItemStore, enrollment);
@@ -418,8 +382,6 @@ public final class EnrollmentController extends PushableDataController implement
 
     private void UpdateEnrollmentTimestamp(Enrollment enrollment) throws ApiException {
         try {
-            /* final Map<String, String> QUERY_PARAMS = new HashMap<>();
-            QUERY_PARAMS.put("fields", "created,lastUpdated"); */
             Enrollment updatedEnrollment = enrollmentApiClient
                     .getBasicEnrollment(enrollment.getEnrollmentUid(), null);
 
