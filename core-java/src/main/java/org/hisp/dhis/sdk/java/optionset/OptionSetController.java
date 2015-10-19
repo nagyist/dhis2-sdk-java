@@ -58,7 +58,6 @@ public final class OptionSetController extends ResourceController<OptionSet> {
     private final IOptionStore mOptionStore;
     private final IIdentifiableObjectStore<OptionSet> mOptionSetStore;
 
-
     public OptionSetController(IOptionSetApiClient optionSetApiClient ,IOptionStore mOptionStore,
                                IIdentifiableObjectStore<OptionSet> mOptionSetStore,
                                ISystemInfoApiClient systemInfoApiClient,
@@ -96,7 +95,7 @@ public final class OptionSetController extends ResourceController<OptionSet> {
                 } else {
                     persistedOptions = new ArrayList<>();
                 }
-                operations.addAll(createOpeations(mOptionStore, persistedOptions, optionSet.getOptions()));
+                operations.addAll(DbUtils.createOperations(mOptionStore, persistedOptions, optionSet.getOptions()));
             }
         }
         operations.addAll(DbUtils.createOperations(mOptionSetStore, persistedOptionSets, existingPersistedAndUpdatedOptionSets));
