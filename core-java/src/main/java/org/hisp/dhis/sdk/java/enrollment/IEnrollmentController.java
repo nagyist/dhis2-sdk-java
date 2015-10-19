@@ -28,15 +28,18 @@
 
 package org.hisp.dhis.sdk.java.enrollment;
 
-import org.hisp.dhis.java.sdk.core.network.APIException;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 
 import java.util.List;
 
 public interface IEnrollmentController {
-    public void sync() throws APIException;
-    public Enrollment sync(String uid, boolean getEvents) throws APIException;
-    public List<Enrollment> sync(TrackedEntityInstance trackedEntityInstance) throws APIException;
-    void sendEnrollmentChanges(List<Enrollment> enrollments, boolean sendEvents) throws APIException;
+    void sync() throws ApiException;
+
+    Enrollment sync(String uid, boolean getEvents) throws ApiException;
+
+    List<Enrollment> sync(TrackedEntityInstance trackedEntityInstance) throws ApiException;
+
+    void sendEnrollmentChanges(List<Enrollment> enrollments, boolean sendEvents) throws ApiException;
 }
