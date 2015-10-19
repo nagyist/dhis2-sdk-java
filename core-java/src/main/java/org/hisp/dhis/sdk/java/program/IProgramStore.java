@@ -28,13 +28,15 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.Program;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IProgramStore extends IIdentifiableObjectStore<Program> {
-    public List<Program> query(OrganisationUnit organisationUnit);
-    public void assign(Program program, List<OrganisationUnit> organisationUnits);
+    List<Program> query(OrganisationUnit organisationUnit);
+
+    void assign(Program program, Set<OrganisationUnit> organisationUnits);
 }

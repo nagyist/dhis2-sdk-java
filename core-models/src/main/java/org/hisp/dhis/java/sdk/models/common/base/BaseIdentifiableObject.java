@@ -30,15 +30,10 @@ package org.hisp.dhis.java.sdk.models.common.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.hisp.dhis.java.sdk.models.common.Access;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject {
@@ -184,5 +179,17 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
         }
 
         return new ArrayList<>(existingItemsMap.values());
+    }
+
+    public static <T extends IdentifiableObject> Set<String> getUids(Collection<T> items) {
+        Set<String> uIds = new HashSet<>();
+
+        if (items != null && !items.isEmpty()) {
+            for (T item : items) {
+                uIds.add(item.getUId());
+            }
+        }
+
+        return uIds;
     }
 }

@@ -32,10 +32,11 @@ import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.sdk.java.common.controllers.IController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface IProgramController extends IController<Program> {
     void sync() throws ApiException;
 
-    void sync(List<String> programUids);
+    void sync(Collection<String> programUids);
 }
