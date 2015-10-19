@@ -31,7 +31,6 @@ package org.hisp.dhis.sdk.java.program;
 import org.hisp.dhis.java.sdk.models.program.ProgramRuleAction;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -84,7 +83,8 @@ public final class ProgramRuleActionController implements IDataController<Progra
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(DbUtils.createOperations(mProgramRuleActionStore, existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(mProgramRuleActionStore,
+                existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);
