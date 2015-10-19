@@ -30,8 +30,9 @@ package org.hisp.dhis.sdk.java.program;
 
 import org.hisp.dhis.java.sdk.models.program.IProgramRuleApiClient;
 import org.hisp.dhis.java.sdk.models.program.ProgramRule;
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
@@ -39,11 +40,14 @@ import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class ProgramRuleController extends ResourceController<ProgramRule> {
+public final class ProgramRuleController implements IDataController<ProgramRule> {
+    private final ITransactionManager transactionManager;
     private final IIdentifiableObjectStore<ProgramRule> mProgramRuleStore;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
@@ -54,8 +58,7 @@ public final class ProgramRuleController extends ResourceController<ProgramRule>
                                  IIdentifiableObjectStore<ProgramRule> mProgramRuleStore,
                                  ISystemInfoApiClient systemInfoApiClient,
                                  IProgramRuleApiClient programRuleApiClient) {
-        super(transactionManager, lastUpdatedPreferences);
-
+        this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.mProgramRuleStore = mProgramRuleStore;
         this.systemInfoApiClient = systemInfoApiClient;
@@ -77,8 +80,12 @@ public final class ProgramRuleController extends ResourceController<ProgramRule>
         // merging updated items with persisted items, and removing ones not present in server.
         List<ProgramRule> existingPersistedAndUpdatedProgramRules =
                 merge(allProgramRules, updatedProgramRules, mProgramRuleStore.queryAll());
-        saveResourceDataFromServer(resource, mProgramRuleStore,
-                existingPersistedAndUpdatedProgramRules, mProgramRuleStore.queryAll(), serverTime);
+
+        Queue<IDbOperation> operations = new LinkedList<>();
+        operations.addAll(transactionManager.createOperations(mProgramRuleStore, existingPersistedAndUpdatedProgramRules, mProgramRuleStore.queryAll()));
+
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(resource, serverTime);
     }
 
     @Override
