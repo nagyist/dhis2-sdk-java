@@ -28,64 +28,48 @@
 
 package org.hisp.dhis.sdk.java.organisationunit;
 
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.DbUtils;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
 
 public final class OrganisationUnitController implements IOrganisationUnitController {
 
     private final static String ORGANISATIONUNITS = "organisationUnits";
-    private final static int QUERY_SIZE = 100;
-    private final IDhisApi mDhisApi;
 
     private final IOrganisationUnitStore mOrganisationUnitStore;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final IOrganisationUnitApiClient organisationUnitApiClient;
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ITransactionManager transactionManager;
 
-    public OrganisationUnitController(IDhisApi dhisApi, IOrganisationUnitStore mOrganisationUnitStore) {
-        this.mDhisApi = dhisApi;
+    public OrganisationUnitController(IOrganisationUnitStore mOrganisationUnitStore, ISystemInfoApiClient systemInfoApiClient, IOrganisationUnitApiClient organisationUnitApiClient, ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager) {
         this.mOrganisationUnitStore = mOrganisationUnitStore;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.organisationUnitApiClient = organisationUnitApiClient;
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.transactionManager = transactionManager;
     }
 
     private void getOrganisationUnitsFromServer(List<OrganisationUnit> organisationUnits) {
-        ResourceType resource = ResourceType.ORGANISATIONUNITS;
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(resource);
-
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("fields", "id,level,created,name,lastUpdated,shortName,openingDate,displayName");
-        List<OrganisationUnit> updatedOrganisationUnits = new ArrayList<>();
-        boolean done = false;
-        int iteration = 1;
-        int first = 0;
-        int last;
-        while(!done) {
-            if (organisationUnits.size() < QUERY_SIZE * iteration) {
-                last = organisationUnits.size();
-                done = true;
-            } else {
-                last = QUERY_SIZE * iteration;
-            }
-            queryParams.remove("filter");
-            queryParams.put("filter", getOrganisationUnitFilterIdString(organisationUnits.subList(first, last)));
-            List<OrganisationUnit> queriedOrganisationUnits = NetworkUtils.unwrapResponse(mDhisApi.getOrganisationUnits(queryParams), ORGANISATIONUNITS);
-            updatedOrganisationUnits.addAll(queriedOrganisationUnits);
-            first = last;
-            iteration++;
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.ORGANISATION_UNITS);
+        List<String> organisationUnitIds = new ArrayList<>();
+        for(OrganisationUnit organisationUnit : organisationUnits) {
+            organisationUnitIds.add(organisationUnit.getUId());
         }
+        List<OrganisationUnit> updatedOrganisationUnits = organisationUnitApiClient.getFullOrganisationUnits(organisationUnitIds);
         List<OrganisationUnit> persistedOrganisationUnits = mOrganisationUnitStore.queryAll();
         Map<String, OrganisationUnit> persistedOrganisationUnitsMap = toMap(persistedOrganisationUnits);
         Map<String, OrganisationUnit> updatedOrganisationUnitsMap = toMap(updatedOrganisationUnits);
@@ -103,34 +87,20 @@ public final class OrganisationUnitController implements IOrganisationUnitContro
                 operations.add(DbOperation.with(mOrganisationUnitStore).insert(updatedOrganisationUnit));
             }
         }
-        DbUtils.applyBatch(operations);
-
-        DateTimeManager.getInstance()
-                .setLastUpdated(ResourceType.ORGANISATIONUNITS, serverTime);
+        transactionManager.transact(operations);
+        lastUpdatedPreferences.save(ResourceType.ORGANISATION_UNITS, serverTime);
     }
 
     private void getOrganisationUnitsFromServer() {
         getOrganisationUnitsFromServer(mOrganisationUnitStore.queryAll());
     }
 
-    private String getOrganisationUnitFilterIdString(List<OrganisationUnit> organisationUnits) {
-        String filterString = "id:in:[";
-        for(int i = 0; i<organisationUnits.size(); i++) {
-            filterString += organisationUnits.get(i).getUId();
-            if(i < organisationUnits.size() -1 ) {
-                filterString += ',';
-            }
-        }
-        filterString+=']';
-        return filterString;
-    }
-
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getOrganisationUnitsFromServer();
     }
 
-    public void sync(List<OrganisationUnit> organisationUnits) throws APIException {
+    public void sync(List<OrganisationUnit> organisationUnits) throws ApiException {
         getOrganisationUnitsFromServer(organisationUnits);
     }
 }
