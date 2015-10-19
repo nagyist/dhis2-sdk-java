@@ -46,8 +46,6 @@ import java.util.Queue;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class ConstantController implements IDataController<Constant> {
-
-    private final static String CONSTANTS = "constants";
     private final IConstantApiClient constantApiClient;
     private final ITransactionManager transactionManager;
     private final ISystemInfoApiClient systemInfoApiClient;

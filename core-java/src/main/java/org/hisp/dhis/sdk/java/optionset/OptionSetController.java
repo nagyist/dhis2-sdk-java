@@ -47,8 +47,6 @@ import java.util.List;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class OptionSetController implements IDataController<OptionSet> {
-
-    private final static String OPTIONSETS = "optionSets";
     private final IOptionSetApiClient optionSetApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;

@@ -46,9 +46,6 @@ import java.util.Queue;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class TrackedEntityAttributeController implements IDataController<TrackedEntityAttribute> {
-
-
-    private final static String TRACKEDENTITYATTRIBUTES = "trackedEntityAttributes";
     private final ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient;
     private final ITransactionManager transactionManager;
     private final ILastUpdatedPreferences lastUpdatedPreferences;

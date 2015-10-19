@@ -44,8 +44,6 @@ import java.util.List;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class DataElementController implements IDataController<DataElement> {
-
-    private final static String DATAELEMENTS = "dataElements";
     private final IDataElementApiClient dataElementApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<DataElement> mDataElementStore;

@@ -46,8 +46,6 @@ import java.util.Queue;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
 public final class ProgramRuleActionController implements IDataController<ProgramRuleAction> {
-
-    private final static String PROGRAMRULEACTIONS = "programRuleActions";
     private final IProgramRuleActionApiClient programRuleActionApiClient;
     private final ITransactionManager transactionManager;
     private final ISystemInfoApiClient systemInfoApiClient;

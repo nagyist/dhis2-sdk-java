@@ -54,9 +54,6 @@ import org.joda.time.DateTime;
 import java.util.*;
 
 public final class TrackedEntityInstanceController extends PushableDataController implements ITrackedEntityInstanceController {
-
-    private final static String TRACKEDENTITYINSTANCES = "trackedEntityInstances";
-
     private final ITrackedEntityInstanceApiClient trackedEntityInstanceApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ITrackedEntityInstanceStore trackedEntityInstanceStore;
