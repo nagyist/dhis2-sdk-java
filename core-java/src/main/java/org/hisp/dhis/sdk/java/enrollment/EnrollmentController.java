@@ -52,8 +52,6 @@ import org.joda.time.DateTime;
 import java.util.*;
 
 public final class EnrollmentController extends PushableDataController implements IEnrollmentController {
-    private final static String ENROLLMENTS = "enrollments";
-
     private final IEnrollmentApiClient enrollmentApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
 

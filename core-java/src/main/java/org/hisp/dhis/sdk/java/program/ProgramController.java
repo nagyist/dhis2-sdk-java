@@ -51,8 +51,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class ProgramController implements IProgramController, IDataController<Program> {
-
-    private final static String PROGRAMS = "programs";
     private final IProgramStore mProgramStore;
     private final IProgramApiClient programApiClient;
     private final ITransactionManager transactionManager;

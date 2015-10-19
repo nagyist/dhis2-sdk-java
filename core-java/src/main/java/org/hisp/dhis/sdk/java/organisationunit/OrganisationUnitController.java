@@ -46,9 +46,6 @@ import java.util.Map;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
 
 public final class OrganisationUnitController implements IOrganisationUnitController {
-
-    private final static String ORGANISATIONUNITS = "organisationUnits";
-
     private final IOrganisationUnitStore mOrganisationUnitStore;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IOrganisationUnitApiClient organisationUnitApiClient;
