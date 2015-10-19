@@ -54,7 +54,7 @@ public final class DbUtils {
      */
     public static <T extends IdentifiableObject> List<IDbOperation> createOperations(IIdentifiableObjectStore<T> modelStore,
                                                                                      List<T> oldModels, List<T> newModels) {
-        List<DbOperation> ops = new ArrayList<>();
+        List<IDbOperation> ops = new ArrayList<>();
 
         Map<String, T> newModelsMap = toMap(newModels);
         Map<String, T> oldModelsMap = toMap(oldModels);
