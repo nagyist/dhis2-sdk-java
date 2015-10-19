@@ -65,13 +65,15 @@ public final class TrackedEntityAttributeController extends ResourceController<T
         DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
         DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
-        //fetching id and name for all items on server. This is needed in case something is
+        // fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
 
-        List<TrackedEntityAttribute> allTrackedEntityAttributes = trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null);
+        List<TrackedEntityAttribute> allTrackedEntityAttributes
+                = trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null);
 
         //fetch all updated items
-        List<TrackedEntityAttribute> updatedTrackedEntityAttributes = trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated);
+        List<TrackedEntityAttribute> updatedTrackedEntityAttributes
+                = trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated);
 
         //merging updated items with persisted items, and removing ones not present in server.
         List<TrackedEntityAttribute> existingPersistedAndUpdatedTrackedEntityAttributes =
