@@ -37,8 +37,12 @@ import java.util.List;
 
 public interface IEnrollmentStore extends IStore<Enrollment> {
     Enrollment query(long id);
+
     Enrollment query(String uid);
+
     List<Enrollment> query(Program program, TrackedEntityInstance trackedEntityInstance);
+
     Enrollment queryActiveEnrollment(Program program, TrackedEntityInstance trackedEntityInstance);
+
     List<Enrollment> query(TrackedEntityInstance trackedEntityInstance);
 }
