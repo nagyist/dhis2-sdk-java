@@ -29,7 +29,6 @@
 package org.hisp.dhis.sdk.java.relationship;
 
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;

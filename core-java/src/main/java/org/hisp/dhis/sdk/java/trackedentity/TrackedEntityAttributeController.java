@@ -30,7 +30,6 @@ package org.hisp.dhis.sdk.java.trackedentity;
 
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
-import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
