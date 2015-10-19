@@ -28,135 +28,104 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.java.sdk.models.program.IAssignedProgramApiClient;
+import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.sdk.java.common.controllers.ResourceController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitController;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitStore;
-import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
-import org.hisp.dhis.java.sdk.models.program.Program;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
+import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.getUids;
 
 public final class AssignedProgramsController extends ResourceController<Program> {
-
-    private final static String ORGANISATIONUNITS = "organisationUnits";
-    private final static String PROGRAMS = "programs";
-    private final static String ID = "id";
-
-    private final IDhisApi mDhisApi;
     private final IProgramController programController;
     private final IOrganisationUnitController organisationUnitController;
 
     private final IOrganisationUnitStore organisationUnitStore;
     private final IProgramStore programStore;
 
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final ISystemInfoApiClient systemInfoApiClient;
+    private final IAssignedProgramApiClient assignedProgramApiClient;
 
-    public AssignedProgramsController(IDhisApi dhisApi, IProgramController programController,
+
+    public AssignedProgramsController(IProgramController programController,
                                       IOrganisationUnitController organisationUnitController,
-                                      IOrganisationUnitStore organisationUnitStore, IProgramStore programStore) {
-        mDhisApi = dhisApi;
+                                      IOrganisationUnitStore organisationUnitStore,
+                                      IProgramStore programStore,
+                                      ITransactionManager transactionManager,
+                                      ILastUpdatedPreferences lastUpdatedPreferences,
+                                      ISystemInfoApiClient systemInfoApiClient,
+                                      IAssignedProgramApiClient assignedProgramApiClient) {
+        super(transactionManager, lastUpdatedPreferences);
         this.programController = programController;
         this.organisationUnitController = organisationUnitController;
         this.organisationUnitStore = organisationUnitStore;
         this.programStore = programStore;
-    }
 
-    private void getAssignedProgramsDataFromServer() throws APIException {
-        DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
-        DateTime lastUpdated = DateTimeManager.getInstance()
-                .getLastUpdated(ResourceType.ASSIGNEDPROGRAMS);
-        Response response = mDhisApi.getAssignedPrograms(getAllFieldsQueryMap(lastUpdated));
-
-        List<OrganisationUnit> organisationUnits = new ArrayList<>();
-        Map<OrganisationUnit, List<String>> organisationUnitPrograms = new HashMap<>();
-        Map<String, List<String>> programOrganisationUnits = new HashMap<>();
-        String responseBodyString = "";
-        try {
-            responseBodyString = new StringConverter().fromBody(response.getBody(), String.class);
-        } catch (ConversionException e) {
-            e.printStackTrace();
-            return; //todo: handle
-        }
-
-        JsonNode node;
-        try {
-            node = ObjectMapperProvider.getInstance().
-                    readTree(responseBodyString);
-        } catch (IOException e) {
-            node = null;
-        }
-
-        //manual deserialization of the /me/programs node for organisationUnits with programAssignments
-        if (node != null) {
-            JsonNode organisationUnitsNode = node.get(ORGANISATIONUNITS);
-            if (organisationUnitsNode != null) { //may be null if there are no org units.
-                Iterator<JsonNode> nodes = organisationUnitsNode.elements();
-                List<String> programsToLoad = new ArrayList<>();
-                while (nodes.hasNext()) {
-                    JsonNode organisationUnitNode = nodes.next();
-                    OrganisationUnit item;
-                    try {
-                        item = ObjectMapperProvider.getInstance().
-                                readValue(organisationUnitNode.toString(), OrganisationUnit.class);
-                    } catch (IOException e) {
-                        item = null;
-                    }
-                    if (item != null) {
-                        organisationUnits.add(item);
-                        organisationUnitPrograms.put(item, new ArrayList<String>());
-                        JsonNode programsNode = organisationUnitNode.get(PROGRAMS);
-
-                        //Getting the program assignments for the current organisation unit
-                        if (programsNode != null) {
-                            Iterator<JsonNode> programsNodeIterator = programsNode.elements();
-                            while (programsNodeIterator.hasNext()) {
-                                JsonNode programNode = programsNodeIterator.next();
-                                String programUid = programNode.get(ID).textValue();
-                                List<String> organisationUnitsForProgram = programOrganisationUnits.get(programUid);
-                                if (organisationUnitsForProgram == null) {
-                                    organisationUnitsForProgram = new ArrayList<>();
-                                    programOrganisationUnits.put(programUid, organisationUnitsForProgram);
-                                }
-                                organisationUnitsForProgram.add(item.getUId());
-
-                                if (!programsToLoad.contains(programUid)) {
-                                    programsToLoad.add(programUid);
-                                }
-                            }
-                        }
-                    }
-                }
-                //Load the programs and organisation units from server with full data
-                programController.sync(programsToLoad);
-                organisationUnitController.sync(organisationUnits);
-            }
-        }
-        organisationUnits = organisationUnitStore.queryAll();
-        List<Program> programs = programStore.queryAll();
-        Map<String, OrganisationUnit> organisationUnitMap = toMap(organisationUnits);
-        for (Program program : programs) {
-            List<OrganisationUnit> organisationUnitsAssigned = new ArrayList<>();
-            for (String organisationUnitId : programOrganisationUnits.get(program.getUId())) {
-                organisationUnitsAssigned.add(organisationUnitMap.get(organisationUnitId));
-            }
-            programStore.assign(program, organisationUnitsAssigned);
-        }
-
-        DateTimeManager.getInstance()
-                .setLastUpdated(ResourceType.ASSIGNEDPROGRAMS, serverTime);
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.systemInfoApiClient = systemInfoApiClient;
+        this.assignedProgramApiClient = assignedProgramApiClient;
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getAssignedProgramsDataFromServer();
+    }
+
+    private void getAssignedProgramsDataFromServer() throws ApiException {
+        DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
+        Map<OrganisationUnit, Set<Program>> assignedPrograms = assignedProgramApiClient.getAssignedPrograms();
+
+        Set<String> organisationUnitsToLoad = getUids(assignedPrograms.keySet());
+        Set<String> programsToLoad = new HashSet<>();
+        for (OrganisationUnit organisationUnit : assignedPrograms.keySet()) {
+            programsToLoad.addAll(getUids(assignedPrograms.get(organisationUnit)));
+        }
+
+        //Load the programs and organisation units from server with full data
+        organisationUnitController.sync(organisationUnitsToLoad);
+        programController.sync(programsToLoad);
+
+        Map<Program, Set<OrganisationUnit>> programToUnits = reverseRelationship(assignedPrograms);
+        for (Program program : reverseRelationship(assignedPrograms).keySet()) {
+            Set<OrganisationUnit> units = programToUnits.get(program);
+
+            programStore.assign(program, units);
+        }
+
+        lastUpdatedPreferences.save(ResourceType.ASSIGNED_PROGRAMS, serverTime);
+    }
+
+    private Map<Program, Set<OrganisationUnit>> reverseRelationship(Map<OrganisationUnit, Set<Program>> assignedOrganisations) {
+        Map<Program, Set<OrganisationUnit>> programToOrganisationUnitsMap = new HashMap<>();
+        for (OrganisationUnit unit : assignedOrganisations.keySet()) {
+            Set<Program> assignedUnitPrograms = assignedOrganisations.get(unit);
+
+            if (assignedUnitPrograms == null) {
+                continue;
+            }
+
+            for (Program program : assignedUnitPrograms) {
+                if (!programToOrganisationUnitsMap.containsKey(program)) {
+                    programToOrganisationUnitsMap.put(program, new HashSet<OrganisationUnit>());
+                }
+
+                programToOrganisationUnitsMap.get(program).add(unit);
+            }
+        }
+
+        return programToOrganisationUnitsMap;
     }
 }

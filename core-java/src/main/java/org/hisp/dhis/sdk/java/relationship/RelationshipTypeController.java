@@ -90,7 +90,7 @@ public final class RelationshipTypeController implements IDataController<Relatio
         operations.addAll(DbUtils.createOperations(mRelationshipTypeStore, existingPersistedAndUpdatedRelationshipTypes, mRelationshipTypeStore.queryAll()));
 
         transactionManager.transact(operations);
-
+        lastUpdatedPreferences.save(resource, serverTime, null);
     }
 
     @Override

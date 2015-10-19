@@ -52,8 +52,8 @@ public final class DbUtils {
      * @param oldModels List of models from local storage.
      * @param newModels List of models of distance instance of DHIS.
      */
-    public static <T extends IdentifiableObject> List<DbOperation> createOperations(IIdentifiableObjectStore<T> modelStore,
-                                                                                    List<T> oldModels, List<T> newModels) {
+    public static <T extends IdentifiableObject> List<IDbOperation> createOperations(IIdentifiableObjectStore<T> modelStore,
+                                                                                     List<T> oldModels, List<T> newModels) {
         List<DbOperation> ops = new ArrayList<>();
 
         Map<String, T> newModelsMap = toMap(newModels);

@@ -26,9 +26,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.program;
+package org.hisp.dhis.sdk.java.dataelement;
 
-import org.hisp.dhis.java.sdk.models.program.ProgramRuleAction;
+import org.hisp.dhis.java.sdk.models.dataelement.DataElement;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
@@ -40,58 +40,55 @@ import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.joda.time.DateTime;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 
-public final class ProgramRuleActionController implements IDataController<ProgramRuleAction> {
+public final class DataElementController implements IDataController<DataElement> {
 
-    private final static String PROGRAMRULEACTIONS = "programRuleActions";
-    private final IProgramRuleActionApiClient programRuleActionApiClient;
-    private final ITransactionManager transactionManager;
+    private final static String DATAELEMENTS = "dataElements";
+    private final IDataElementApiClient dataElementApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
+    private final IIdentifiableObjectStore<DataElement> mDataElementStore;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
-    private final IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore;
+    private final ITransactionManager transactionManager;
 
-    public ProgramRuleActionController(IProgramRuleActionApiClient programRuleActionApiClient,
-                                       ITransactionManager transactionManager,
-                                       ISystemInfoApiClient systemInfoApiClient,
-                                       ILastUpdatedPreferences lastUpdatedPreferences,
-                                       IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore) {
-        this.programRuleActionApiClient = programRuleActionApiClient;
-        this.transactionManager = transactionManager;
+    public DataElementController(IDataElementApiClient dataElementApiClient,
+                                 ISystemInfoApiClient systemInfoApiClient,
+                                 ILastUpdatedPreferences lastUpdatedPreferences,
+                                 IIdentifiableObjectStore<DataElement> mDataElementStore,
+                                 ITransactionManager transactionManager) {
+        this.dataElementApiClient = dataElementApiClient;
         this.systemInfoApiClient = systemInfoApiClient;
+        this.mDataElementStore = mDataElementStore;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
-        this.mProgramRuleActionStore = mProgramRuleActionStore;
+        this.transactionManager = transactionManager;
     }
 
-    private void getProgramRuleVariablesDataFromServer() throws ApiException {
-        ResourceType resource = ResourceType.PROGRAM_RULE_ACTIONS;
+    private void getProgramRulesDataFromServer() throws ApiException {
+        ResourceType resource = ResourceType.DATA_ELEMENTS;
         DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
         DateTime lastUpdated = lastUpdatedPreferences.get(resource);
 
         //fetching id and name for all items on server. This is needed in case something is
         // deleted on the server and we want to reflect that locally
-        List<ProgramRuleAction> allProgramRuleActions = programRuleActionApiClient.getBasicProgramRuleActions(null);
+        List<DataElement> allDataElements = dataElementApiClient.getBasicDataElements(null);
 
         //fetch all updated items
-        List<ProgramRuleAction> updatedProgramRuleActions = programRuleActionApiClient.getFullProgramRuleActions(lastUpdated);
+        List<DataElement> updatedDataElements = dataElementApiClient.getFullDataElements(lastUpdated);
+
         //merging updated items with persisted items, and removing ones not present in server.
-        List<ProgramRuleAction> existingPersistedAndUpdatedProgramRuleActions =
-                merge(allProgramRuleActions, updatedProgramRuleActions, mProgramRuleActionStore.
-                        queryAll());
+        List<DataElement> existingPersistedAndUpdatedDataElements =
+                merge(allDataElements, updatedDataElements, mDataElementStore.queryAll());
 
-        Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(DbUtils.createOperations(mProgramRuleActionStore, existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
-
-        transactionManager.transact(operations);
-        lastUpdatedPreferences.save(resource, serverTime, null);
+        List<IDbOperation> dbOperations = DbUtils.createOperations(mDataElementStore,
+                mDataElementStore.queryAll(), existingPersistedAndUpdatedDataElements);
+        transactionManager.transact(dbOperations);
+        lastUpdatedPreferences.save(ResourceType.DATA_ELEMENTS, serverTime);
     }
 
     @Override
     public void sync() throws ApiException {
-        getProgramRuleVariablesDataFromServer();
+        getProgramRulesDataFromServer();
     }
 }

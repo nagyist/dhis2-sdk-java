@@ -28,13 +28,14 @@
 
 package org.hisp.dhis.sdk.java.organisationunit;
 
-import org.hisp.dhis.java.sdk.common.IController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.sdk.java.common.controllers.IController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface IOrganisationUnitController extends IController<OrganisationUnit> {
-    void sync() throws APIException;
-    void sync(List<OrganisationUnit> organisationUnits);
+    void sync() throws ApiException;
+
+    void sync(Collection<String> organisationUnitIds);
 }

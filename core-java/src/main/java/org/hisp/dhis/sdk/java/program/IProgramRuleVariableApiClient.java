@@ -1,4 +1,4 @@
-/*
+package org.hisp.dhis.sdk.java.program;/*
  * Copyright (c) 2015, University of Oslo
  *
  * All rights reserved.
@@ -26,17 +26,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.program;
-
-import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
-import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.java.sdk.models.program.ProgramRuleVariable;
+import org.joda.time.DateTime;
 
 import java.util.List;
-import java.util.Set;
 
-public interface IProgramStore extends IIdentifiableObjectStore<Program> {
-    List<Program> query(OrganisationUnit organisationUnit);
+public interface IProgramRuleVariableApiClient {
+    List<ProgramRuleVariable> getBasicProgramRuleVariables(DateTime lastUpdated);
 
-    void assign(Program program, Set<OrganisationUnit> organisationUnits);
+    List<ProgramRuleVariable> getFullProgramRuleVariables(DateTime lastUpdated);
 }

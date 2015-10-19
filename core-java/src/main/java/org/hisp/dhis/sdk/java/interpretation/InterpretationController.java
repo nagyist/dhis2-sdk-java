@@ -28,46 +28,28 @@
 
 package org.hisp.dhis.sdk.java.interpretation;
 
-import android.net.Uri;
-
-import org.hisp.dhis.java.sdk.common.IDataController;
-import org.hisp.dhis.java.sdk.core.network.APIException;
-import org.hisp.dhis.java.sdk.core.network.IDhisApi;
-import org.hisp.dhis.java.sdk.core.api.preferences.DateTimeManager;
-import org.hisp.dhis.java.sdk.core.models.ResourceType;
-import org.hisp.dhis.java.sdk.core.api.utils.DbUtils;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
-import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
-import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
-import org.hisp.dhis.sdk.java.user.IUserAccountService;
-import org.hisp.dhis.sdk.java.user.IUserStore;
 import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.network.Response;
+import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.user.IUserAccountService;
+import org.hisp.dhis.sdk.java.user.IUserStore;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
-import retrofit.client.Header;
-import retrofit.client.Response;
-import retrofit.mime.TypedString;
-
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.findLocationHeader;
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.handleApiException;
-import static org.hisp.dhis.java.sdk.core.api.utils.NetworkUtils.unwrapResponse;
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
 import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
 
 public final class InterpretationController implements IDataController<Interpretation> {
-    private final IDhisApi mDhisApi;
-
     private final IInterpretationService mInterpretationService;
     private final IUserAccountService mUserAccountService;
 
@@ -77,12 +59,11 @@ public final class InterpretationController implements IDataController<Interpret
 
     private final IUserStore mUserStore;
 
-    public InterpretationController(IDhisApi dhisApi, IInterpretationService interpretationsService,
+    public InterpretationController(IInterpretationService interpretationsService,
                                     IUserAccountService userAccountService,
                                     IIdentifiableObjectStore<Interpretation> mInterpretationStore,
                                     IInterpretationElementStore mInterpretationElementStore,
                                     IInterpretationCommentStore mInterpretationCommentStore, IUserStore mUserStore) {
-        mDhisApi = dhisApi;
         this.mInterpretationService = interpretationsService;
         this.mUserAccountService = userAccountService;
         this.mInterpretationStore = mInterpretationStore;
@@ -91,12 +72,12 @@ public final class InterpretationController implements IDataController<Interpret
         this.mUserStore = mUserStore;
     }
 
-    private void sendLocalChanges() throws APIException {
+    private void sendLocalChanges() throws ApiException {
         sendInterpretationChanges();
         sendInterpretationCommentChanges();
     }
 
-    private void sendInterpretationChanges() throws APIException {
+    private void sendInterpretationChanges() throws ApiException {
         List<Interpretation> interpretations = null;
         // mInterpretationStore.filter(Action.SYNCED);
 
@@ -128,12 +109,12 @@ public final class InterpretationController implements IDataController<Interpret
         } */
     }
 
-    public void postInterpretation(Interpretation interpretation) throws APIException {
+    public void postInterpretation(Interpretation interpretation) throws ApiException {
         try {
             Response response;
 
             switch (interpretation.getType()) {
-                case Interpretation.TYPE_CHART: {
+                /* case Interpretation.TYPE_CHART: {
                     response = mDhisApi.postChartInterpretation(
                             interpretation.getChart().getUId(), new TypedString(interpretation.getText()));
                     break;
@@ -150,24 +131,26 @@ public final class InterpretationController implements IDataController<Interpret
                 }
                 default:
                     throw new IllegalArgumentException("Unsupported interpretation type");
+                */
             }
 
-            Header header = NetworkUtils.findLocationHeader(response.getHeaders());
+            /* Header header = NetworkUtils.findLocationHeader(response.getHeaders());
             String interpretationUid = Uri.parse(header
-                    .getValue()).getLastPathSegment();
-            interpretation.setUId(interpretationUid);
+                    .getValue()).getLastPathSegment(); */
+            //  interpretation.setUId(interpretationUid);
             // interpretation.setAction(Action.SYNCED);
+
             mInterpretationStore.save(interpretation);
 
             updateInterpretationTimeStamp(interpretation);
 
-        } catch (APIException apiException) {
-            NetworkUtils.handleApiException(apiException, interpretation, mInterpretationStore);
+        } catch (ApiException apiException) {
+            // ApiExceptionHandler.handleApiException(apiException, interpretation, mInterpretationStore);
         }
     }
 
-    public void putInterpretation(Interpretation interpretation) throws APIException {
-        try {
+    public void putInterpretation(Interpretation interpretation) {
+        /* try {
             mDhisApi.putInterpretationText(interpretation.getUId(),
                     new TypedString(interpretation.getText()));
             // interpretation.setAction(Action.SYNCED);
@@ -177,22 +160,22 @@ public final class InterpretationController implements IDataController<Interpret
             updateInterpretationTimeStamp(interpretation);
         } catch (APIException apiException) {
             NetworkUtils.handleApiException(apiException, interpretation, mInterpretationStore);
-        }
+        } */
     }
 
-    public void deleteInterpretation(Interpretation interpretation) throws APIException {
-        try {
+    public void deleteInterpretation(Interpretation interpretation) {
+        /* try {
             mDhisApi.deleteInterpretation(interpretation.getUId());
 
             mInterpretationStore.delete(interpretation);
         } catch (APIException apiException) {
             NetworkUtils.handleApiException(apiException, interpretation, mInterpretationStore);
-        }
+        } */
     }
 
-    private void sendInterpretationCommentChanges() throws APIException {
+    private void sendInterpretationCommentChanges() {
         List<InterpretationComment> comments = null;
-                // mInterpretationCommentStore.queryByInterpretation(Action.SYNCED);
+        // mInterpretationCommentStore.queryByInterpretation(Action.SYNCED);
 
         if (comments == null || comments.isEmpty()) {
             return;
@@ -216,7 +199,7 @@ public final class InterpretationController implements IDataController<Interpret
         }
     }
 
-    public void postInterpretationComment(InterpretationComment comment) throws APIException {
+    public void postInterpretationComment(InterpretationComment comment) {
         Interpretation interpretation = comment.getInterpretation();
 
         /* if (interpretation != null && interpretation.getAction() != null) {
@@ -246,7 +229,7 @@ public final class InterpretationController implements IDataController<Interpret
         } */
     }
 
-    public void putInterpretationComment(InterpretationComment comment) throws APIException {
+    public void putInterpretationComment(InterpretationComment comment) {
         Interpretation interpretation = comment.getInterpretation();
 
         /* if (interpretation != null && interpretation.getAction() != null) {
@@ -272,7 +255,7 @@ public final class InterpretationController implements IDataController<Interpret
         } */
     }
 
-    public void deleteInterpretationComment(InterpretationComment comment) throws APIException {
+    public void deleteInterpretationComment(InterpretationComment comment) {
         Interpretation interpretation = comment.getInterpretation();
 
         /* if (interpretation != null && interpretation.getAction() != null) {
@@ -309,8 +292,8 @@ public final class InterpretationController implements IDataController<Interpret
      *
      * @param interpretation Interpretation to update.
      */
-    private void updateInterpretationTimeStamp(Interpretation interpretation) throws APIException {
-        try {
+    private void updateInterpretationTimeStamp(Interpretation interpretation) {
+        /* try {
             final Map<String, String> QUERY_PARAMS = new HashMap<>();
             QUERY_PARAMS.put("fields", "[created,lastUpdated]");
 
@@ -324,11 +307,11 @@ public final class InterpretationController implements IDataController<Interpret
             mInterpretationStore.save(interpretation);
         } catch (APIException apiException) {
             NetworkUtils.handleApiException(apiException, interpretation, mInterpretationStore);
-        }
+        } */
     }
 
-    private void updateInterpretationCommentTimeStamp(InterpretationComment comment) throws APIException {
-        try {
+    private void updateInterpretationCommentTimeStamp(InterpretationComment comment) {
+        /* try {
             // after posting comment, timestamp both of interpretation and comment will change.
             // we have to reflect these changes here in order not to break data integrity during
             // next synchronizations to server.
@@ -358,11 +341,11 @@ public final class InterpretationController implements IDataController<Interpret
             }
         } catch (APIException apiException) {
             NetworkUtils.handleApiException(apiException);
-        }
+        } */
     }
 
-    private void getInterpretationDataFromServer() throws APIException {
-        DateTime lastUpdated = DateTimeManager.getInstance()
+    private void getInterpretationDataFromServer() throws ApiException {
+        /* DateTime lastUpdated = DateTimeManager.getInstance()
                 .getLastUpdated(ResourceType.INTERPRETATIONS);
         DateTime serverTime = mDhisApi.getSystemInfo().getServerDate();
 
@@ -378,12 +361,12 @@ public final class InterpretationController implements IDataController<Interpret
         /* operations.addAll(DbUtils.createOperations(
                 mInterpretationCommentStore, mInterpretationCommentStore.queryByInterpretation(Action.TO_POST), comments)); */
 
-        DbUtils.applyBatch(operations);
+        /* DbUtils.applyBatch(operations);
         DateTimeManager.getInstance()
-                .setLastUpdated(ResourceType.INTERPRETATIONS, serverTime);
+                .setLastUpdated(ResourceType.INTERPRETATIONS, serverTime); */
     }
 
-    private List<Interpretation> updateInterpretations(DateTime lastUpdated) throws APIException {
+    private List<Interpretation> updateInterpretations(DateTime lastUpdated) {
         final Map<String, String> QUERY_MAP_BASIC = new HashMap<>();
         final Map<String, String> QUERY_MAP_FULL = new HashMap<>();
         final String BASE = "id,created,lastUpdated,name,displayName,access";
@@ -403,11 +386,13 @@ public final class InterpretationController implements IDataController<Interpret
             QUERY_MAP_FULL.put("filter", "lastUpdated:gt:" + lastUpdated.toString());
         }
 
-        List<Interpretation> actualInterpretations = NetworkUtils.unwrapResponse(mDhisApi
+        /* List<Interpretation> actualInterpretations = NetworkUtils.unwrapResponse(mDhisApi
                 .getInterpretations(QUERY_MAP_BASIC), "interpretations");
 
         List<Interpretation> updatedInterpretations = NetworkUtils.unwrapResponse(mDhisApi
-                .getInterpretations(QUERY_MAP_FULL), "interpretations");
+                .getInterpretations(QUERY_MAP_FULL), "interpretations"); */
+
+        List<Interpretation> updatedInterpretations = new ArrayList<>();
 
         if (updatedInterpretations != null && !updatedInterpretations.isEmpty()) {
 
@@ -477,7 +462,8 @@ public final class InterpretationController implements IDataController<Interpret
             }
         }
 
-        return merge(actualInterpretations, updatedInterpretations, persistedInterpretations);
+        // return merge(actualInterpretations, updatedInterpretations, persistedInterpretations);
+        return null;
     }
 
     private List<InterpretationComment> updateInterpretationComments(List<Interpretation> interpretations) {
@@ -571,7 +557,7 @@ public final class InterpretationController implements IDataController<Interpret
     }
 
     @Override
-    public void sync() throws APIException {
+    public void sync() throws ApiException {
         getInterpretationDataFromServer();
         sendLocalChanges();
     }
