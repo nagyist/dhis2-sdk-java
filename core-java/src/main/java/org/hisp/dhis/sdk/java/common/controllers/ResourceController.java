@@ -29,7 +29,6 @@
 package org.hisp.dhis.sdk.java.common.controllers;
 
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -58,7 +57,7 @@ public abstract class ResourceController<T extends IdentifiableObject> implement
     public void saveResourceDataFromServer(ResourceType resourceType, String extraIdentifier, IIdentifiableObjectStore<T> store,
                                            List<T> updatedItems, List<T> persistedItems, DateTime serverDateTime) {
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(DbUtils.createOperations(store, persistedItems, updatedItems));
+        operations.addAll(transactionManager.createOperations(store, persistedItems, updatedItems));
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }

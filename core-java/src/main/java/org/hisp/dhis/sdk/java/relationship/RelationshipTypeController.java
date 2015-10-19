@@ -28,11 +28,11 @@
 
 package org.hisp.dhis.sdk.java.relationship;
 
+import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
-import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
@@ -85,7 +85,8 @@ public final class RelationshipTypeController implements IDataController<Relatio
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(transactionManager.createOperations(mRelationshipTypeStore, existingPersistedAndUpdatedRelationshipTypes, mRelationshipTypeStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(mRelationshipTypeStore,
+                existingPersistedAndUpdatedRelationshipTypes, mRelationshipTypeStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);

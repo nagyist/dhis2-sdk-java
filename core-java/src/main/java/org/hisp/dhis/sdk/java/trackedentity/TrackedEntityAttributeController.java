@@ -88,7 +88,8 @@ public final class TrackedEntityAttributeController implements IDataController<T
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(transactionManager.createOperations(trackedEntityAttributeStore, existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(trackedEntityAttributeStore,
+                existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);

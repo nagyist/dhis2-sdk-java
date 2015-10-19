@@ -83,7 +83,8 @@ public final class ProgramRuleActionController implements IDataController<Progra
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(transactionManager.createOperations(mProgramRuleActionStore, existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(mProgramRuleActionStore,
+                existingPersistedAndUpdatedProgramRuleActions, mProgramRuleActionStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);

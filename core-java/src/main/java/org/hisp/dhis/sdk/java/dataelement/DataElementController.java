@@ -31,7 +31,6 @@ package org.hisp.dhis.sdk.java.dataelement;
 import org.hisp.dhis.java.sdk.models.dataelement.DataElement;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.persistence.DbUtils;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -81,7 +80,7 @@ public final class DataElementController implements IDataController<DataElement>
         List<DataElement> existingPersistedAndUpdatedDataElements =
                 merge(allDataElements, updatedDataElements, mDataElementStore.queryAll());
 
-        List<IDbOperation> dbOperations = DbUtils.createOperations(mDataElementStore,
+        List<IDbOperation> dbOperations = transactionManager.createOperations(mDataElementStore,
                 mDataElementStore.queryAll(), existingPersistedAndUpdatedDataElements);
         transactionManager.transact(dbOperations);
         lastUpdatedPreferences.save(ResourceType.DATA_ELEMENTS, serverTime);
