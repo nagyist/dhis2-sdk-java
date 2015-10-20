@@ -56,13 +56,14 @@ public class DashboardElementService implements IDashboardElementService {
     public boolean remove(DashboardElement dashboardElement) {
         isNull(dashboardElement, "dashboardElement must not be null");
 
+        boolean result;
         Action action = stateStore.queryActionForModel(dashboardElement);
         if (Action.TO_POST.equals(action)) {
             stateStore.deleteActionForModel(dashboardElement);
-            dashboardElementStore.delete(dashboardElement);
+            result = dashboardElementStore.delete(dashboardElement);
         } else {
             stateStore.saveActionForModel(dashboardElement, Action.TO_DELETE);
-            dashboardElementStore.update(dashboardElement);
+            result = dashboardElementStore.update(dashboardElement);
         }
 
         /* if count of elements in item is zero, it means we don't need this item anymore */
@@ -70,12 +71,13 @@ public class DashboardElementService implements IDashboardElementService {
             dashboardItemService.remove(dashboardElement.getDashboardItem());
         }
 
-        return false;
+        return result;
     }
 
     @Override
     public List<DashboardElement> list(DashboardItem dashboardItem) {
-        List<DashboardElement> allDashboardElements = dashboardElementStore.queryByDashboardItem(dashboardItem);
+        List<DashboardElement> allDashboardElements =
+                dashboardElementStore.queryByDashboardItem(dashboardItem);
         Map<Long, Action> actionMap = stateStore.queryActionsForModel(DashboardElement.class);
 
         List<DashboardElement> dashboardElements = new ArrayList<>();
@@ -88,6 +90,11 @@ public class DashboardElementService implements IDashboardElementService {
         }
 
         return dashboardElements;
+    }
+
+    @Override
+    public int count(DashboardItem dashboardItem) {
+        return 0;
     }
 
     @Override

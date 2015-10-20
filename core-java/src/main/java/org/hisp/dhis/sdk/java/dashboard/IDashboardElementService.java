@@ -42,4 +42,6 @@ public interface IDashboardElementService extends IService, IRemove<DashboardEle
      * {@inheritDoc}
      */
     List<DashboardElement> list(DashboardItem dashboardItem);
+
+    int count(DashboardItem dashboardItem);
 }
