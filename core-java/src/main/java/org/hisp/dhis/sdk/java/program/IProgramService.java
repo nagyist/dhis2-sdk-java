@@ -30,33 +30,13 @@ package org.hisp.dhis.sdk.java.program;
 
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.sdk.java.common.services.IGet;
+import org.hisp.dhis.sdk.java.common.services.IGetUid;
+import org.hisp.dhis.sdk.java.common.services.IList;
+import org.hisp.dhis.sdk.java.common.services.IService;
 
 import java.util.List;
-import java.util.Set;
 
-public interface IProgramStore extends IIdentifiableObjectStore<Program> {
-
-    /**
-     * Returns a list of Programs that are assigned to a given Organisation Unit
-     * @param organisationUnit
-     * @return
-     */
-    List<Program> query(OrganisationUnit organisationUnit);
-
-    /**
-     * Returns a list of Programs that are assigned to a given Organisation Unit with one of the
-     * given program type(s)
-     * @param organisationUnit
-     * @param programTypes
-     * @return
-     */
-    List<Program> query(OrganisationUnit organisationUnit, Program.ProgramType... programTypes);
-
-    /**
-     * Creates an assignment link between the given program and the given list of organisation Units
-     * @param program
-     * @param organisationUnits
-     */
-    void assign(Program program, Set<OrganisationUnit> organisationUnits);
+public interface IProgramService extends IService, IGet<Program>, IGetUid<Program>, IList<Program> {
+    List<Program> list(OrganisationUnit organisationUnit, Program.ProgramType... programTypes);
 }
