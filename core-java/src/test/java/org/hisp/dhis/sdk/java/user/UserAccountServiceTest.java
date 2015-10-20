@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,6 +78,22 @@ public class UserAccountServiceTest {
     public void testGetCurrentUser() {
         UserAccount userAccount = userAccountService.getCurrentUserAccount();
         assertEquals(userAccount, userAccountMock);
+    }
+
+    @Test
+    public void testGetCurrentUserShouldReturnNullWhenListUserAccountStoreHasNoAccounts() {
+        when(userAccountStoreMock.queryAll()).thenReturn(new ArrayList<UserAccount>());
+
+        UserAccount userAccount = userAccountService.getCurrentUserAccount();
+        assertNull(userAccount);
+    }
+
+    @Test
+    public void testGetCurrentUserShouldReturnNullWhenListUserAccountStoreReturnsNull() {
+        when(userAccountStoreMock.queryAll()).thenReturn(null);
+
+        UserAccount userAccount = userAccountService.getCurrentUserAccount();
+        assertNull(userAccount);
     }
 
     @Test

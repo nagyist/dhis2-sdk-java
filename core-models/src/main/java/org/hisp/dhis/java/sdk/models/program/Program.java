@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class Program extends BaseIdentifiableObject {
+public class Program extends BaseIdentifiableObject {
 
     public enum ProgramType {
 

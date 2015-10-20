@@ -47,7 +47,11 @@ public class UserAccountService implements IUserAccountService {
     @Override
     public UserAccount getCurrentUserAccount() {
         List<UserAccount> userAccounts = userAccountStore.queryAll();
-        return userAccounts != null && !userAccounts.isEmpty() ? userAccounts.get(0) : null;
+
+        if (userAccounts != null && !userAccounts.isEmpty()) {
+            return userAccounts.get(0);
+        }
+        return null;
     }
 
     @Override
