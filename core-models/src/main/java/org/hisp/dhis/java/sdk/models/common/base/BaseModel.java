@@ -36,12 +36,12 @@ public class BaseModel implements IModel {
     private long id;
 
     @Override
-    public final long getId() {
+    public long getId() {
         return id;
     }
 
     @Override
-    public final void setId(long id) {
+    public void setId(long id) {
         this.id = id;
     }
 }
