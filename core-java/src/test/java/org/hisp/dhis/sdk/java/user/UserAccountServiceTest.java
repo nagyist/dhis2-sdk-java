@@ -68,7 +68,6 @@ public class UserAccountServiceTest {
 
     }
 
-
     @Test
     public void testToUser() {
         User user = userAccountService.toUser(userAccountMock);
