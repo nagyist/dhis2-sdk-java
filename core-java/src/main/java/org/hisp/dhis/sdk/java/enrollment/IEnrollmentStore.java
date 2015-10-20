@@ -28,6 +28,7 @@
 
 package org.hisp.dhis.sdk.java.enrollment;
 
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.sdk.java.common.persistence.IStore;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.program.Program;
@@ -37,12 +38,9 @@ import java.util.List;
 
 public interface IEnrollmentStore extends IStore<Enrollment> {
     Enrollment query(long id);
-
     Enrollment query(String uid);
-
     List<Enrollment> query(Program program, TrackedEntityInstance trackedEntityInstance);
-
-    Enrollment queryActiveEnrollment(Program program, TrackedEntityInstance trackedEntityInstance);
-
+    Enrollment queryActiveEnrollment(TrackedEntityInstance trackedEntityInstance, OrganisationUnit organisationUnit, Program program);
     List<Enrollment> query(TrackedEntityInstance trackedEntityInstance);
+    List<Enrollment> query(Program program, OrganisationUnit organisationUnit);
 }
