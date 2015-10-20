@@ -39,7 +39,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,21 +50,16 @@ public class UserAccountServiceTest {
 
     @Before
     public void setUp() {
-
+        modelsStoreMock = mock(IModelsStore.class);
         userAccountMock = mock(UserAccount.class);
         userAccountStoreMock = mock(IUserAccountStore.class);
-        modelsStoreMock = mock(IModelsStore.class);
-
-        when(userAccountMock.getUId()).thenReturn("2xPJ8ysSeqs");
-
-        userAccountService = spy(new UserAccountService(userAccountStoreMock, modelsStoreMock));
-
         userAccountStoreMock.insert(userAccountMock);
+        userAccountService = new UserAccountService(userAccountStoreMock, modelsStoreMock);
 
         List<UserAccount> userAccounts = new ArrayList<>();
         userAccounts.add(userAccountMock);
         when(userAccountStoreMock.queryAll()).thenReturn(userAccounts);
-
+        when(userAccountMock.getUId()).thenReturn("2xPJ8ysSeqs");
     }
 
     @Test
@@ -74,11 +68,15 @@ public class UserAccountServiceTest {
         assertEquals(user.getUId(), userAccountMock.getUId());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullArgumentUserAccountToUser() {
+        userAccountService.toUser(null);
+    }
+
     @Test
     public void testGetCurrentUser() {
         UserAccount userAccount = userAccountService.getCurrentUserAccount();
         assertEquals(userAccount, userAccountMock);
-
     }
 
     @Test
