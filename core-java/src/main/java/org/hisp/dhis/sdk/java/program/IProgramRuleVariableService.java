@@ -28,14 +28,13 @@
 
 package org.hisp.dhis.sdk.java.program;
 
-import org.hisp.dhis.java.sdk.models.program.ProgramStage;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.models.program.ProgramRule;
+import org.hisp.dhis.java.sdk.models.program.ProgramRuleVariable;
+import org.hisp.dhis.sdk.java.common.services.IGet;
+import org.hisp.dhis.sdk.java.common.services.IGetUid;
+import org.hisp.dhis.sdk.java.common.services.IList;
+import org.hisp.dhis.sdk.java.common.services.IService;
 
-import java.util.List;
-
-public interface IProgramRuleStore extends IIdentifiableObjectStore<ProgramRule> {
-    List<ProgramRule> query(Program program);
-    List<ProgramRule> query(ProgramStage programStage);
+public interface IProgramRuleVariableService extends IService, IGet<ProgramRuleVariable>, IGetUid<ProgramRuleVariable>, IList<ProgramRuleVariable> {
+    ProgramRuleVariable getByName(Program program, String programRuleVariableName);
 }

@@ -36,7 +36,27 @@ import java.util.List;
 import java.util.Set;
 
 public interface IProgramStore extends IIdentifiableObjectStore<Program> {
+
+    /**
+     * Returns a list of Programs that are assigned to a given Organisation Unit
+     * @param organisationUnit
+     * @return
+     */
     List<Program> query(OrganisationUnit organisationUnit);
 
+    /**
+     * Returns a list of Programs that are assigned to a given Organisation Unit with one of the
+     * given program type(s)
+     * @param organisationUnit
+     * @param programTypes
+     * @return
+     */
+    List<Program> query(OrganisationUnit organisationUnit, Program.ProgramType... programTypes);
+
+    /**
+     * Creates an assignment link between the given program and the given list of organisation Units
+     * @param program
+     * @param organisationUnits
+     */
     void assign(Program program, Set<OrganisationUnit> organisationUnits);
 }

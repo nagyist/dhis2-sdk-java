@@ -26,16 +26,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.program;
+package org.hisp.dhis.sdk.java.event;
 
-import org.hisp.dhis.java.sdk.models.program.ProgramStage;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
+import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
+import org.hisp.dhis.java.sdk.models.event.Event;
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.models.program.ProgramRule;
+import org.hisp.dhis.java.sdk.models.program.ProgramStage;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
+import org.hisp.dhis.sdk.java.common.services.*;
+import org.joda.time.DateTime;
 
 import java.util.List;
 
-public interface IProgramRuleStore extends IIdentifiableObjectStore<ProgramRule> {
-    List<ProgramRule> query(Program program);
-    List<ProgramRule> query(ProgramStage programStage);
+public interface IEventService extends IService, IAdd<Event>, ISave<Event>,
+        IUpdate<Event>, IRemove<Event>, IGet<Event>, IList<Event> {
+    Event get(String uid);
+    Event create(TrackedEntityInstance trackedEntityInstance, Enrollment enrollment, OrganisationUnit organisationUnit, Program program, ProgramStage programStage, String status);
+    Event create(OrganisationUnit organisationUnit, String status, Program program, ProgramStage programStage);
+    List<Event> list(Program program, OrganisationUnit organisationUnit, DateTime startDate, DateTime endDate);
 }

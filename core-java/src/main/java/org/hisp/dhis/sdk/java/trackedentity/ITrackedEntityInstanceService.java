@@ -26,16 +26,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.program;
+package org.hisp.dhis.sdk.java.trackedentity;
 
-import org.hisp.dhis.java.sdk.models.program.ProgramStage;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
-import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.models.program.ProgramRule;
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.java.sdk.models.relationship.Relationship;
+import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntity;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
+import org.hisp.dhis.sdk.java.common.services.*;
 
-import java.util.List;
+public interface ITrackedEntityInstanceService extends IService, IAdd<TrackedEntityInstance>, ISave<TrackedEntityInstance>,
+        IUpdate<TrackedEntityInstance>, IRemove<TrackedEntityInstance>, IGet<TrackedEntityInstance>, IList<TrackedEntityInstance> {
+    TrackedEntityInstance get(String uid);
+    TrackedEntityInstance create(TrackedEntity trackedEntity, OrganisationUnit organisationUnit);
 
-public interface IProgramRuleStore extends IIdentifiableObjectStore<ProgramRule> {
-    List<ProgramRule> query(Program program);
-    List<ProgramRule> query(ProgramStage programStage);
+    /**
+     * Creates and adds a relationship for the given parameters.
+     * @param trackedEntityInstanceA
+     * @param trackedEntityInstanceB
+     * @param relationshipType
+     */
+    boolean addRelationship(TrackedEntityInstance trackedEntityInstanceA, TrackedEntityInstance trackedEntityInstanceB, RelationshipType relationshipType);
+
+    /**
+     * Removes a given relationship, both locally and on the server
+     * @param relationship
+     * @return
+     */
+    boolean removeRelationship(Relationship relationship);
 }
