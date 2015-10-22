@@ -184,7 +184,7 @@ public class DashboardService implements IDashboardService {
      */
     @Override
     public List<Dashboard> list() {
-        return stateStore.filterModelsByAction(Dashboard.class, Action.TO_DELETE);
+        return stateStore.queryModelsWithAction(Dashboard.class, Action.TO_POST, Action.TO_UPDATE, Action.SYNCED);
     }
 
 

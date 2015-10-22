@@ -53,7 +53,6 @@ public class EventService implements IEventService {
         DateTime dueDate = enrollment.getDateOfEnrollment();
         dueDate.plusDays(programStage.getMinDaysFromStart());
         event.setDueDate(dueDate);
-        add(event);
         return event;
     }
 
@@ -65,8 +64,6 @@ public class EventService implements IEventService {
         event.setProgramId(program.getUId());
         event.setProgramStageId(programStage.getUId());
         event.setTrackedEntityDataValues(new ArrayList<TrackedEntityDataValue>());
-
-        add(event);
         return event;
     }
 
@@ -105,7 +102,7 @@ public class EventService implements IEventService {
 
     @Override
     public List<Event> list() {
-        return stateStore.filterModelsByAction(Event.class, Action.TO_DELETE);
+        return stateStore.queryModelsWithAction(Event.class, Action.TO_POST, Action.SYNCED, Action.TO_UPDATE);
     }
 
     @Override
