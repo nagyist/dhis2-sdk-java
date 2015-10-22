@@ -4,65 +4,65 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class DashboardContentServiceTest {
-    /* mocks */
     private DashboardContent dashboardContentMock;
-    private List<DashboardContent> dashboardContentListMock;
-    private IDashboardItemContentStore dashboardItemContentStoreMock;
+    private List<DashboardContent> dashboardContentsMockList;
 
-    /* should be a real implementation */
+    private IDashboardItemContentStore dashboardItemContentStoreMock;
     private IDashboardItemContentService dashboardItemContentService;
 
     @Before
     public void setUp() {
         dashboardContentMock = mock(DashboardContent.class);
-        dashboardContentListMock = new ArrayList<>();
-        for (int i = 0; i < 16; i++) {
-            dashboardContentListMock.add(mock(DashboardContent.class));
-            dashboardContentListMock.add(mock(DashboardContent.class));
-            dashboardContentListMock.add(mock(DashboardContent.class));
-        }
-
+        dashboardContentsMockList = Arrays.asList(dashboardContentMock, dashboardContentMock, dashboardContentMock);
         dashboardItemContentStoreMock = mock(IDashboardItemContentStore.class);
-        when(dashboardItemContentStoreMock.queryById(anyInt())).thenReturn(dashboardContentMock);
-        when(dashboardItemContentStoreMock.queryByUid(anyString())).thenReturn(dashboardContentMock);
-        when(dashboardItemContentStoreMock.queryAll()).thenReturn(dashboardContentListMock);
-        when(dashboardItemContentStoreMock.queryByTypes(anyListOf(String.class))).thenReturn(dashboardContentListMock);
-
         dashboardItemContentService = new DashboardContentService(dashboardItemContentStoreMock);
     }
 
     @Test
     public void testGetById() {
-        DashboardContent dashboardContent = dashboardItemContentService.get(12);
-        assertEquals(dashboardContent, dashboardContentMock);
+        when(dashboardItemContentStoreMock.queryById(anyInt())).thenReturn(dashboardContentMock);
+
+        dashboardItemContentService.get(12);
+
+        verify(dashboardItemContentStoreMock, times(1)).queryById(12);
     }
 
     @Test
     public void testGetByUid() {
-        DashboardContent dashboardContent = dashboardItemContentService.get("123");
-        assertEquals(dashboardContent, dashboardContentMock);
+        when(dashboardItemContentStoreMock.queryByUid(anyString())).thenReturn(dashboardContentMock);
+
+        dashboardItemContentService.get("123");
+
+        verify(dashboardItemContentStoreMock, times(1)).queryByUid("123");
     }
 
     @Test
     public void testList() {
-        List<DashboardContent> dashboardContents = dashboardItemContentService.list();
-        assertEquals(dashboardContents, dashboardContentListMock);
+        when(dashboardItemContentStoreMock.queryAll())
+                .thenReturn(dashboardContentsMockList);
+
+        dashboardItemContentService.list();
+
+        verify(dashboardItemContentStoreMock, times(1)).queryAll();
     }
 
     @Test
     public void testListByTypes() {
-        List<DashboardContent> dashboardContents = dashboardItemContentService
-                .list(Arrays.asList("type_one", "type_two"));
-        assertEquals(dashboardContents, dashboardContentListMock);
+        when(dashboardItemContentStoreMock.queryByTypes(anyListOf(String.class)))
+                .thenReturn(dashboardContentsMockList);
+
+        List<String> types = Arrays.asList("type_one", "type_two");
+        dashboardItemContentService.list(types);
+
+        verify(dashboardItemContentStoreMock, times(1)).queryByTypes(types);
     }
 }

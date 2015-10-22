@@ -24,7 +24,6 @@ public class DashboardElementService implements IDashboardElementService {
     }
 
     @Override
-    /* TODO for all operations, consider using ACL (access control layer)  */
     public boolean remove(DashboardElement object) {
         isNull(object, "DashboardElement object must not be null");
 
