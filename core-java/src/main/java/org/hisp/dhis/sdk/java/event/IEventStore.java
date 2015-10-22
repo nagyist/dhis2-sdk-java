@@ -37,8 +37,7 @@ import org.hisp.dhis.java.sdk.models.program.Program;
 import java.util.List;
 
 public interface IEventStore extends IStore<Event> {
-    Event query(long id);
-    Event query(String uid);
+    Event queryByUid(String uid);
     List<Event> query(Enrollment enrollment);
     List<Event> query(OrganisationUnit organisationUnit, Program program);
 }

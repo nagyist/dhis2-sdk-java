@@ -144,7 +144,7 @@ public final class EventController extends PushableDataController implements IEv
         //todo: delete the event if it has been deleted on server.
         //todo: be sure to check if the event has ever been on the server, or if it is still pending first time registration sync
 
-        Event persistedEvent = eventStore.query(uid);
+        Event persistedEvent = eventStore.queryByUid(uid);
         if (persistedEvent != null) {
             updatedEvent.setId(persistedEvent.getId());
             if (updatedEvent.getLastUpdated().isAfter(persistedEvent.getLastUpdated())) {
@@ -160,7 +160,7 @@ public final class EventController extends PushableDataController implements IEv
                 dataValue.setEvent(updatedEvent);
             }
             operations.addAll(createOperations(trackedEntityDataValueStore,
-                    eventStore.query(updatedEvent.getId()), updatedEvent,
+                    eventStore.queryById(updatedEvent.getId()), updatedEvent,
                     trackedEntityDataValueStore.query(updatedEvent), updatedDataValues));
         }
         transactionManager.transact(operations);
@@ -183,7 +183,7 @@ public final class EventController extends PushableDataController implements IEv
                     dataValue.setEvent(event);
                 }
                 operations.addAll(createOperations(trackedEntityDataValueStore,
-                        eventStore.query(event.getId()), event,
+                        eventStore.queryById(event.getId()), event,
                         trackedEntityDataValueStore.query(event), updatedDataValues));
             }
             lastUpdatedPreferences.save(ResourceType.EVENT, serverDateTime, event.getEventUid());

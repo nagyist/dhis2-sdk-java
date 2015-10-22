@@ -29,7 +29,7 @@ public class EventService implements IEventService {
 
     @Override
     public Event get(String uid) {
-        Event event = eventStore.query(uid);
+        Event event = eventStore.queryByUid(uid);
         Action action = stateStore.queryActionForModel(event);
 
         if (!Action.TO_DELETE.equals(action)) {
@@ -41,9 +41,16 @@ public class EventService implements IEventService {
 
     @Override
     public Event create(TrackedEntityInstance trackedEntityInstance, Enrollment enrollment, OrganisationUnit organisationUnit, Program program, ProgramStage programStage, String status) {
+        isNull(trackedEntityInstance, "trackedEntityInstance argument must not be null");
+        isNull(enrollment, "enrollment argument must not be null");
+        isNull(organisationUnit, "organisationUnit argument must not be null");
+        isNull(program, "program argument must not be null");
+        isNull(programStage, "programStage argument must not be null");
+        isNull(status, "status argument must not be null");
         Event event = new Event();
         event.setEventUid(CodeGenerator.generateCode());
         event.setEnrollment(enrollment);
+        event.setOrganisationUnitId(organisationUnit.getUId());
         event.setStatus(status);
         event.setTrackedEntityInstance(trackedEntityInstance);
         event.setProgramId(program.getUId());
@@ -51,16 +58,24 @@ public class EventService implements IEventService {
         event.setTrackedEntityDataValues(new ArrayList<TrackedEntityDataValue>());
 
         DateTime dueDate = enrollment.getDateOfEnrollment();
-        dueDate.plusDays(programStage.getMinDaysFromStart());
-        event.setDueDate(dueDate);
+        event.setDueDate(dueDate.plusDays(programStage.getMinDaysFromStart()));
         return event;
     }
 
     @Override
     public Event create(OrganisationUnit organisationUnit, String status, Program program, ProgramStage programStage) {
+        isNull(organisationUnit, "organisationUnit argument must not be null");
+        isNull(program, "program argument must not be null");
+        isNull(programStage, "programStage argument must not be null");
+        isNull(status, "status argument must not be null");
+        if(!Event.STATUS_ACTIVE.equals(status) && !Event.STATUS_COMPLETED.equals(status)) {
+            throw new IllegalArgumentException("event status must be either ACTIVE or COMPLETED");
+        }
+
         Event event = new Event();
         event.setEventUid(CodeGenerator.generateCode());
         event.setStatus(status);
+        event.setOrganisationUnitId(organisationUnit.getUId());
         event.setProgramId(program.getUId());
         event.setProgramStageId(programStage.getUId());
         event.setTrackedEntityDataValues(new ArrayList<TrackedEntityDataValue>());
@@ -74,18 +89,19 @@ public class EventService implements IEventService {
             Event event = events.get(i);
             if(event.getDueDate().isBefore(startDate) || event.getDueDate().isAfter(endDate)) {
                 events.remove(i);
+                i--;
             }
-            i--;
         }
         return events;
     }
 
     @Override
     public boolean add(Event object) {
-        eventStore.insert(object);
-        stateStore.saveActionForModel(object, Action.TO_POST);
-
-        return true;
+        isNull(object, "event argument must not be null");
+        if(!eventStore.insert(object)) {
+            return false;
+        }
+        return stateStore.saveActionForModel(object, Action.TO_POST);
     }
 
     @Override
@@ -96,7 +112,6 @@ public class EventService implements IEventService {
         if (!Action.TO_DELETE.equals(action)) {
             return event;
         }
-
         return null;
     }
 
@@ -108,24 +123,25 @@ public class EventService implements IEventService {
     @Override
     public boolean remove(Event object) {
         isNull(object, "event argument must not be null");
-        eventStore.delete(object);
-        return true;
+        if(!eventStore.delete(object)) {
+            return false;
+        }
+        return stateStore.deleteActionForModel(object);
     }
 
     @Override
     public boolean save(Event object) {
-        eventStore.save(object);
-
-        // TODO check if object was created earlier (then set correct flag)
-        Action action = stateStore.queryActionForModel(object);
-
-        if (action == null) {
-            stateStore.saveActionForModel(object, Action.TO_POST);
-        } else {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
+        isNull(object, "event argument must not be null");
+        if(!eventStore.save(object)) {
+            return false;
         }
 
-        return true;
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null || Action.TO_POST.equals(action)) {
+            return stateStore.saveActionForModel(object, Action.TO_POST);
+        } else {
+            return stateStore.saveActionForModel(object, Action.TO_UPDATE);
+        }
     }
 
     @Override
@@ -144,8 +160,6 @@ public class EventService implements IEventService {
             stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
 
-        eventStore.update(object);
-
-        return true;
+        return eventStore.update(object);
     }
 }
