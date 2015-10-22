@@ -94,5 +94,5 @@ public interface IStateStore extends IStore<State> {
      * @param actions Action(s) which we want to have in resulting payload from database.
      * @return List of Class typed instances which State contain given action.
      */
-    <T extends IModel> List<T> queryModelsWithAction(Class<T> clazz, Action... actions);
+    <T extends IModel> List<T> queryModelsWithActions(Class<T> clazz, Action... actions);
 }

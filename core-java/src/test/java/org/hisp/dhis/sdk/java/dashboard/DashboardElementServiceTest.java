@@ -121,7 +121,8 @@ public class DashboardElementServiceTest {
     public void testListDashboardElements() {
         dashboardElementService.list();
 
-        verify(stateStoreMock, times(1)).filterModelsByAction(DashboardElement.class, Action.TO_DELETE);
+        verify(stateStoreMock, times(1)).queryModelsWithActions(DashboardElement.class,
+                Action.SYNCED, Action.TO_POST, Action.TO_UPDATE);
     }
 
     @Test(expected = IllegalArgumentException.class)

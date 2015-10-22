@@ -105,7 +105,7 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public List<Enrollment> list() {
-        return stateStore.queryModelsWithAction(Enrollment.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_POST);
+        return stateStore.queryModelsWithActions(Enrollment.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_POST);
     }
 
     @Override
