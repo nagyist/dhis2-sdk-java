@@ -77,8 +77,8 @@ public class DashboardElementServiceTest {
         }
 
         noneRemovedDashboardElements = new ArrayList<>();
-        when(stateStore.filterModelsByAction(DashboardElement.class,
-                Action.TO_DELETE)).thenReturn(noneRemovedDashboardElements);
+        when(stateStore.queryModelsWithAction(DashboardElement.class,
+                Action.TO_POST, Action.TO_UPDATE, Action.SYNCED)).thenReturn(noneRemovedDashboardElements);
         when(stateStore.queryActionsForModel(DashboardElement.class)).thenReturn(actionMap);
 
         dashboardElementStore = mock(IDashboardElementStore.class);
@@ -146,7 +146,7 @@ public class DashboardElementServiceTest {
     public void testListDashboardElements() {
         List<DashboardElement> dashboardElements = dashboardElementServiceSpy.list();
         assertEquals(dashboardElements, noneRemovedDashboardElements);
-        verify(stateStore).filterModelsByAction(DashboardElement.class, Action.TO_DELETE);
+        verify(stateStore).queryModelsWithAction(DashboardElement.class, Action.TO_POST, Action.TO_UPDATE, Action.SYNCED);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -174,6 +174,6 @@ public class DashboardElementServiceTest {
     public void testCountDashboardElements() {
         int dashboardElementCount = dashboardElementService.count(dashboardItem);
         assertEquals(noneRemovedDashboardElements.size(), dashboardElementCount);
-        verify(stateStore).filterModelsByAction(DashboardElement.class, Action.TO_DELETE);
+        verify(stateStore).queryModelsWithAction(DashboardElement.class, Action.TO_POST, Action.TO_UPDATE, Action.SYNCED);
     }
 }
