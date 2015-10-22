@@ -105,7 +105,7 @@ public class EventService implements IEventService {
 
     @Override
     public List<Event> list() {
-        return stateStore.filterModelsByAction(Event.class, Action.TO_DELETE);
+        return stateStore.queryModelsWithAction(Event.class, Action.TO_POST, Action.SYNCED, Action.TO_UPDATE);
     }
 
     @Override

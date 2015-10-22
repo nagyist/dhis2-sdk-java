@@ -91,15 +91,8 @@ public interface IStateStore extends IStore<State> {
 
     /**
      * @param clazz  Class, instances of which we want to retrieve from database.
-     * @param action Action by which we want to filter resulting payload from database.
-     * @return List of Class typed instances which State does not contain given action.
-     */
-    <T extends IModel> List<T> filterModelsByAction(Class<T> clazz, Action action);
-
-    /**
-     * @param clazz  Class, instances of which we want to retrieve from database.
-     * @param action Action which we want to have in resulting payload from database.
+     * @param actions Action(s) which we want to have in resulting payload from database.
      * @return List of Class typed instances which State contain given action.
      */
-    <T extends IModel> List<T> queryModelsWithAction(Class<T> clazz, Action action);
+    <T extends IModel> List<T> queryModelsWithAction(Class<T> clazz, Action... actions);
 }

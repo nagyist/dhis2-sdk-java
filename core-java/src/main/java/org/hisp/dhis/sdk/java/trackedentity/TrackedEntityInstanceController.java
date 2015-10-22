@@ -272,8 +272,8 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
     }
 
     private List<TrackedEntityInstance> getLocallyChangedTrackedEntityInstances() {
-        List<TrackedEntityInstance> toPost = stateStore.filterModelsByAction(TrackedEntityInstance.class, Action.TO_POST);
-        List<TrackedEntityInstance> toPut = stateStore.filterModelsByAction(TrackedEntityInstance.class, Action.TO_UPDATE);
+        List<TrackedEntityInstance> toPost = stateStore.queryModelsWithAction(TrackedEntityInstance.class, Action.TO_POST);
+        List<TrackedEntityInstance> toPut = stateStore.queryModelsWithAction(TrackedEntityInstance.class, Action.TO_UPDATE);
         List<TrackedEntityInstance> trackedEntityInstances = new ArrayList<>();
         trackedEntityInstances.addAll(toPost);
         trackedEntityInstances.addAll(toPut);

@@ -106,7 +106,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public List<TrackedEntityInstance> list() {
-        return stateStore.filterModelsByAction(TrackedEntityInstance.class, Action.TO_DELETE);
+        return stateStore.queryModelsWithAction(TrackedEntityInstance.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_POST);
     }
 
     @Override

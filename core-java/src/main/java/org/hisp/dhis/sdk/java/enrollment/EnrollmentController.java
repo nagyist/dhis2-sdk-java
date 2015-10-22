@@ -272,8 +272,8 @@ public final class EnrollmentController extends PushableDataController implement
     }
 
     private List<Enrollment> getLocallyChangedEnrollments() {
-        List<Enrollment> toPost = stateStore.filterModelsByAction(Enrollment.class, Action.TO_POST);
-        List<Enrollment> toPut = stateStore.filterModelsByAction(Enrollment.class, Action.TO_UPDATE);
+        List<Enrollment> toPost = stateStore.queryModelsWithAction(Enrollment.class, Action.TO_POST);
+        List<Enrollment> toPut = stateStore.queryModelsWithAction(Enrollment.class, Action.TO_UPDATE);
         List<Enrollment> enrollments = new ArrayList<>();
         enrollments.addAll(toPost);
         enrollments.addAll(toPut);

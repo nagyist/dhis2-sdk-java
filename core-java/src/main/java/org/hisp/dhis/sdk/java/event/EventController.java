@@ -397,8 +397,8 @@ public final class EventController extends PushableDataController implements IEv
     }
 
     private List<Event> getLocallyChangedEvents() {
-        List<Event> toPost = stateStore.filterModelsByAction(Event.class, Action.TO_POST);
-        List<Event> toPut = stateStore.filterModelsByAction(Event.class, Action.TO_UPDATE);
+        List<Event> toPost = stateStore.queryModelsWithAction(Event.class, Action.TO_POST);
+        List<Event> toPut = stateStore.queryModelsWithAction(Event.class, Action.TO_UPDATE);
         List<Event> events = new ArrayList<>();
         events.addAll(toPost);
         events.addAll(toPut);
