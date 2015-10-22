@@ -82,6 +82,7 @@ public class DashboardElementService implements IDashboardElementService {
     @Override
     public int count(DashboardItem dashboardItem) {
         isNull(dashboardItem, "DashboardItem object must not be null");
-        return stateStore.filterModelsByAction(DashboardElement.class, Action.TO_DELETE).size();
+
+        return list(dashboardItem).size();
     }
 }
