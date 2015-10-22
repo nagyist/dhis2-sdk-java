@@ -57,7 +57,8 @@ public class DashboardElementService implements IDashboardElementService {
 
     @Override
     public List<DashboardElement> list() {
-        return stateStore.queryModelsWithAction(DashboardElement.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_POST);
+        return stateStore.queryModelsWithActions(DashboardElement.class,
+                Action.SYNCED, Action.TO_POST, Action.TO_UPDATE);
     }
 
     @Override
@@ -82,6 +83,7 @@ public class DashboardElementService implements IDashboardElementService {
     @Override
     public int count(DashboardItem dashboardItem) {
         isNull(dashboardItem, "DashboardItem object must not be null");
-        return stateStore.queryModelsWithAction(DashboardElement.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_POST).size();
+
+        return list(dashboardItem).size();
     }
 }

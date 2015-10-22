@@ -116,9 +116,9 @@ public final class DashboardController implements IDataController<Dashboard> {
         Queue<IDbOperation> operations = new LinkedList<>();
 
         operations.addAll(transactionManager.createOperations(dashboardStore,
-                stateStore.queryModelsWithAction(Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE), dashboards));
+                stateStore.queryModelsWithActions(Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE), dashboards));
         operations.addAll(transactionManager.createOperations(dashboardItemStore,
-                stateStore.queryModelsWithAction(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE), dashboardItems));
+                stateStore.queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE), dashboardItems));
         operations.addAll(createOperations(dashboardItems));
 
         transactionManager.transact(operations);
@@ -134,7 +134,7 @@ public final class DashboardController implements IDataController<Dashboard> {
         List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
 
         // List of persisted dashboards.
-        List<Dashboard> persistedDashboards = stateStore.queryModelsWithAction(Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
 
         Map<Long, List<DashboardItem>> dashboardItemMap = getDashboardItemMap();
         Map<Long, List<DashboardElement>> dashboardElementMap = getDashboardElementMap(false);
@@ -164,7 +164,7 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         // List of persisted dashboard items
         Map<String, DashboardItem> persistedDashboardItems =
-                toMap(stateStore.queryModelsWithAction(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
+                toMap(stateStore.queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
 
         // List of updated dashboard items. We need this only to get
         // information about updates of item shape.
@@ -273,7 +273,7 @@ public final class DashboardController implements IDataController<Dashboard> {
     // TODO move this method out
     private Map<Long, List<DashboardItem>> getDashboardItemMap() {
         List<DashboardItem> dashboardItemsList = stateStore
-                .queryModelsWithAction(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+                .queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
         Map<Long, List<DashboardItem>> dashboardItemMap = new HashMap<>();
 
         for (DashboardItem dashboardItem : dashboardItemsList) {
@@ -296,10 +296,10 @@ public final class DashboardController implements IDataController<Dashboard> {
         List<DashboardElement> dashboardElementsList;
 
         if (withAction) {
-            dashboardElementsList = stateStore.queryModelsWithAction(
+            dashboardElementsList = stateStore.queryModelsWithActions(
                     DashboardElement.class, Action.TO_POST);
         } else {
-            dashboardElementsList = stateStore.queryModelsWithAction(
+            dashboardElementsList = stateStore.queryModelsWithActions(
                     DashboardElement.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
         }
         Map<Long, List<DashboardElement>> dashboardElementMap = new HashMap<>();
@@ -332,7 +332,7 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         // List<Dashboard> dashboards = dashboardStore.filter(Action.SYNCED);
         List<Dashboard> dashboards = stateStore
-                .queryModelsWithAction(Dashboard.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
+                .queryModelsWithActions(Dashboard.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
         Map<Long, Action> actionMap = stateStore
                 .queryActionsForModel(Dashboard.class);
         if (dashboards == null || dashboards.isEmpty()) {
@@ -417,7 +417,7 @@ public final class DashboardController implements IDataController<Dashboard> {
         /* List<DashboardItem> dashboardItems =
                 dashboardItemStore.filter(Action.SYNCED); */
         List<DashboardItem> dashboardItems =
-                stateStore.queryModelsWithAction(DashboardItem.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
+                stateStore.queryModelsWithActions(DashboardItem.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
         Map<Long, Action> actionMap = stateStore.queryActionsForModel(DashboardItem.class);
 
         if (dashboardItems == null || dashboardItems.isEmpty()) {
@@ -532,7 +532,7 @@ public final class DashboardController implements IDataController<Dashboard> {
                 .orderBy(true, DashboardElement$Table.ID)
                 .queryList(); */
         List<DashboardElement> elements = stateStore
-                .queryModelsWithAction(DashboardElement.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
+                .queryModelsWithActions(DashboardElement.class, Action.TO_POST, Action.TO_UPDATE, Action.TO_DELETE);
         Map<Long, Action> actionMap = stateStore.queryActionsForModel(DashboardElement.class);
 
         if (elements == null || elements.isEmpty()) {
