@@ -281,7 +281,7 @@ public class EventServiceTest {
         listEventsMock.add(new Event());
         listEventsMock.add(new Event());
         listEventsMock.add(new Event());
-        when(stateStore.queryModelsWithAction(Event.class, Action.TO_POST, Action.SYNCED, Action.TO_UPDATE))
+        when(stateStore.queryModelsWithActions(Event.class, Action.TO_POST, Action.SYNCED, Action.TO_UPDATE))
                 .thenReturn(listEventsMock);
         assertTrue(listEventsMock.equals(eventService.list()));
     }
