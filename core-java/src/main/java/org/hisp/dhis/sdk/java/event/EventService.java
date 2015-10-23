@@ -154,7 +154,7 @@ public class EventService implements IEventService {
             throw new IllegalArgumentException("The object with Action." +
                     "TO_DELETE cannot be updated");
         }
-        
+
         /* if object was not posted to the server before,
         you don't have anything to update */
         if (!Action.TO_POST.equals(action)) {
