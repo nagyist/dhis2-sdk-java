@@ -62,11 +62,45 @@ public class DashboardItemService2 implements IDashboardItemService {
 
     @Override
     public DashboardItem get(String uid) {
+        DashboardItem dashboardItem = dashboardItemStore.queryByUid(uid);
+
+        if (dashboardItem != null) {
+            Action action = stateStore.queryActionForModel(dashboardItem);
+
+            if (!Action.TO_DELETE.equals(action)) {
+                return dashboardItem;
+            }
+        }
+
         return null;
     }
 
     @Override
     public boolean remove(DashboardItem object) {
-        return false;
+        isNull(object, "DashboardItem object must not be null");
+
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null) {
+            return false;
+        }
+
+        boolean status = false;
+        switch (action) {
+            case SYNCED:
+            case TO_UPDATE: {
+                status = stateStore.saveActionForModel(object, Action.TO_DELETE);
+                break;
+            }
+            case TO_POST: {
+                status = dashboardItemStore.delete(object);
+                break;
+            }
+            case TO_DELETE: {
+                status = false;
+                break;
+            }
+        }
+
+        return status;
     }
 }

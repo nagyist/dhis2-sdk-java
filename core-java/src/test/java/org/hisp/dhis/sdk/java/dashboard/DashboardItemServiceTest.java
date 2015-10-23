@@ -97,22 +97,139 @@ public class DashboardItemServiceTest {
 
     @Test
     public void testGetDashboardItemByIdShouldReturnItem() {
-        when(dashboardItemStoreMock.queryById(anyInt())).thenReturn(dashboardItemMock);
-        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.TO_POST);
+        DashboardItem dashboardItemSynced = mock(DashboardItem.class);
+        DashboardItem dashboardItemToPost = mock(DashboardItem.class);
+        DashboardItem dashboardItemToUpdate = mock(DashboardItem.class);
 
-        DashboardItem dashboardItem = dashboardItemService.get(12);
-        assertEquals(dashboardItem, dashboardItemMock);
-        verify(dashboardItemStoreMock, times(1)).queryById(12);
+        when(dashboardItemStoreMock.queryById(1L)).thenReturn(dashboardItemSynced);
+        when(dashboardItemStoreMock.queryById(2L)).thenReturn(dashboardItemToPost);
+        when(dashboardItemStoreMock.queryById(3L)).thenReturn(dashboardItemToUpdate);
+
+        when(stateStoreMock.queryActionForModel(dashboardItemSynced)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.queryActionForModel(dashboardItemToPost)).thenReturn(Action.TO_POST);
+        when(stateStoreMock.queryActionForModel(dashboardItemToUpdate)).thenReturn(Action.TO_UPDATE);
+
+        DashboardItem dashboardItemSyncedResult = dashboardItemService.get(1L);
+        DashboardItem dashboardItemToPostResult = dashboardItemService.get(2L);
+        DashboardItem dashboardItemToUpdateResult = dashboardItemService.get(3L);
+
+        assertEquals(dashboardItemSyncedResult, dashboardItemSynced);
+        assertEquals(dashboardItemToPostResult, dashboardItemToPost);
+        assertEquals(dashboardItemToUpdateResult, dashboardItemToUpdate);
+
+        verify(dashboardItemStoreMock, times(1)).queryById(1L);
+        verify(dashboardItemStoreMock, times(1)).queryById(2L);
+        verify(dashboardItemStoreMock, times(1)).queryById(3L);
+
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemSynced);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemToPost);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemToUpdate);
+    }
+
+    @Test
+    public void testGetDashboardItemByUidShouldReturnNullForRemovedItem() {
+        when(dashboardItemStoreMock.queryByUid(anyString())).thenReturn(dashboardItemMock);
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.TO_DELETE);
+
+        DashboardItem dashboardItem = dashboardItemService.get("dasdfgdd");
+
+        assertNull(dashboardItem);
+        verify(dashboardItemStoreMock, times(1)).queryByUid("dasdfgdd");
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
+    }
+
+
+    @Test
+    public void testGetDashboardItemByUidShouldReturnItem() {
+        DashboardItem dashboardItemSynced = mock(DashboardItem.class);
+        DashboardItem dashboardItemToPost = mock(DashboardItem.class);
+        DashboardItem dashboardItemToUpdate = mock(DashboardItem.class);
+
+        when(dashboardItemStoreMock.queryByUid("gadgdfg")).thenReturn(dashboardItemSynced);
+        when(dashboardItemStoreMock.queryByUid("sdfds4gdgad")).thenReturn(dashboardItemToPost);
+        when(dashboardItemStoreMock.queryByUid("sdfgfsd234")).thenReturn(dashboardItemToUpdate);
+
+        when(stateStoreMock.queryActionForModel(dashboardItemSynced)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.queryActionForModel(dashboardItemToPost)).thenReturn(Action.TO_POST);
+        when(stateStoreMock.queryActionForModel(dashboardItemToUpdate)).thenReturn(Action.TO_UPDATE);
+
+        DashboardItem dashboardItemSyncedResult = dashboardItemService.get("gadgdfg");
+        DashboardItem dashboardItemToPostResult = dashboardItemService.get("sdfds4gdgad");
+        DashboardItem dashboardItemToUpdateResult = dashboardItemService.get("sdfgfsd234");
+
+        assertEquals(dashboardItemSyncedResult, dashboardItemSynced);
+        assertEquals(dashboardItemToPostResult, dashboardItemToPost);
+        assertEquals(dashboardItemToUpdateResult, dashboardItemToUpdate);
+
+        verify(dashboardItemStoreMock, times(1)).queryByUid("gadgdfg");
+        verify(dashboardItemStoreMock, times(1)).queryByUid("sdfds4gdgad");
+        verify(dashboardItemStoreMock, times(1)).queryByUid("sdfgfsd234");
+
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemSynced);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemToPost);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemToUpdate);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRemoveNullDashboardItem() {
+        dashboardItemService.remove(null);
+    }
+
+    @Test
+    public void testRemoveNotExistingDashboardItem() {
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(null);
+
+        boolean status = dashboardItemService.remove(dashboardItemMock);
+
+        assertFalse(status);
         verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
     }
 
     @Test
-    public void testGetDashboardItemByUidShouldReturnNotRemovedItem() {
+    public void testRemoveDashboardItemWhichShouldBePostedToServer() {
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.TO_POST);
+        when(dashboardItemStoreMock.delete(dashboardItemMock)).thenReturn(true);
 
+        boolean status = dashboardItemService.remove(dashboardItemMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
+        verify(dashboardItemStoreMock, times(1)).delete(dashboardItemMock);
     }
 
     @Test
-    public void testRemoveNullDashboardItem() {
+    public void testRemoveDashboardItemWhichShouldBePutToServer() {
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.TO_UPDATE);
+        when(stateStoreMock.saveActionForModel(dashboardItemMock, Action.TO_DELETE)).thenReturn(true);
 
+        boolean status = dashboardItemService.remove(dashboardItemMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardItemMock, Action.TO_DELETE);
+    }
+
+    @Test
+    public void testRemoveSyncedDashboardItem() {
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboardItemMock, Action.TO_DELETE)).thenReturn(true);
+
+        boolean status = dashboardItemService.remove(dashboardItemMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardItemMock, Action.TO_DELETE);
+    }
+
+
+    @Test
+    public void testRemoveDashboardItemWhichIsAlreadyRemoved() {
+        when(stateStoreMock.queryActionForModel(dashboardItemMock)).thenReturn(Action.TO_DELETE);
+
+        boolean status = dashboardItemService.remove(dashboardItemMock);
+
+        assertFalse(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
+        verify(stateStoreMock, never()).saveActionForModel(dashboardItemMock, Action.TO_DELETE);
     }
 }
