@@ -26,13 +26,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.trackedentity;
+package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
-import org.hisp.dhis.sdk.java.common.persistence.IStore;
-
-public interface ITrackedEntityInstanceStore extends IStore<TrackedEntityInstance> {
-    TrackedEntityInstance query(long id);
-
-    TrackedEntityInstance query(String uid);
+public class DashboardServiceTest {
 }
+
