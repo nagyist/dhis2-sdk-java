@@ -29,94 +29,50 @@
 package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.hisp.dhis.sdk.java.common.IStateStore;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
+
 public class DashboardItemService implements IDashboardItemService {
     private final IDashboardItemStore dashboardItemStore;
-    private final IDashboardElementStore dashboardElementStore;
     private final IStateStore stateStore;
 
-    public DashboardItemService(IDashboardItemStore dashboardItemStore,
-                                IDashboardElementStore dashboardElementStore,
-                                IStateStore stateStore) {
+    public DashboardItemService(IDashboardItemStore dashboardItemStore, IStateStore stateStore) {
         this.dashboardItemStore = dashboardItemStore;
-        this.dashboardElementStore = dashboardElementStore;
         this.stateStore = stateStore;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean remove(DashboardItem dashboardItem) {
-        Action action = stateStore.queryActionForModel(dashboardItem);
-        if (Action.TO_POST.equals(action)) {
-            stateStore.deleteActionForModel(dashboardItem);
-            dashboardItemStore.delete(dashboardItem);
-        } else {
-            stateStore.saveActionForModel(dashboardItem, Action.TO_DELETE);
-            dashboardItemStore.update(dashboardItem);
-        }
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<DashboardItem> list() {
-        return stateStore.queryModelsWithActions(DashboardItem.class, Action.TO_POST, Action.TO_UPDATE, Action.SYNCED);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<DashboardItem> list(Dashboard dashboard) {
-        List<DashboardItem> dashboardItems = dashboardItemStore.queryByDashboard(dashboard);
+        isNull(dashboard, "Dashboard object must not be null");
+
+        List<DashboardItem> allDashboardItems = dashboardItemStore.queryByDashboard(dashboard);
         Map<Long, Action> actionMap = stateStore.queryActionsForModel(DashboardItem.class);
 
-        List<DashboardItem> filteredItems = new ArrayList<>();
-        if (dashboardItems != null && !dashboardItems.isEmpty()) {
-            for (DashboardItem dashboardItem : dashboardItems) {
-                if (!Action.TO_DELETE.equals(actionMap.get(dashboardItem.getId()))) {
-                    filteredItems.add(dashboardItem);
-                }
+        List<DashboardItem> dashboardItems = new ArrayList<>();
+        for (DashboardItem dashboardItem : allDashboardItems) {
+            Action action = actionMap.get(dashboardItem.getId());
+
+            if (!Action.TO_DELETE.equals(action)) {
+                dashboardItems.add(dashboardItem);
             }
         }
 
-        return filteredItems;
+        return dashboardItems;
     }
 
-    /* @Override
-    public List<DashboardItem> filterByType(Dashboard dashboard, String type) {
-        // List<DashboardItem> dashboardItems = dashboardItemStore.filterByType(dashboard, type);
-        List<DashboardItem> dashboardItems = new ArrayList<>();
-        Map<Long, Action> actionMap = stateStore.queryMap(DashboardItem.class);
+    @Override
+    public List<DashboardItem> list() {
+        return stateStore.queryModelsWithActions(DashboardItem.class,
+                Action.SYNCED, Action.TO_POST, Action.TO_UPDATE);
+    }
 
-        List<DashboardItem> filteredItems = new ArrayList<>();
-        if (dashboardItems != null && !dashboardItems.isEmpty()) {
-            for (DashboardItem dashboardItem : dashboardItems) {
-                if (!Action.TO_DELETE.equals(actionMap.get(dashboardItem.getId()))) {
-                    filteredItems.add(dashboardItem);
-                }
-            }
-        }
-
-        return filteredItems;
-    } */
-
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public DashboardItem get(long id) {
         DashboardItem dashboardItem = dashboardItemStore.queryById(id);
@@ -132,10 +88,6 @@ public class DashboardItemService implements IDashboardItemService {
         return null;
     }
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public DashboardItem get(String uid) {
         DashboardItem dashboardItem = dashboardItemStore.queryByUid(uid);
@@ -149,5 +101,34 @@ public class DashboardItemService implements IDashboardItemService {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean remove(DashboardItem object) {
+        isNull(object, "DashboardItem object must not be null");
+
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null) {
+            return false;
+        }
+
+        boolean status = false;
+        switch (action) {
+            case SYNCED:
+            case TO_UPDATE: {
+                status = stateStore.saveActionForModel(object, Action.TO_DELETE);
+                break;
+            }
+            case TO_POST: {
+                status = dashboardItemStore.delete(object);
+                break;
+            }
+            case TO_DELETE: {
+                status = false;
+                break;
+            }
+        }
+
+        return status;
     }
 }
