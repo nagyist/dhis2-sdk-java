@@ -34,6 +34,7 @@ import org.hisp.dhis.sdk.java.dashboard.DashboardItemServiceTest;
 import org.hisp.dhis.sdk.java.event.EventServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
+import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityInstanceServiceTest;
 import org.hisp.dhis.sdk.java.user.UserAccountControllerTest;
 import org.hisp.dhis.sdk.java.user.UserAccountServiceTest;
 import org.junit.runner.RunWith;
@@ -51,7 +52,7 @@ import org.junit.runners.Suite;
         UserAccountServiceTest.class,
 
         UserAccountControllerTest.class,
-
+        TrackedEntityInstanceServiceTest.class,
         EventServiceTest.class
 })
 public class CoreTestSuite {
