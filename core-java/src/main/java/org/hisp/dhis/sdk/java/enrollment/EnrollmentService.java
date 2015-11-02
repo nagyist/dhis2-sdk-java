@@ -59,6 +59,7 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public Enrollment get(String uid) {
+        isNull(uid, "Uid must not be null");
         Enrollment enrollment = enrollmentStore.query(uid);
         Action action = stateStore.queryActionForModel(enrollment);
 
@@ -74,6 +75,34 @@ public class EnrollmentService implements IEnrollmentService {
                              TrackedEntityInstance trackedEntityInstance,
                              Program program, boolean followUp, DateTime dateOfEnrollment,
                              DateTime dateOfIncident) {
+        isNull(organisationUnit, "Organisation unit must not be null");
+        isNull(trackedEntityInstance, "Tracked entity instance must not be null");
+        isNull(program, "Program must not be null");
+        isNull(followUp, "Follow up must not be null");
+        isNull(dateOfEnrollment, "Date of enrollment must not be null");
+
+        if (program.isDisplayIncidentDate()) {
+            isNull(dateOfIncident, "Date of incident must not be null");
+        }
+
+        if (!program.isSelectEnrollmentDatesInFuture()) { 
+            if (dateOfEnrollment.isAfterNow()) {
+                throw new IllegalArgumentException("Program doesn't allow to set future enrollment dates");
+            }
+        }
+        if (!program.isSelectIncidentDatesInFuture()) {
+            if (dateOfIncident.isAfterNow()) {
+                throw new IllegalArgumentException("Program doesn't allow to set future incident dates");
+            }
+        }
+
+        if (program.isOnlyEnrollOnce()) {
+            List<Enrollment> enrollments = enrollmentStore.query(program, trackedEntityInstance);
+            if (enrollments.size() > 0) {
+                throw new IllegalArgumentException("Tracked entity instance can only be enrolled once");
+            }
+        }
+
         Enrollment enrollment = new Enrollment();
         enrollment.setEnrollmentUid(CodeGenerator.generateCode());
         enrollment.setTrackedEntityInstance(trackedEntityInstance);
@@ -86,8 +115,8 @@ public class EnrollmentService implements IEnrollmentService {
         add(enrollment);
 
         List<Event> events = new ArrayList<>();
-        for(ProgramStage programStage : program.getProgramStages()) {
-            if(programStage.isAutoGenerateEvent()) {
+        for (ProgramStage programStage : program.getProgramStages()) {
+            if (programStage.isAutoGenerateEvent()) {
                 Event event = eventService.create(trackedEntityInstance, enrollment, organisationUnit, program, programStage, Event.STATUS_FUTURE_VISIT);
                 events.add(event);
             }

@@ -68,11 +68,14 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public TrackedEntityInstance create(TrackedEntity trackedEntity, OrganisationUnit organisationUnit) {
+        isNull(trackedEntity, "Tracked entity must not be null");
+        isNull(organisationUnit, "Organisation unit must not be null");
+
         TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance();
         trackedEntityInstance.setOrgUnit(organisationUnit.getUId());
         trackedEntityInstance.setTrackedEntity(trackedEntity.getUId());
         trackedEntityInstance.setTrackedEntityInstanceUid(CodeGenerator.generateCode());
-        if(add(trackedEntityInstance)) {
+        if (add(trackedEntityInstance)) {
             return trackedEntityInstance;
         } else {
             return null;
@@ -81,10 +84,13 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public boolean addRelationship(TrackedEntityInstance trackedEntityInstanceA, TrackedEntityInstance trackedEntityInstanceB, RelationshipType relationshipType) {
+        isNull(trackedEntityInstanceA, "Tracked entity instance A must not be null");
+        isNull(trackedEntityInstanceB, "Tracked entity instance B must not be null");
+        isNull(relationshipType, "Relationship type must not be null");
+
         List<Relationship> existingRelationships = trackedEntityInstanceA.getRelationships();
-        for(Relationship existingRelationship : existingRelationships) {
-            if(existingRelationship.getTrackedEntityInstanceB()
-                    .getTrackedEntityInstanceUid()
+        for (Relationship existingRelationship : existingRelationships) {
+            if (existingRelationship.getTrackedEntityInstanceB().getTrackedEntityInstanceUid()
                     .equals(trackedEntityInstanceB.getTrackedEntityInstanceUid()) &&
                     relationshipType.equals(existingRelationship.getRelationship())) {
                 return false;
@@ -104,6 +110,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public boolean removeRelationship(Relationship relationship) {
+        isNull(relationship, "Relationship must not be null");
         relationshipStore.delete(relationship);
         relationship.getTrackedEntityInstanceA().getRelationships().remove(relationship);
         relationship.getTrackedEntityInstanceB().getRelationships().remove(relationship);
@@ -114,15 +121,17 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public boolean add(TrackedEntityInstance object) {
-        trackedEntityInstanceStore.insert(object);
-        stateStore.saveActionForModel(object, Action.TO_POST);
+        isNull(object, "Tracked entity instance must not be null");
 
-        return true;
+        if(!trackedEntityInstanceStore.insert(object)) {
+            return false;
+        }
+        return stateStore.saveActionForModel(object, Action.TO_POST);
     }
 
     @Override
     public TrackedEntityInstance get(long id) {
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.queryById(id);
+        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.query(id);
         Action action = stateStore.queryActionForModel(trackedEntityInstance);
 
         if (!Action.TO_DELETE.equals(action)) {
@@ -140,24 +149,28 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
     @Override
     public boolean remove(TrackedEntityInstance object) {
         isNull(object, "trackedEntityInstance argument must not be null");
-        trackedEntityInstanceStore.delete(object);
-        return true;
+        if (!trackedEntityInstanceStore.delete(object)) {
+            return false;
+        }
+        return stateStore.deleteActionForModel(object);
     }
 
     @Override
     public boolean save(TrackedEntityInstance object) {
-        trackedEntityInstanceStore.save(object);
+        isNull(object, "Tracked entity instance must not be null");
+
+        if (!trackedEntityInstanceStore.save(object))
+            return false;
 
         // TODO check if object was created earlier (then set correct flag)
         Action action = stateStore.queryActionForModel(object);
 
-        if (action == null) {
-            stateStore.saveActionForModel(object, Action.TO_POST);
+        if (action == null || Action.TO_POST.equals(action)) {
+            return stateStore.saveActionForModel(object, Action.TO_POST);
         } else {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
+            return stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
 
-        return true;
     }
 
     @Override
