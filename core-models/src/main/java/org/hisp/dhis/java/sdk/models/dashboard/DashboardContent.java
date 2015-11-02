@@ -52,9 +52,6 @@ public class DashboardContent extends BaseIdentifiableObject {
     /* resource can be anything (like pdf or binary file. Will look into this later */
     public static final String TYPE_RESOURCES = "resources";
 
-    /* unknown type: ask core team about this one */
-    public static final String TYPE_REPORT_TABLES = "reportTables";
-
     /* won't be supported until implementation of messaging application */
     public static final String TYPE_MESSAGES = "messages";
 

@@ -54,6 +54,8 @@ public interface IDashboardService extends IService, ISave<Dashboard>, IRemove<D
     boolean addContent(Dashboard dashboard, DashboardContent content);
 
 
+    int countItems(Dashboard dashboard);
+
     /**
      * Returns an item from this dashboard of the given type which number of
      * content is less than max. Returns null if no item matches the criteria.

@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 
 import java.util.List;
 
-public interface IDashboardItemContentService extends IService, IGet<DashboardContent>,
+public interface IDashboardContentService extends IService, IGet<DashboardContent>,
         IGetUid<DashboardContent>, IList<DashboardContent> {
 
     /**

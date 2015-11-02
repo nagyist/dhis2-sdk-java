@@ -31,6 +31,8 @@ package org.hisp.dhis.sdk.java.dashboard;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 
 import java.util.List;
@@ -39,11 +41,19 @@ import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 
 public class DashboardService2 implements IDashboardService {
     private final IDashboardStore dashboardStore;
+    private final IDashboardItemStore dashboardItemStore;
+    private final IDashboardElementStore dashboardElementStore;
     private final IStateStore stateStore;
+    private final IDashboardItemService dashboardItemService;
 
-    public DashboardService2(IDashboardStore dashboardStore, IStateStore stateStore) {
+    public DashboardService2(IDashboardStore dashboardStore, IDashboardItemStore dashboardItemStore,
+                             IDashboardElementStore dashboardElementStore, IStateStore stateStore,
+                             IDashboardItemService dashboardItemService) {
         this.dashboardStore = dashboardStore;
+        this.dashboardItemStore = dashboardItemStore;
+        this.dashboardElementStore = dashboardElementStore;
         this.stateStore = stateStore;
+        this.dashboardItemService = dashboardItemService;
     }
 
     @Override
@@ -117,21 +127,72 @@ public class DashboardService2 implements IDashboardService {
 
     @Override
     public Dashboard get(long id) {
+        Dashboard dashboard = dashboardStore.queryById(id);
+
+        if (dashboard != null) {
+            Action action = stateStore.queryActionForModel(dashboard);
+
+            if (!Action.TO_DELETE.equals(action)) {
+                return dashboard;
+            }
+        }
         return null;
     }
 
     @Override
     public Dashboard get(String uid) {
+        Dashboard dashboard = dashboardStore.queryByUid(uid);
+
+        if (dashboard != null) {
+            Action action = stateStore.queryActionForModel(dashboard);
+
+            if (!Action.TO_DELETE.equals(action)) {
+                return dashboard;
+            }
+        }
         return null;
     }
 
     @Override
     public List<Dashboard> list() {
-        return null;
+        return stateStore.queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_POST, Action.TO_UPDATE);
+    }
+
+    @Override
+    public int countItems(Dashboard dashboard) {
+        isNull(dashboard, "Dashboard object must not be null");
+
+        List<DashboardItem> dashboardItems = dashboardItemService.list(dashboard);
+        return dashboardItems != null ? dashboardItems.size() : 0;
     }
 
     @Override
     public boolean addContent(Dashboard dashboard, DashboardContent content) {
-        return false;
+        isNull(dashboard, "Dashboard object must not be null");
+        isNull(content, "DashboardContent object must not be null");
+
+
+        return true;
+    }
+
+    private static boolean isItemContentTypeEmbedded(DashboardContent content) {
+        switch (content.getType()) {
+            case DashboardContent.TYPE_CHART:
+            case DashboardContent.TYPE_EVENT_CHART:
+            case DashboardContent.TYPE_MAP:
+            case DashboardContent.TYPE_EVENT_REPORT:
+            case DashboardContent.TYPE_REPORT_TABLE: {
+                return true;
+            }
+            case DashboardContent.TYPE_USERS:
+            case DashboardContent.TYPE_REPORTS:
+            case DashboardContent.TYPE_RESOURCES: {
+                return false;
+            }
+        }
+
+        throw new IllegalArgumentException("Unsupported DashboardContent type: " +
+                content.getType() + " name: " + content.getDisplayName());
     }
 }

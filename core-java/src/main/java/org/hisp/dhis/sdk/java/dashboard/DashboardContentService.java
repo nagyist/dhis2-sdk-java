@@ -32,7 +32,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 
 import java.util.List;
 
-public class DashboardContentService implements IDashboardItemContentService {
+public class DashboardContentService implements IDashboardContentService {
     private final IDashboardItemContentStore mDashboardItemContentStore;
 
     public DashboardContentService(IDashboardItemContentStore mDashboardItemContentStore) {

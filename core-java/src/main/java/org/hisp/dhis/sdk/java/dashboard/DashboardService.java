@@ -265,6 +265,11 @@ public class DashboardService implements IDashboardService {
         return false;
     }
 
+    @Override
+    public int countItems(Dashboard dashboard) {
+        return 0;
+    }
+
     /**
      * {@inheritDoc}
      */

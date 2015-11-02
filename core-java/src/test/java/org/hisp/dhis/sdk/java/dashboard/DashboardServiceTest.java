@@ -30,17 +30,26 @@ package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class DashboardServiceTest {
     private Dashboard dashboardMock;
+    private DashboardItem dashboardItemMock;
+    private DashboardContent dashboardContentMock;
+
     private IDashboardStore dashboardStoreMock;
+    private IDashboardItemStore dashboardItemStoreMock;
+    private IDashboardElementStore dashboardElementStoreMock;
+    private IDashboardItemService dashboardItemServiceMock;
     private IStateStore stateStoreMock;
 
     private IDashboardService dashboardService;
@@ -48,11 +57,17 @@ public class DashboardServiceTest {
     @Before
     public void setUp() {
         dashboardMock = mock(Dashboard.class);
+        dashboardItemMock = mock(DashboardItem.class);
+        dashboardContentMock = mock(DashboardContent.class);
+
         dashboardStoreMock = mock(IDashboardStore.class);
+        dashboardItemStoreMock = mock(IDashboardItemStore.class);
+        dashboardItemServiceMock = mock(IDashboardItemService.class);
 
         stateStoreMock = mock(IStateStore.class);
 
-        dashboardService = new DashboardService2(dashboardStoreMock, stateStoreMock);
+        dashboardService = spy(new DashboardService2(dashboardStoreMock, dashboardItemStoreMock,
+                dashboardElementStoreMock, stateStoreMock, dashboardItemServiceMock));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -190,6 +205,192 @@ public class DashboardServiceTest {
 
         assertFalse(status);
         verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+    @Test
+    public void testGetDashboardByIdWithStateSynced() {
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+
+        Dashboard dashboard = dashboardService.get(12);
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryById(12);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByIdWithStateToPost() {
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+
+        Dashboard dashboard = dashboardService.get(12);
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryById(12);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByIdWithStateToUpdate() {
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+
+        Dashboard dashboard = dashboardService.get(12);
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryById(12);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByIdWithStateToDelete() {
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+
+        Dashboard dashboard = dashboardService.get(12);
+
+        assertNull(dashboard);
+        verify(dashboardStoreMock, times(1)).queryById(12);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByUidWithStateSynced() {
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+
+        Dashboard dashboard = dashboardService.get("asfkj234");
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByUidWithStateToPost() {
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+
+        Dashboard dashboard = dashboardService.get("asfkj234");
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByUidWithStateToUpdate() {
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+
+        Dashboard dashboard = dashboardService.get("asfkj234");
+
+        assertSame(dashboard, dashboardMock);
+        verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+
+    @Test
+    public void testGetDashboardByUidWithStateToDelete() {
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+
+        Dashboard dashboard = dashboardService.get("asfkj234");
+
+        assertNull(dashboard);
+        verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
+
+    @Test
+    public void testListDashboards() {
+        dashboardService.list();
+
+        verify(stateStoreMock, times(1)).queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_POST, Action.TO_UPDATE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCountDashboardItemsForNullDashboard() {
+        dashboardService.countItems(null);
+    }
+
+    @Test
+    public void testCountItemsOnEmptyDashboard() {
+        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(null);
+
+        int itemCount = dashboardService.countItems(dashboardMock);
+
+        assertEquals(itemCount, 0);
+        verify(dashboardItemServiceMock, times(1)).list(dashboardMock);
+    }
+
+    @Test
+    public void testCountItemsOnNoneEmptyDashboard() {
+        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(
+                dashboardItemMock, dashboardItemMock, dashboardItemMock));
+
+        int itemCount = dashboardService.countItems(dashboardMock);
+
+        assertEquals(itemCount, 3);
+        verify(dashboardItemServiceMock, times(1)).list(dashboardMock);
+    }
+
+    @Test
+    public void testAddContentToFullDashboard() {
+        doReturn(40).when(dashboardService.countItems(dashboardMock));
+        DashboardContent content = mock(DashboardContent.class);
+
+        boolean flag = dashboardService.addContent(dashboardMock, content);
+
+        assertFalse(flag);
+        verify(dashboardService, times(1)).countItems(dashboardMock);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddContentToNullDashboard() {
+        dashboardService.addContent(null, dashboardContentMock);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddNullContentToDashboard() {
+        dashboardService.addContent(dashboardMock, null);
+    }
+
+    @Test
+    public void testTypeOfAddContentToDashboard() {
+        DashboardContent chart = mock(DashboardContent.class);
+        DashboardContent eventChart = mock(DashboardContent.class);
+        DashboardContent map = mock(DashboardContent.class);
+        DashboardContent eventReport = mock(DashboardContent.class);
+        DashboardContent reportTable = mock(DashboardContent.class);
+        DashboardContent user = mock(DashboardContent.class);
+        DashboardContent report = mock(DashboardContent.class);
+        DashboardContent resource = mock(DashboardContent.class);
+
+        when(chart.getType()).thenReturn(DashboardContent.TYPE_CHART);
+        when(eventChart.getType()).thenReturn(DashboardContent.TYPE_EVENT_CHART);
+        when(map.getType()).thenReturn(DashboardContent.TYPE_MAP);
+        when(eventReport.getType()).thenReturn(DashboardContent.TYPE_EVENT_REPORT);
+        when(reportTable.getType()).thenReturn(DashboardContent.TYPE_REPORT_TABLE);
+        when(user.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        when(report.getType()).thenReturn(DashboardContent.TYPE_REPORTS);
+        when(resource.getType()).thenReturn(DashboardContent.TYPE_RESOURCES);
+
+        dashboardService.addContent(dashboardMock, chart);
+        dashboardService.addContent(dashboardMock, chart);
+        dashboardService.addContent(dashboardMock, chart);
+        dashboardService.addContent(dashboardMock, chart);
+        dashboardService.addContent(dashboardMock, chart);
+        dashboardService.addContent(dashboardMock, chart);
     }
 }
 
