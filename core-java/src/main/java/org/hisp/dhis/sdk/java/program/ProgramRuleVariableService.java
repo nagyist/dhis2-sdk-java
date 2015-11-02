@@ -33,6 +33,8 @@ import org.hisp.dhis.java.sdk.models.program.ProgramRuleVariable;
 
 import java.util.List;
 
+import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
+
 public final class ProgramRuleVariableService implements IProgramRuleVariableService {
 
     private final IProgramRuleVariableStore programRuleVariableStore;
@@ -43,21 +45,23 @@ public final class ProgramRuleVariableService implements IProgramRuleVariableSer
 
     @Override
     public ProgramRuleVariable get(long id) {
-        return null;
+        return programRuleVariableStore.queryById(id);
     }
 
     @Override
     public ProgramRuleVariable get(String uid) {
-        return null;
+        return programRuleVariableStore.queryByUid(uid);
     }
 
     @Override
     public List<ProgramRuleVariable> list() {
-        return null;
+        return programRuleVariableStore.queryAll();
     }
 
     @Override
     public ProgramRuleVariable getByName(Program program, String programRuleVariableName) {
+        isNull(programRuleVariableName, "programRuleVariableName cannot be null!");
+
         List<ProgramRuleVariable> programRuleVariables = programRuleVariableStore.query(program);
         for(ProgramRuleVariable programRuleVariable : programRuleVariables) {
             if(programRuleVariable.getName().equals(programRuleVariableName)) {
