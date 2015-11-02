@@ -78,14 +78,13 @@ public class EnrollmentService implements IEnrollmentService {
         isNull(organisationUnit, "Organisation unit must not be null");
         isNull(trackedEntityInstance, "Tracked entity instance must not be null");
         isNull(program, "Program must not be null");
-        isNull(followUp, "Follow up must not be null");
         isNull(dateOfEnrollment, "Date of enrollment must not be null");
 
         if (program.isDisplayIncidentDate()) {
             isNull(dateOfIncident, "Date of incident must not be null");
         }
 
-        if (!program.isSelectEnrollmentDatesInFuture()) { 
+        if (!program.isSelectEnrollmentDatesInFuture()) {
             if (dateOfEnrollment.isAfterNow()) {
                 throw new IllegalArgumentException("Program doesn't allow to set future enrollment dates");
             }
