@@ -43,7 +43,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -75,8 +74,6 @@ public class TrackedEntityInstanceServiceTest {
     private final String ORGANISATION_UNIT_UID = "Qe1zQpL24x";
     private final String RELATIONSHIP_TYPE_UID = "M8uy5Ao0lx";
 
-    private List<TrackedEntityInstance> noneRemovedTrackedEntityInstances;
-
     private TrackedEntityInstance trackedEntityInstanceMock;
     private TrackedEntityInstance trackedEntityInstanceToSync;
     private TrackedEntityInstance trackedEntityInstanceToPost;
@@ -92,7 +89,6 @@ public class TrackedEntityInstanceServiceTest {
         trackedEntityInstanceStoreMock = mock(ITrackedEntityInstanceStore.class);
         relationshipStoreMock = mock(IRelationshipStore.class);
         stateStoreMock = mock(IStateStore.class);
-        noneRemovedTrackedEntityInstances = new ArrayList<>();
 
         trackedEntityInstanceMock = mock(TrackedEntityInstance.class);
         trackedEntityInstanceToPost = mock(TrackedEntityInstance.class);
@@ -337,10 +333,8 @@ public class TrackedEntityInstanceServiceTest {
         given(CodeGenerator.generateCode()).willReturn(trackedEntityInstanceMockUId);
 
         TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceService.create(trackedEntity, organisationUnit);
-
         verifyStatic();
         CodeGenerator.generateCode();
-
 
         assertTrue(organisationUnit.getUId().equals(trackedEntityInstance.getOrgUnit()));
         assertTrue(trackedEntity.getUId().equals(trackedEntityInstance.getTrackedEntity()));
