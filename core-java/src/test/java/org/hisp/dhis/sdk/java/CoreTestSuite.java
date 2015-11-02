@@ -31,6 +31,7 @@ package org.hisp.dhis.sdk.java;
 import org.hisp.dhis.sdk.java.dashboard.DashboardContentServiceTest;
 import org.hisp.dhis.sdk.java.dashboard.DashboardElementServiceTest;
 import org.hisp.dhis.sdk.java.dashboard.DashboardItemServiceTest;
+import org.hisp.dhis.sdk.java.dashboard.DashboardServiceTest;
 import org.hisp.dhis.sdk.java.event.EventServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
@@ -46,6 +47,7 @@ import org.junit.runners.Suite;
         DashboardContentServiceTest.class,
         DashboardElementServiceTest.class,
         DashboardItemServiceTest.class,
+        DashboardServiceTest.class,
 
         ProgramServiceTest.class,
         ProgramRuleServiceTest.class,

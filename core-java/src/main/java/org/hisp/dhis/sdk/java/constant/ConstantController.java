@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java;
+package org.hisp.dhis.sdk.java.constant;
 
 import org.hisp.dhis.java.sdk.models.constant.Constant;
 import org.hisp.dhis.sdk.java.common.controllers.IDataController;
