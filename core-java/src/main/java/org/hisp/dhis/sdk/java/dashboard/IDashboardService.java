@@ -28,19 +28,12 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.sdk.java.common.services.IAdd;
-import org.hisp.dhis.sdk.java.common.services.IGet;
-import org.hisp.dhis.sdk.java.common.services.IGetUid;
-import org.hisp.dhis.sdk.java.common.services.IList;
-import org.hisp.dhis.sdk.java.common.services.IRemove;
-import org.hisp.dhis.sdk.java.common.services.ISave;
-import org.hisp.dhis.sdk.java.common.services.IUpdate;
-import org.hisp.dhis.sdk.java.common.services.IService;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.sdk.java.common.services.*;
 
-public interface IDashboardService extends IService, IAdd<Dashboard>, ISave<Dashboard>,
-        IUpdate<Dashboard>, IRemove<Dashboard>, IGet<Dashboard>, IGetUid<Dashboard>, IList<Dashboard> {
+public interface IDashboardService extends IService, ISave<Dashboard>, IRemove<Dashboard>, IGet<Dashboard>,
+        IGetUid<Dashboard>, IList<Dashboard> {
 
     /**
      * Will try to append DashboardContent to current dashboard.

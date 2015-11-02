@@ -28,6 +28,168 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
+import org.hisp.dhis.java.sdk.models.common.state.Action;
+import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
+
 public class DashboardServiceTest {
+    private Dashboard dashboardMock;
+    private IDashboardStore dashboardStoreMock;
+    private IStateStore stateStoreMock;
+
+    private IDashboardService dashboardService;
+
+    @Before
+    public void setUp() {
+        dashboardMock = mock(Dashboard.class);
+        dashboardStoreMock = mock(IDashboardStore.class);
+
+        stateStoreMock = mock(IStateStore.class);
+
+        dashboardService = new DashboardService2(dashboardStoreMock, stateStoreMock);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRemoveNullDashboard() {
+        dashboardService.remove(null);
+    }
+
+    @Test
+    public void testRemoveDashboardWhichDoesNotExist() {
+        when(stateStoreMock.queryActionForModel(any(Dashboard.class))).thenReturn(null);
+
+        boolean status = dashboardService.remove(dashboardMock);
+
+        assertFalse(status);
+        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
+    }
+
+    @Test
+    public void testRemoveDashboardWithStateToPost() {
+        when(dashboardStoreMock.delete(dashboardMock)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+
+        boolean status = dashboardService.remove(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
+        verify(dashboardStoreMock, times(1)).delete(dashboardMock);
+    }
+
+    @Test
+    public void testRemoveDashboardWithStateToUpdate() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+
+        boolean status = dashboardService.remove(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_DELETE);
+    }
+
+    @Test
+    public void testRemoveDashboardWithStateSynced() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+
+        boolean status = dashboardService.remove(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_DELETE);
+    }
+
+
+    @Test
+    public void testRemoveDashboardWithStateToDelete() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+
+        boolean status = dashboardService.remove(dashboardMock);
+
+        assertFalse(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveNullDashboard() {
+        dashboardService.save(null);
+    }
+
+    @Test
+    public void testSaveDashboardWithoutState() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(null);
+        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_POST)).thenReturn(true);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(null);
+        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+
+        boolean status = dashboardService.save(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_POST);
+        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+    }
+
+    @Test
+    public void testSaveDashboardWithStateToPost() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+
+        boolean status = dashboardService.save(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+    }
+
+    @Test
+    public void testSaveDashboardWithStateToUpdate() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+
+        boolean status = dashboardService.save(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+    }
+
+    @Test
+    public void testSaveDashboardWithStateSynced() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_UPDATE)).thenReturn(true);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+
+        boolean status = dashboardService.save(dashboardMock);
+
+        assertTrue(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_UPDATE);
+        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+    }
+
+    @Test
+    public void testSaveDashboardWithStateToDelete() {
+        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+
+        boolean status = dashboardService.save(dashboardMock);
+
+        assertFalse(status);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+    }
 }
 

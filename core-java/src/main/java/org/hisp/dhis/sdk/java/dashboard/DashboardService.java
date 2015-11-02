@@ -28,13 +28,13 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.utils.Preconditions;
 
 import java.util.ArrayList;
@@ -124,6 +124,7 @@ public class DashboardService implements IDashboardService {
     /**
      * {@inheritDoc}
      */
+    /*
     @Override
     public boolean add(Dashboard dashboard) {
         dashboardStore.insert(dashboard);
@@ -131,6 +132,7 @@ public class DashboardService implements IDashboardService {
 
         return true;
     }
+    */
 
     /**
      * {@inheritDoc}
@@ -154,6 +156,7 @@ public class DashboardService implements IDashboardService {
     /**
      * {@inheritDoc}
      */
+    /*
     @Override
     public boolean update(Dashboard dashboard) {
         Preconditions.isNull(dashboard, "dashboard argument must not be null");
@@ -164,20 +167,19 @@ public class DashboardService implements IDashboardService {
                     "TO_DELETE cannot be updated");
         }
 
-        /* if dashboard was not posted to the server before,
-        you don't have anything to update */
+        // if dashboard was not posted to the server before, you don't have anything to update
         if (!Action.TO_POST.equals(action)) {
             // dashboard.setAction(Action.TO_UPDATE);
             stateStore.saveActionForModel(dashboard, Action.TO_UPDATE);
         }
 
-        /* dashboard.setName(name);
-        dashboard.setDisplayName(name); */
+        // dashboard.setName(name);
+        // dashboard.setDisplayName(name);
 
         dashboardStore.update(dashboard);
 
         return true;
-    }
+    } */
 
     /**
      * {@inheritDoc}

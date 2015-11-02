@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java;/*
+package org.hisp.dhis.sdk.java.constant;/*
  * Copyright (c) 2015, University of Oslo
  *
  * All rights reserved.
