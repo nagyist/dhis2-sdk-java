@@ -28,29 +28,18 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.sdk.java.common.services.IGet;
-import org.hisp.dhis.sdk.java.common.services.IGetUid;
-import org.hisp.dhis.sdk.java.common.services.IList;
-import org.hisp.dhis.sdk.java.common.services.IRemove;
-import org.hisp.dhis.sdk.java.common.services.IService;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.hisp.dhis.sdk.java.common.services.*;
 
 import java.util.List;
 
-public interface IDashboardItemService extends IService, IRemove<DashboardItem>,
-        IList<DashboardItem>, IGet<DashboardItem>, IGetUid<DashboardItem> {
-    // DashboardItem add(Dashboard dashboard, DashboardContent content);
+public interface IDashboardItemService extends IService, IRemove<DashboardItem>, IList<DashboardItem>,
+        IGet<DashboardItem>, IGetUid<DashboardItem> {
 
-    // boolean remove(DashboardItem dashboardItem);
+    DashboardItem create(Dashboard dashboard, String type);
 
-    // List<DashboardItem> list();
+    int countItems(DashboardItem dashboardItem);
 
     List<DashboardItem> list(Dashboard dashboard);
-
-    // DashboardItem get(long id);
-
-    // DashboardItem get(String uid);
-
-    // int getContentCount(DashboardItem dashboardItem);
 }

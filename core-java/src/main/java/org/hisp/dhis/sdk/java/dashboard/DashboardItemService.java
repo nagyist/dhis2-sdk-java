@@ -28,10 +28,15 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
+import org.hisp.dhis.java.sdk.models.common.Access;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.utils.CodeGenerator;
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +47,60 @@ import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 public class DashboardItemService implements IDashboardItemService {
     private final IDashboardItemStore dashboardItemStore;
     private final IStateStore stateStore;
+    private final IDashboardElementService dashboardElementService;
 
-    public DashboardItemService(IDashboardItemStore dashboardItemStore, IStateStore stateStore) {
+    public DashboardItemService(IDashboardItemStore dashboardItemStore, IStateStore stateStore,
+                                IDashboardElementService dashboardElementService) {
         this.dashboardItemStore = dashboardItemStore;
         this.stateStore = stateStore;
+        this.dashboardElementService = dashboardElementService;
+    }
+
+    @Override
+    public DashboardItem create(Dashboard dashboard, String type) {
+        isNull(dashboard, "Dashboard object must not be null");
+        isNull(type, "Type must not be null");
+
+        switch (type) {
+            case DashboardContent.TYPE_CHART:
+            case DashboardContent.TYPE_EVENT_CHART:
+            case DashboardContent.TYPE_MAP:
+            case DashboardContent.TYPE_REPORT_TABLE:
+            case DashboardContent.TYPE_USERS:
+            case DashboardContent.TYPE_REPORTS:
+            case DashboardContent.TYPE_EVENT_REPORT:
+            case DashboardContent.TYPE_RESOURCES:
+            case DashboardContent.TYPE_MESSAGES:
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported DashboardContent type: " + type);
+        }
+
+        String uid = CodeGenerator.generateCode();
+        DateTime created = DateTime.now();
+        Access access = Access.createDefaultAccess();
+
+        DashboardItem dashboardItem = new DashboardItem();
+        dashboardItem.setUId(uid);
+        dashboardItem.setCreated(created);
+        dashboardItem.setLastUpdated(created);
+        dashboardItem.setName(uid);
+        dashboardItem.setDisplayName(uid);
+        dashboardItem.setAccess(access);
+
+        dashboardItem.setType(type);
+        dashboardItem.setShape(DashboardItem.SHAPE_NORMAL);
+        dashboardItem.setDashboard(dashboard);
+
+        return dashboardItem;
+    }
+
+    @Override
+    public int countItems(DashboardItem dashboardItem) {
+        isNull(dashboardItem, "DashboardItem object must not be null");
+
+        List<DashboardElement> dashboardElements = dashboardElementService.list(dashboardItem);
+        return dashboardElements != null ? dashboardElements.size() : 0;
     }
 
     @Override

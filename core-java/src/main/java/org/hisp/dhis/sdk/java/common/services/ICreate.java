@@ -28,28 +28,11 @@
 
 package org.hisp.dhis.sdk.java.common.services;
 
-import org.hisp.dhis.sdk.java.common.persistence.IPersistenceModule;
-import org.hisp.dhis.sdk.java.dashboard.DashboardService;
-import org.hisp.dhis.sdk.java.dashboard.IDashboardService;
+import org.hisp.dhis.java.sdk.models.common.base.IModel;
 
-import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
-
-public final class ServicesModule implements IServicesModule {
-    private final IDashboardService dashboardService;
-
-    public ServicesModule(IPersistenceModule persistenceModule, IServicesModule servicesModule) {
-        isNull(persistenceModule, "persistenceModule must not be null");
-        isNull(servicesModule, "serviceModule must not be null");
-
-        dashboardService = new DashboardService(
-                persistenceModule.getDashboardStore(),
-                persistenceModule.getDashboardItemStore(),
-                persistenceModule.getDashboardElementStore(),
-                persistenceModule.getStateStore(), null, null);
-    }
-
-    @Override
-    public IDashboardService getDashboardService() {
-        return dashboardService;
-    }
+/**
+ * This method
+ */
+public interface ICreate<T extends IModel> {
+    T create();
 }
