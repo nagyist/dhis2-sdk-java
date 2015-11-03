@@ -141,10 +141,13 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public boolean add(Enrollment object) {
-        enrollmentStore.insert(object);
-        stateStore.saveActionForModel(object, Action.TO_POST);
+        isNull(object, "Enrollment object must not be null");
 
-        return true;
+        if (!enrollmentStore.insert(object)) {
+            return false;
+        }
+
+        return stateStore.saveActionForModel(object, Action.TO_POST);
     }
 
     @Override
@@ -166,30 +169,32 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public boolean remove(Enrollment object) {
-        isNull(object, "enrollment argument must not be null");
-        enrollmentStore.delete(object);
-        return true;
+        isNull(object, "Enrollment argument must not be null");
+
+        if (!enrollmentStore.delete(object)) {
+            return false;
+        }
+        return stateStore.deleteActionForModel(object);
     }
 
     @Override
     public boolean save(Enrollment object) {
-        enrollmentStore.save(object);
+        isNull(object, "Enrollment argument must not be null");
 
-        // TODO check if object was created earlier (then set correct flag)
-        Action action = stateStore.queryActionForModel(object);
-
-        if (action == null) {
-            stateStore.saveActionForModel(object, Action.TO_POST);
-        } else {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
+        if (!enrollmentStore.save(object)) {
+            return false;
         }
-
-        return true;
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null || Action.TO_POST.equals(action)) {
+            return stateStore.saveActionForModel(object, Action.TO_POST);
+        } else {
+            return stateStore.saveActionForModel(object, Action.TO_UPDATE);
+        }
     }
 
     @Override
     public boolean update(Enrollment object) {
-        isNull(object, "enrollment argument must not be null");
+        isNull(object, "Enrollment argument must not be null");
 
         Action action = stateStore.queryActionForModel(object);
         if (Action.TO_DELETE.equals(action)) {
@@ -203,8 +208,6 @@ public class EnrollmentService implements IEnrollmentService {
             stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
 
-        enrollmentStore.update(object);
-
-        return true;
+        return enrollmentStore.update(object);
     }
 }
