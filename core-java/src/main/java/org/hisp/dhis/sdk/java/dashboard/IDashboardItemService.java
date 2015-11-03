@@ -39,7 +39,7 @@ public interface IDashboardItemService extends IService, IRemove<DashboardItem>,
 
     DashboardItem create(Dashboard dashboard, String type);
 
-    int countItems(DashboardItem dashboardItem);
+    int countElements(DashboardItem dashboardItem);
 
     List<DashboardItem> list(Dashboard dashboard);
 }

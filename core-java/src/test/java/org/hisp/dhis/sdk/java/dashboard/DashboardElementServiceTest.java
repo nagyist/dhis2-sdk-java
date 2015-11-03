@@ -83,7 +83,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveNoneExistingDashboardElement() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(4);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(null);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -93,7 +93,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementSynced() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(4);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.SYNCED);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -104,7 +104,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToUpdate() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(4);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_UPDATE);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -115,7 +115,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToPost() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(4);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_POST);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -127,7 +127,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToDelete() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(4);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_DELETE);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -138,7 +138,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveLastDashboardElement() {
-        when(dashboardItemServiceMock.countItems(any(DashboardItem.class))).thenReturn(1);
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(1);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.SYNCED);
         when(dashboardElementMock.getDashboardItem()).thenReturn(dashboardItemMock);
 

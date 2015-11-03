@@ -323,7 +323,7 @@ public class DashboardItemServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCountItemsByNullDashboardItem() {
-        dashboardItemService.countItems(null);
+        dashboardItemService.countElements(null);
     }
 
     @Test
@@ -331,7 +331,7 @@ public class DashboardItemServiceTest {
         when(dashboardElementServiceMock.list(dashboardItemMock)).thenReturn(
                 Arrays.asList(dashboardElementMock, dashboardElementMock, dashboardElementMock));
 
-        int dashboardElementCount = dashboardItemService.countItems(dashboardItemMock);
+        int dashboardElementCount = dashboardItemService.countElements(dashboardItemMock);
 
         assertEquals(dashboardElementCount, 3);
         verify(dashboardElementServiceMock, times(1)).list(dashboardItemMock);

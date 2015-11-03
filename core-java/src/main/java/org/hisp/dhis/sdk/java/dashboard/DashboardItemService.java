@@ -96,7 +96,7 @@ public class DashboardItemService implements IDashboardItemService {
     }
 
     @Override
-    public int countItems(DashboardItem dashboardItem) {
+    public int countElements(DashboardItem dashboardItem) {
         isNull(dashboardItem, "DashboardItem object must not be null");
 
         List<DashboardElement> dashboardElements = dashboardElementService.list(dashboardItem);

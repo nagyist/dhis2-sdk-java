@@ -99,7 +99,7 @@ public class DashboardElementService implements IDashboardElementService {
             }
         }
 
-        if (isRemoved && !(dashboardItemService.countItems(object.getDashboardItem()) > 1)) {
+        if (isRemoved && !(dashboardItemService.countElements(object.getDashboardItem()) > 1)) {
             isRemoved = dashboardItemService.remove(object.getDashboardItem());
         }
 
