@@ -42,7 +42,9 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.sound.midi.Track;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -50,10 +52,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -101,6 +100,7 @@ public class TrackedEntityInstanceServiceTest {
         relationshipType = new RelationshipType();
         relationshipType.setUId(RELATIONSHIP_TYPE_UID);
 
+
         trackedEntity = new TrackedEntity();
         trackedEntity.setUId(TRACKED_ENTITY_UID);
 
@@ -108,6 +108,7 @@ public class TrackedEntityInstanceServiceTest {
         organisationUnit.setUId(ORGANISATION_UNIT_UID);
 
         relationship = new Relationship();
+        relationship.setRelationship(RELATIONSHIP_TYPE_UID);
         relationship.setTrackedEntityInstanceA(trackedEntityInstanceA);
         relationship.setTrackedEntityInstanceB(trackedEntityInstanceB);
 
@@ -366,5 +367,22 @@ public class TrackedEntityInstanceServiceTest {
     public void testSaveTrackedEntityInstanceReturnFalse() {
         when(trackedEntityInstanceStoreMock.save(trackedEntityInstanceMock)).thenReturn(false);
         assertFalse(trackedEntityInstanceService.save(trackedEntityInstanceMock));
+    }
+
+    @Test
+    public void testAddRelationshipReturnFalse() {
+        TrackedEntityInstance trackedEntityInstanceBRelationship = new TrackedEntityInstance();
+        trackedEntityInstanceBRelationship.setTrackedEntityInstanceUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        relationship.setTrackedEntityInstanceB(trackedEntityInstanceBRelationship);
+        relationship.setTrackedEntityInstanceB(trackedEntityInstanceBRelationship.getTrackedEntityInstanceUid());
+        relationship.setRelationship(relationshipType.getUId());
+        when(trackedEntityInstanceA.getRelationships()).thenReturn(Arrays.asList(relationship));
+        assertFalse(trackedEntityInstanceService.addRelationship(trackedEntityInstanceA, trackedEntityInstanceBRelationship, relationshipType));
+    }
+
+    @Test
+    public void testAddRelationshipWithoutExistingRelationships() {
+        when(trackedEntityInstanceA.getRelationships()).thenReturn(new ArrayList<Relationship>());
+        assertTrue(trackedEntityInstanceService.addRelationship(trackedEntityInstanceA, trackedEntityInstanceB, relationshipType));
     }
 }

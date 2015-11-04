@@ -90,7 +90,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
         for (Relationship existingRelationship : existingRelationships) {
             if (existingRelationship.getTrackedEntityInstanceB().getTrackedEntityInstanceUid()
                     .equals(trackedEntityInstanceB.getTrackedEntityInstanceUid()) &&
-                    relationshipType.equals(existingRelationship.getRelationship())) {
+                    relationshipType.getUId().equals(existingRelationship.getRelationship())) {
                 return false;
             }
         }
