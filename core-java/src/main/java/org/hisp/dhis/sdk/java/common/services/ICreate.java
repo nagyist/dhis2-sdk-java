@@ -26,21 +26,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.dashboard;
+package org.hisp.dhis.sdk.java.common.services;
 
-import org.hisp.dhis.sdk.java.common.services.IGet;
-import org.hisp.dhis.sdk.java.common.services.IGetUid;
-import org.hisp.dhis.sdk.java.common.services.IList;
-import org.hisp.dhis.sdk.java.common.services.IService;
-import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.common.base.IModel;
 
-import java.util.List;
-
-public interface IDashboardItemContentService extends IService, IGet<DashboardContent>,
-        IGetUid<DashboardContent>, IList<DashboardContent> {
-
-    /**
-     * {@inheritDoc}
-     */
-    List<DashboardContent> list(List<String> types);
+/**
+ * This method
+ */
+public interface ICreate<T extends IModel> {
+    T create();
 }

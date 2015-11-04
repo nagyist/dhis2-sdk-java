@@ -33,6 +33,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.*;
 public class DashboardElementServiceTest {
     private DashboardItem dashboardItemMock;
     private DashboardElement dashboardElementMock;
+    private DashboardContent dashboardContentMock;
 
     private IStateStore stateStoreMock;
     private IDashboardItemService dashboardItemServiceMock;
@@ -58,6 +60,7 @@ public class DashboardElementServiceTest {
     public void setUp() {
         dashboardItemMock = mock(DashboardItem.class);
         dashboardElementMock = mock(DashboardElement.class);
+        dashboardContentMock = mock(DashboardContent.class);
 
         /* Mocking state store */
         stateStoreMock = mock(IStateStore.class);
@@ -69,8 +72,8 @@ public class DashboardElementServiceTest {
         dashboardItemServiceMock = mock(IDashboardItemService.class);
         when(dashboardItemServiceMock.remove(any(DashboardItem.class))).thenReturn(true);
 
-        dashboardElementService = spy(new DashboardElementService(stateStoreMock,
-                dashboardElementStoreMock, dashboardItemServiceMock));
+        dashboardElementService = new DashboardElementService(stateStoreMock,
+                dashboardElementStoreMock, dashboardItemServiceMock);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -80,7 +83,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveNoneExistingDashboardElement() {
-        doReturn(16).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(null);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -90,7 +93,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementSynced() {
-        doReturn(16).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.SYNCED);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -101,7 +104,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToUpdate() {
-        doReturn(16).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_UPDATE);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -112,7 +115,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToPost() {
-        doReturn(16).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_POST);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -124,7 +127,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveDashboardElementToDelete() {
-        doReturn(16).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(4);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.TO_DELETE);
 
         boolean status = dashboardElementService.remove(dashboardElementMock);
@@ -135,7 +138,7 @@ public class DashboardElementServiceTest {
 
     @Test
     public void testRemoveLastDashboardElement() {
-        doReturn(1).when(dashboardElementService).count(any(DashboardItem.class));
+        when(dashboardItemServiceMock.countElements(any(DashboardItem.class))).thenReturn(1);
         when(stateStoreMock.queryActionForModel(dashboardElementMock)).thenReturn(Action.SYNCED);
         when(dashboardElementMock.getDashboardItem()).thenReturn(dashboardItemMock);
 
@@ -190,21 +193,33 @@ public class DashboardElementServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCountDashboardElementsByNullDashboardItem() {
-        dashboardElementService.count(null);
+    public void testCreateDashboardElementShouldThrowOnNullDashboardItem() {
+        dashboardElementService.create(null, dashboardContentMock);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateDashboardElementShouldThrowOnNullDashboardContent() {
+        dashboardElementService.create(dashboardItemMock, null);
     }
 
     @Test
-    public void testCountDashboardElements() {
-        List<DashboardElement> dashboardElementsMockList = Arrays.asList(dashboardElementMock,
-                dashboardElementMock, dashboardElementMock);
-        when(dashboardElementStoreMock.queryByDashboardItem(dashboardItemMock))
-                .thenReturn(dashboardElementsMockList);
+    public void testCreateDashboardElement() {
+        DateTime dateTime = DateTime.now();
+        when(dashboardContentMock.getName()).thenReturn("fancyName");
+        when(dashboardContentMock.getDisplayName()).thenReturn("fancyDisplayName");
+        when(dashboardContentMock.getCreated()).thenReturn(dateTime);
+        when(dashboardContentMock.getLastUpdated()).thenReturn(dateTime);
+        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_CHART);
 
-        int dashboardElementCount = dashboardElementService.count(dashboardItemMock);
+        DashboardElement dashboardElement = dashboardElementService.create(
+                dashboardItemMock, dashboardContentMock);
 
-        assertEquals(dashboardElementsMockList.size(), dashboardElementCount);
-        verify(dashboardElementStoreMock, times(1)).queryByDashboardItem(dashboardItemMock);
-        verify(stateStoreMock, times(1)).queryActionsForModel(DashboardElement.class);
+        assertNotNull(dashboardElement.getUId());
+        assertNotNull(dashboardElement.getAccess());
+        assertEquals(dashboardElement.getCreated(), dateTime);
+        assertEquals(dashboardElement.getLastUpdated(), dateTime);
+        assertEquals(dashboardElement.getName(), dashboardContentMock.getName());
+        assertEquals(dashboardElement.getDisplayName(), dashboardContentMock.getDisplayName());
+        assertSame(dashboardElement.getDashboardItem(), dashboardItemMock);
     }
 }

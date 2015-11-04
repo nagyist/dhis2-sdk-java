@@ -28,10 +28,13 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
+import org.hisp.dhis.java.sdk.models.common.Access;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.utils.CodeGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +52,26 @@ public class DashboardElementService implements IDashboardElementService {
         this.stateStore = stateStore;
         this.dashboardElementStore = elementStore;
         this.dashboardItemService = dashboardItemService;
+    }
+
+    @Override
+    public DashboardElement create(DashboardItem dashboardItem, DashboardContent dashboardContent) {
+        isNull(dashboardItem, "DashboardItem object must not be null");
+        isNull(dashboardContent, "DashboardContent object must not be null");
+
+        String uid = CodeGenerator.generateCode();
+        Access access = Access.createDefaultAccess();
+
+        DashboardElement dashboardElement = new DashboardElement();
+        dashboardElement.setUId(uid);
+        dashboardElement.setName(dashboardContent.getName());
+        dashboardElement.setDisplayName(dashboardContent.getDisplayName());
+        dashboardElement.setCreated(dashboardContent.getCreated());
+        dashboardElement.setLastUpdated(dashboardContent.getLastUpdated());
+        dashboardElement.setAccess(access);
+        dashboardElement.setDashboardItem(dashboardItem);
+
+        return dashboardElement;
     }
 
     @Override
@@ -76,7 +99,7 @@ public class DashboardElementService implements IDashboardElementService {
             }
         }
 
-        if (isRemoved && !(count(object.getDashboardItem()) > 1)) {
+        if (isRemoved && !(dashboardItemService.countElements(object.getDashboardItem()) > 1)) {
             isRemoved = dashboardItemService.remove(object.getDashboardItem());
         }
 
@@ -106,12 +129,5 @@ public class DashboardElementService implements IDashboardElementService {
         }
 
         return dashboardElements;
-    }
-
-    @Override
-    public int count(DashboardItem dashboardItem) {
-        isNull(dashboardItem, "DashboardItem object must not be null");
-
-        return list(dashboardItem).size();
     }
 }

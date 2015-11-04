@@ -30,6 +30,8 @@ package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.junit.Before;
@@ -46,8 +48,10 @@ import static org.mockito.Mockito.*;
 public class DashboardItemServiceTest {
     private Dashboard dashboardMock;
     private DashboardItem dashboardItemMock;
+    private DashboardElement dashboardElementMock;
 
     private IDashboardItemStore dashboardItemStoreMock;
+    private IDashboardElementService dashboardElementServiceMock;
     private IStateStore stateStoreMock;
 
     private IDashboardItemService dashboardItemService;
@@ -56,11 +60,14 @@ public class DashboardItemServiceTest {
     public void setUp() {
         dashboardMock = mock(Dashboard.class);
         dashboardItemMock = mock(DashboardItem.class);
+        dashboardElementMock = mock(DashboardElement.class);
 
         dashboardItemStoreMock = mock(IDashboardItemStore.class);
+        dashboardElementServiceMock = mock(IDashboardElementService.class);
         stateStoreMock = mock(IStateStore.class);
 
-        dashboardItemService = new DashboardItemService(dashboardItemStoreMock, stateStoreMock);
+        dashboardItemService = new DashboardItemService(dashboardItemStoreMock, stateStoreMock,
+                dashboardElementServiceMock);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -264,5 +271,69 @@ public class DashboardItemServiceTest {
         assertFalse(status);
         verify(stateStoreMock, times(1)).queryActionForModel(dashboardItemMock);
         verify(stateStoreMock, never()).saveActionForModel(dashboardItemMock, Action.TO_DELETE);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateDashboardItemWithNullDashboardShouldThrow() {
+        dashboardItemService.create(null, DashboardContent.TYPE_CHART);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateDashboardItemWithNullTypeShouldThrow() {
+        dashboardItemService.create(dashboardMock, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateDashboardItemWithUnsupportedTypeShouldThrow() {
+        dashboardItemService.create(dashboardMock, "SomeType");
+    }
+
+    @Test
+    public void testCreateDashboardItem() {
+        DashboardItem dashboardItem = dashboardItemService.create(dashboardMock, DashboardContent.TYPE_CHART);
+
+        assertNotNull(dashboardItem.getUId());
+        assertNotNull(dashboardItem.getCreated());
+        assertNotNull(dashboardItem.getLastUpdated());
+        assertNotNull(dashboardItem.getName());
+        assertNotNull(dashboardItem.getDisplayName());
+        assertNotNull(dashboardItem.getAccess());
+
+        assertTrue(DashboardItem.SHAPE_DOUBLE_WIDTH.equals(dashboardItem.getShape()) ||
+                DashboardItem.SHAPE_FULL_WIDTH.equals(dashboardItem.getShape()) ||
+                DashboardItem.SHAPE_NORMAL.equals(dashboardItem.getShape()));
+
+        assertEquals(dashboardItem.getType(), DashboardContent.TYPE_CHART);
+        assertEquals(dashboardItem.getDashboard(), dashboardMock);
+    }
+
+    @Test
+    public void testCreateDashboardItemWithDifferentTypes() {
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_CHART);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_EVENT_CHART);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_MAP);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_REPORT_TABLE);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_USERS);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_REPORTS);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_EVENT_REPORT);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_RESOURCES);
+        dashboardItemService.create(dashboardMock, DashboardContent.TYPE_MESSAGES);
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCountItemsByNullDashboardItem() {
+        dashboardItemService.countElements(null);
+    }
+
+    @Test
+    public void testCountItems() {
+        when(dashboardElementServiceMock.list(dashboardItemMock)).thenReturn(
+                Arrays.asList(dashboardElementMock, dashboardElementMock, dashboardElementMock));
+
+        int dashboardElementCount = dashboardItemService.countElements(dashboardItemMock);
+
+        assertEquals(dashboardElementCount, 3);
+        verify(dashboardElementServiceMock, times(1)).list(dashboardItemMock);
     }
 }

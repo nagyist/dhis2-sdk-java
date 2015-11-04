@@ -29,19 +29,21 @@
 package org.hisp.dhis.sdk.java.dashboard;
 
 
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.services.IList;
 import org.hisp.dhis.sdk.java.common.services.IRemove;
 import org.hisp.dhis.sdk.java.common.services.IService;
-import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
-import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 
 import java.util.List;
 
 public interface IDashboardElementService extends IService, IRemove<DashboardElement>, IList<DashboardElement> {
+
+    DashboardElement create(DashboardItem dashboardItem, DashboardContent dashboardContent);
+
     /**
      * {@inheritDoc}
      */
     List<DashboardElement> list(DashboardItem dashboardItem);
-
-    int count(DashboardItem dashboardItem);
 }

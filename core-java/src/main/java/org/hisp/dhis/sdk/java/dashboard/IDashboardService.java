@@ -35,6 +35,8 @@ import org.hisp.dhis.sdk.java.common.services.*;
 public interface IDashboardService extends IService, ISave<Dashboard>, IRemove<Dashboard>, IGet<Dashboard>,
         IGetUid<Dashboard>, IList<Dashboard> {
 
+    Dashboard create(String name);
+
     /**
      * Will try to append DashboardContent to current dashboard.
      * If the type of DashboardContent is embedded (chart, eventChart, map, eventReport, reportTable),
@@ -43,24 +45,16 @@ public interface IDashboardService extends IService, ISave<Dashboard>, IRemove<D
      * If the type of DashboardContent is link type (users, reports, resources),
      * method will try to append content to existing item. Otherwise it will create a new dashboard item.
      * <p/>
-     * If the overall count of items in dashboard is bigger that Dashboard.MAX_ITEMS, method will not
+     * If the overall countElements of items in dashboard is bigger that Dashboard.MAX_ITEMS, method will not
      * add content and return false;
      *
      * @param dashboard dashboard to which we want add new content.
      * @param content   content which we want to add to given dashboard.
-     * @return false if item count is bigger than MAX_ITEMS.
+     * @return false if item countElements is bigger than MAX_ITEMS.
      * @throws IllegalArgumentException if dashboard or content is null.
      */
     boolean addContent(Dashboard dashboard, DashboardContent content);
 
 
-    /**
-     * Returns an item from this dashboard of the given type which number of
-     * content is less than max. Returns null if no item matches the criteria.
-     *
-     * @param type the type of content to return.
-     * @return an item.
-     * @throws IllegalArgumentException if dashboard or type is null.
-     */
-    // DashboardItem getAvailableItemByType(Dashboard dashboard, String type);
+    int countItems(Dashboard dashboard);
 }

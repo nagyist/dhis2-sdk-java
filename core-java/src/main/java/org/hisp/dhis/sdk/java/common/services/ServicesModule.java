@@ -29,7 +29,6 @@
 package org.hisp.dhis.sdk.java.common.services;
 
 import org.hisp.dhis.sdk.java.common.persistence.IPersistenceModule;
-import org.hisp.dhis.sdk.java.common.services.IServicesModule;
 import org.hisp.dhis.sdk.java.dashboard.DashboardService;
 import org.hisp.dhis.sdk.java.dashboard.IDashboardService;
 
@@ -38,15 +37,15 @@ import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 public final class ServicesModule implements IServicesModule {
     private final IDashboardService dashboardService;
 
-    public ServicesModule(IPersistenceModule persistenceModule) {
+    public ServicesModule(IPersistenceModule persistenceModule, IServicesModule servicesModule) {
         isNull(persistenceModule, "persistenceModule must not be null");
+        isNull(servicesModule, "serviceModule must not be null");
 
         dashboardService = new DashboardService(
                 persistenceModule.getDashboardStore(),
                 persistenceModule.getDashboardItemStore(),
                 persistenceModule.getDashboardElementStore(),
-                null, null,
-                persistenceModule.getStateStore());
+                persistenceModule.getStateStore(), null, null);
     }
 
     @Override

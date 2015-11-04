@@ -111,7 +111,7 @@ public class EnrollmentService implements IEnrollmentService {
         enrollment.setFollowup(followUp);
         enrollment.setDateOfEnrollment(dateOfEnrollment);
         enrollment.setDateOfIncident(dateOfIncident);
-        add(enrollment);
+        save(enrollment);
 
         List<Event> events = new ArrayList<>();
         for (ProgramStage programStage : program.getProgramStages()) {
@@ -140,14 +140,6 @@ public class EnrollmentService implements IEnrollmentService {
     }
 
     @Override
-    public boolean add(Enrollment object) {
-        enrollmentStore.insert(object);
-        stateStore.saveActionForModel(object, Action.TO_POST);
-
-        return true;
-    }
-
-    @Override
     public Enrollment get(long id) {
         Enrollment enrollment = enrollmentStore.queryById(id);
         Action action = stateStore.queryActionForModel(enrollment);
@@ -166,45 +158,26 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public boolean remove(Enrollment object) {
-        isNull(object, "enrollment argument must not be null");
-        enrollmentStore.delete(object);
-        return true;
+        isNull(object, "Enrollment argument must not be null");
+
+        if (!enrollmentStore.delete(object)) {
+            return false;
+        }
+        return stateStore.deleteActionForModel(object);
     }
 
     @Override
     public boolean save(Enrollment object) {
-        enrollmentStore.save(object);
+        isNull(object, "Enrollment argument must not be null");
 
-        // TODO check if object was created earlier (then set correct flag)
+        if (!enrollmentStore.save(object)) {
+            return false;
+        }
         Action action = stateStore.queryActionForModel(object);
-
-        if (action == null) {
-            stateStore.saveActionForModel(object, Action.TO_POST);
+        if (action == null || Action.TO_POST.equals(action)) {
+            return stateStore.saveActionForModel(object, Action.TO_POST);
         } else {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
+            return stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
-
-        return true;
-    }
-
-    @Override
-    public boolean update(Enrollment object) {
-        isNull(object, "enrollment argument must not be null");
-
-        Action action = stateStore.queryActionForModel(object);
-        if (Action.TO_DELETE.equals(action)) {
-            throw new IllegalArgumentException("The object with Action." +
-                    "TO_DELETE cannot be updated");
-        }
-
-        /* if object was not posted to the server before,
-        you don't have anything to update */
-        if (!Action.TO_POST.equals(action)) {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
-        }
-
-        enrollmentStore.update(object);
-
-        return true;
     }
 }

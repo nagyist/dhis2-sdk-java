@@ -45,7 +45,7 @@ public class DashboardContentServiceTest {
     private List<DashboardContent> dashboardContentsMockList;
 
     private IDashboardItemContentStore dashboardItemContentStoreMock;
-    private IDashboardItemContentService dashboardItemContentService;
+    private IDashboardContentService dashboardItemContentService;
 
     @Before
     public void setUp() {

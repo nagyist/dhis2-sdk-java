@@ -26,32 +26,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java.trackedentity;
+package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
-import org.hisp.dhis.java.sdk.models.relationship.Relationship;
-import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
-import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntity;
-import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
-import org.hisp.dhis.sdk.java.common.services.*;
+import org.hisp.dhis.sdk.java.common.services.IGet;
+import org.hisp.dhis.sdk.java.common.services.IGetUid;
+import org.hisp.dhis.sdk.java.common.services.IList;
+import org.hisp.dhis.sdk.java.common.services.IService;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 
-public interface ITrackedEntityInstanceService extends IService, ISave<TrackedEntityInstance>,
-        IRemove<TrackedEntityInstance>, IGet<TrackedEntityInstance>, IList<TrackedEntityInstance> {
-    TrackedEntityInstance get(String uid);
-    TrackedEntityInstance create(TrackedEntity trackedEntity, OrganisationUnit organisationUnit);
+import java.util.List;
 
-    /**
-     * Creates and adds a relationship for the given parameters.
-     * @param trackedEntityInstanceA
-     * @param trackedEntityInstanceB
-     * @param relationshipType
-     */
-    boolean addRelationship(TrackedEntityInstance trackedEntityInstanceA, TrackedEntityInstance trackedEntityInstanceB, RelationshipType relationshipType);
+public interface IDashboardContentService extends IService, IGet<DashboardContent>,
+        IGetUid<DashboardContent>, IList<DashboardContent> {
 
     /**
-     * Removes a given relationship, both locally and on the server
-     * @param relationship
-     * @return
+     * {@inheritDoc}
      */
-    boolean removeRelationship(Relationship relationship);
+    List<DashboardContent> list(List<String> types);
 }
