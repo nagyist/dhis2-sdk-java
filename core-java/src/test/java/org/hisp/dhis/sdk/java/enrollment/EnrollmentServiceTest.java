@@ -254,7 +254,10 @@ public class EnrollmentServiceTest {
 
         Enrollment enrollment = enrollmentService.create(organisationUnit, trackedEntityInstanceMock, program, followUp, dateOfEnrollment, dateOfIncident);
         when(enrollmentStore.queryActiveEnrollment(trackedEntityInstanceMock, organisationUnit, program)).thenReturn(enrollment);
-        assertTrue(enrollment.getStatus().equals(Enrollment.ACTIVE));
+        Enrollment enrollment1 = enrollmentService.getActiveEnrollment(trackedEntityInstanceMock, organisationUnit, program);
+
+        assertEquals(enrollment, enrollment1);
+        assertTrue(Enrollment.ACTIVE.equals(enrollment.getStatus()));
     }
 
     @Test
@@ -450,6 +453,14 @@ public class EnrollmentServiceTest {
     public void testGetEnrollmentByUidThatDoesntExistInDatabase() {
         assertTrue(null == enrollmentService.get(INVALID_ENROLLMENT_ID));
         verify(enrollmentStore).queryById(INVALID_ENROLLMENT_ID);
+    }
+
+    @Test
+    public void testGetEnrollmentByIdToDelete() {
+        when(stateStore.queryActionForModel(enrollmentToDelete)).thenReturn(Action.TO_DELETE);
+        when(enrollmentStore.queryById(ENROLLMENT_MOCK_ID)).thenReturn(enrollmentToDelete);
+        assertTrue(null == enrollmentService.get(ENROLLMENT_MOCK_ID));
+        verify(enrollmentStore).queryById(ENROLLMENT_MOCK_ID);
     }
 
 }
