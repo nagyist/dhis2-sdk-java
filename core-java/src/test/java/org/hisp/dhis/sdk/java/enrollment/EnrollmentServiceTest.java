@@ -316,25 +316,6 @@ public class EnrollmentServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testAddNullEnrollment() {
-        enrollmentService.add(null);
-    }
-
-    @Test
-    public void testAddEnrollmentIsCalled() {
-        enrollmentService.add(enrollmentMock);
-        verify(enrollmentStore, times(1)).insert(enrollmentMock);
-    }
-
-    @Test
-    public void testAddEnrollment() {
-        when(enrollmentStore.insert(enrollmentToPost)).thenReturn(true);
-        assertTrue(enrollmentService.add(enrollmentToPost));
-        verify(enrollmentStore).insert(enrollmentToPost);
-        verify(stateStore).saveActionForModel(enrollmentToPost, Action.TO_POST);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testGetNullEnrollment() {
         enrollmentService.get(null);
     }
@@ -367,35 +348,6 @@ public class EnrollmentServiceTest {
         verify(enrollmentStore).save(enrollmentToUpdate);
         verify(stateStore).saveActionForModel(enrollmentToUpdate, Action.TO_UPDATE);
     }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testUpdateNullEnrollment() {
-        enrollmentService.update(null);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedToPostEnrollment() {
-        when(enrollmentStore.update(enrollmentMock)).thenReturn(true);
-        assertTrue(enrollmentService.update(enrollmentMock));
-        verify(enrollmentStore).update(enrollmentMock);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedToUpdateEnrollment() {
-        when(enrollmentStore.update(enrollmentMock)).thenReturn(true);
-        assertTrue(enrollmentService.update(enrollmentMock));
-        verify(enrollmentStore).update(enrollmentMock);
-        verify(stateStore).saveActionForModel(enrollmentMock, Action.TO_UPDATE);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedSyncedEnrollment() {
-        when(enrollmentStore.update(enrollmentMock)).thenReturn(true);
-        assertTrue(enrollmentService.update(enrollmentMock));
-        verify(enrollmentStore).update(enrollmentMock);
-        verify(stateStore).saveActionForModel(enrollmentMock, Action.TO_UPDATE);
-    }
-
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveNullEnrollment() {
@@ -478,13 +430,6 @@ public class EnrollmentServiceTest {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_UPDATE);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
         verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetToUpdateEnrollmentToDelete() {
-        when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_DELETE);
-        enrollmentService.update(enrollmentMock);
-        verify(enrollmentStore.update(enrollmentMock));
     }
 
     @Test
