@@ -137,25 +137,6 @@ public class TrackedEntityInstanceServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testAddNullTrackedEntityInstance() {
-        trackedEntityInstanceService.add(null);
-    }
-
-    @Test
-    public void testAddTrackedEntityInstanceIsCalled() {
-        trackedEntityInstanceService.add(trackedEntityInstanceMock);
-        verify(trackedEntityInstanceStoreMock, times(1)).insert(trackedEntityInstanceMock);
-    }
-
-    @Test
-    public void testAddTrackedEntityInstance() {
-        when(trackedEntityInstanceStoreMock.insert(trackedEntityInstanceMock)).thenReturn(true);
-        assertTrue(trackedEntityInstanceService.add(trackedEntityInstanceMock));
-        verify(trackedEntityInstanceStoreMock).insert(trackedEntityInstanceMock);
-        verify(stateStoreMock).saveActionForModel(trackedEntityInstanceMock, Action.TO_POST);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testSaveNullEvent() {
         trackedEntityInstanceService.save(null);
     }
@@ -184,36 +165,6 @@ public class TrackedEntityInstanceServiceTest {
         verify(trackedEntityInstanceStoreMock).save(trackedEntityInstanceToUpdate);
         verify(stateStoreMock).saveActionForModel(trackedEntityInstanceToUpdate, Action.TO_UPDATE);
     }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testUpdateNullTrackedEntityInstance() {
-        trackedEntityInstanceService.update(null);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedToPostTrackedEntityInstance() {
-        when(trackedEntityInstanceStoreMock.update(trackedEntityInstanceMock)).thenReturn(true);
-        assertTrue(trackedEntityInstanceService.update(trackedEntityInstanceMock));
-        verify(trackedEntityInstanceStoreMock).update(trackedEntityInstanceMock);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedToUpdateTrakcedEntityInstance() {
-        when(trackedEntityInstanceStoreMock.update(trackedEntityInstanceToUpdate)).thenReturn(true);
-        assertTrue(trackedEntityInstanceService.update(trackedEntityInstanceToUpdate));
-        verify(trackedEntityInstanceStoreMock).update(trackedEntityInstanceToUpdate);
-        verify(stateStoreMock).saveActionForModel(trackedEntityInstanceToUpdate, Action.TO_UPDATE);
-    }
-
-    @Test
-    public void testUpdatePreviouslySavedSyncedTrackedEntityInstance() {
-        when(trackedEntityInstanceStoreMock.update(trackedEntityInstanceToSync)).thenReturn(true);
-
-        assertTrue(trackedEntityInstanceService.update(trackedEntityInstanceToSync));
-        verify(trackedEntityInstanceStoreMock).update(trackedEntityInstanceToSync);
-        verify(stateStoreMock).saveActionForModel(trackedEntityInstanceToSync, Action.TO_UPDATE);
-    }
-
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveNullTrackedEntityInstance() {
@@ -286,13 +237,6 @@ public class TrackedEntityInstanceServiceTest {
         verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetToUpdateTrackedEntityInstanceToDelete() {
-        when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_DELETE);
-        trackedEntityInstanceService.update(trackedEntityInstanceMock);
-        verify(trackedEntityInstanceStoreMock.update(trackedEntityInstanceMock));
-    }
-
     @Test
     public void testGetSyncedTrackedEntityInstanceByUid() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.SYNCED);
@@ -339,13 +283,6 @@ public class TrackedEntityInstanceServiceTest {
         assertTrue(organisationUnit.getUId().equals(trackedEntityInstance.getOrgUnit()));
         assertTrue(trackedEntity.getUId().equals(trackedEntityInstance.getTrackedEntity()));
         assertTrue(trackedEntityInstanceMockUId.equals(trackedEntityInstance.getTrackedEntityInstanceUid()));
-    }
-
-    @Test
-    public void testCreateTrackedEntityInstanceAddReturnFalse() {
-        when(trackedEntityInstanceStoreMock.insert(any(TrackedEntityInstance.class))).thenReturn(false);
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceService.create(trackedEntity, organisationUnit);
-        assertTrue(null == trackedEntityInstance);
     }
 
     @Test(expected = IllegalArgumentException.class)
