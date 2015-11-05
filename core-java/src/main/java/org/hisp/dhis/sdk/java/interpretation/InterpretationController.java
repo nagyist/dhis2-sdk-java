@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
 
 public final class InterpretationController implements IDataController<Interpretation> {
     private final IInterpretationService mInterpretationService;

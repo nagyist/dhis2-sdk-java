@@ -43,7 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class TrackedEntityAttributeController implements IDataController<TrackedEntityAttribute> {
     private final ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient;

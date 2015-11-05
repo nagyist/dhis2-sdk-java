@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
 
 public abstract class AbsTransactionManager implements ITransactionManager {
 

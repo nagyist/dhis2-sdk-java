@@ -53,9 +53,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toListIds;
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.toMap;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.toListIds;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
 
 public final class DashboardController implements IDataController<Dashboard> {
     private final IDashboardStore dashboardStore;
@@ -134,7 +134,8 @@ public final class DashboardController implements IDataController<Dashboard> {
         List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
 
         // List of persisted dashboards.
-        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
 
         Map<Long, List<DashboardItem>> dashboardItemMap = getDashboardItemMap();
         Map<Long, List<DashboardElement>> dashboardElementMap = getDashboardElementMap(false);
@@ -318,6 +319,7 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         return dashboardElementMap;
     }
+
 
 
     private void sendLocalChanges() {

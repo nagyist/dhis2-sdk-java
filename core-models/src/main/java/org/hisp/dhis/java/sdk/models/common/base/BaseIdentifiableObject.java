@@ -33,8 +33,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hisp.dhis.java.sdk.models.common.Access;
 import org.joda.time.DateTime;
 
-import java.util.*;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject {
 
@@ -114,82 +112,5 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
     @Override
     public void setAccess(Access access) {
         this.access = access;
-    }
-
-    public static <T extends IdentifiableObject> Map<String, T> toMap(Collection<T> objects) {
-        Map<String, T> map = new HashMap<>();
-        if (objects != null && objects.size() > 0) {
-            for (T object : objects) {
-                if (object.getUId() != null) {
-                    map.put(object.getUId(), object);
-                }
-            }
-        }
-        return map;
-    }
-
-    public static <T extends IdentifiableObject> List<String> toListIds(List<T> objects) {
-        List<String> ids = new ArrayList<>();
-        if (objects != null && objects.size() > 0) {
-            for (T object : objects) {
-                ids.add(object.getUId());
-            }
-        }
-        return ids;
-    }
-
-    /**
-     * Returns a list of items taken from updatedItems and persistedItems, based on the items in
-     * the passed existingItems List. Items that are not present in existingItems will not be
-     * included.
-     *
-     * @param existingItems
-     * @param updatedItems
-     * @param persistedItems
-     * @param <T>
-     * @return
-     */
-    public static <T extends IdentifiableObject> List<T> merge(List<T> existingItems,
-                                                               List<T> updatedItems,
-                                                               List<T> persistedItems) {
-        Map<String, T> updatedItemsMap = toMap(updatedItems);
-        Map<String, T> persistedItemsMap = toMap(persistedItems);
-        Map<String, T> existingItemsMap = new HashMap<>();
-
-        if (existingItems == null || existingItems.isEmpty()) {
-            return new ArrayList<>(existingItemsMap.values());
-        }
-
-        for (T existingItem : existingItems) {
-            String id = existingItem.getUId();
-            T updatedItem = updatedItemsMap.get(id);
-            T persistedItem = persistedItemsMap.get(id);
-
-            if (updatedItem != null) {
-                if (persistedItem != null) {
-                    updatedItem.setId(persistedItem.getId());
-                }
-                existingItemsMap.put(id, updatedItem);
-                continue;
-            }
-
-            if (persistedItem != null) {
-                existingItemsMap.put(id, persistedItem);
-            }
-        }
-
-        return new ArrayList<>(existingItemsMap.values());
-    }
-
-    public static <T extends IdentifiableObject> Set<String> getUids(Collection<T> items) {
-        Set<String> uIds = new HashSet<>();
-
-        if (items != null && !items.isEmpty()) {
-            for (T item : items) {
-                uIds.add(item.getUId());
-            }
-        }
-
-        return uIds;
     }
 }

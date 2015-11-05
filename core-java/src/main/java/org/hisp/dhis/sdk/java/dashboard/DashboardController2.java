@@ -26,38 +26,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java;
+package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.sdk.java.dashboard.*;
-import org.hisp.dhis.sdk.java.enrollment.EnrollmentServiceTest;
-import org.hisp.dhis.sdk.java.event.EventServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramRuleVariableServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
-import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityInstanceServiceTest;
-import org.hisp.dhis.sdk.java.user.UserAccountControllerTest;
-import org.hisp.dhis.sdk.java.user.UserAccountServiceTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.joda.time.DateTime;
+
+import java.util.List;
+
+public class DashboardController2 implements IDashboardController {
+    private final ILastUpdatedPreferences lastUpdatedPreferences;
+    private final IDashboardApiClient dashboardApiClient;
+    private final IDashboardStore dashboardStore;
+    private final IStateStore stateStore;
+
+    public DashboardController2(ILastUpdatedPreferences lastUpdatedPreferences,
+                                IDashboardApiClient dashboardApiClient, IDashboardStore dashboardStore,
+                                IStateStore stateStore) {
+        this.lastUpdatedPreferences = lastUpdatedPreferences;
+        this.dashboardApiClient = dashboardApiClient;
+        this.dashboardStore = dashboardStore;
+        this.stateStore = stateStore;
+    }
+
+    @Override
+    public boolean sync() {
+        return false;
+    }
+
+    @Override
+    public void updateDashboards() {
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
+
+        List<Dashboard> basicDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
+        List<Dashboard> fullDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
+        List<Dashboard> persistedDashboards = dashboardStore.queryAll();
 
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        DashboardContentServiceTest.class,
-        DashboardElementServiceTest.class,
-        DashboardItemServiceTest.class,
-        DashboardServiceTest.class,
-        DashboardControllerTest.class,
-
-        ProgramServiceTest.class,
-        ProgramRuleServiceTest.class,
-        ProgramRuleVariableServiceTest.class,
-        UserAccountServiceTest.class,
-
-        UserAccountControllerTest.class,
-        TrackedEntityInstanceServiceTest.class,
-        EnrollmentServiceTest.class,
-        EventServiceTest.class
-})
-public class CoreTestSuite {
+    }
 }

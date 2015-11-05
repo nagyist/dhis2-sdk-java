@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.getUids;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.getUids;
 
 public final class AssignedProgramsController implements IDataController<Program> {
     private final IProgramController programController;

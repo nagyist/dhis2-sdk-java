@@ -41,7 +41,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-import static org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject.merge;
+import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class DataElementController implements IDataController<DataElement> {
     private final IDataElementApiClient dataElementApiClient;
