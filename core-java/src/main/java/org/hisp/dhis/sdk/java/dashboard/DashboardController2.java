@@ -64,9 +64,14 @@ public class DashboardController2 implements IDashboardController {
     public void updateDashboards() {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
-        List<Dashboard> basicDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
-        List<Dashboard> fullDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
+        List<Dashboard> updatedDashboards = getDashboards(lastUpdated);
+    }
+
+    private List<Dashboard> getDashboards(DateTime lastUpdated) {
+        List<Dashboard> existingDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
+        List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
         List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(
                 Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
     }
 }

@@ -96,9 +96,10 @@ public class DashboardControllerTest {
 
     @Test
     public void testUpdateDashboardsWithoutCachedData() {
-        when(lastUpdatedPreferencesMock.get(ResourceType.DASHBOARDS)).thenReturn(null);
-        when(dashboardStoreMock.queryAll()).thenReturn(new ArrayList<Dashboard>());
-
+        when(dashboardApiClientMock.getBasicDashboards(null)).thenReturn(serverDashboards);
+        when(dashboardApiClientMock.getFullDashboards(null)).thenReturn(serverDashboards);
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(persistedDashboards);
         dashboardController.updateDashboards();
 
         verify(lastUpdatedPreferencesMock, times(1)).get(ResourceType.DASHBOARDS);
@@ -106,6 +107,7 @@ public class DashboardControllerTest {
         verify(dashboardApiClientMock, times(1)).getFullDashboards(null);
         verify(stateStoreMock, times(1)).queryModelsWithActions(
                 Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        verify(modelUtilsMock, times(1)).merge(serverDashboards, serverDashboards, persistedDashboards);
     }
 
     @Test

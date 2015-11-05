@@ -29,29 +29,22 @@
 package org.hisp.dhis.sdk.java.constant;
 
 import org.hisp.dhis.java.sdk.models.constant.Constant;
-import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.models.program.ProgramRule;
-import org.hisp.dhis.java.sdk.models.program.ProgramStage;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
-import org.hisp.dhis.sdk.java.program.IProgramRuleStore;
-import org.hisp.dhis.sdk.java.program.ProgramRuleService;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 public class ConstantControllerTest {
     private IConstantApiClient constantApiClientMock;
     private ITransactionManager transactionManagerMock;
     private ISystemInfoApiClient systemInfoApiClientMock;
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
+    private IModelUtils modelUtilsMock;
     private IIdentifiableObjectStore<Constant> constantStoreMock;
     private ConstantController constantController;
 
@@ -61,9 +54,10 @@ public class ConstantControllerTest {
         transactionManagerMock = mock(ITransactionManager.class);
         systemInfoApiClientMock = mock(ISystemInfoApiClient.class);
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
+        modelUtilsMock = mock(IModelUtils.class);
         constantStoreMock = mock(IIdentifiableObjectStore.class);
         constantController = new ConstantController(constantApiClientMock, transactionManagerMock,
-                systemInfoApiClientMock, lastUpdatedPreferencesMock, constantStoreMock);
+                systemInfoApiClientMock, lastUpdatedPreferencesMock, constantStoreMock, modelUtilsMock);
     }
 
     @Test
