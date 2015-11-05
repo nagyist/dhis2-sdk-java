@@ -37,11 +37,10 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.List;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class DataElementController implements IDataController<DataElement> {
     private final IDataElementApiClient dataElementApiClient;
@@ -49,17 +48,19 @@ public final class DataElementController implements IDataController<DataElement>
     private final IIdentifiableObjectStore<DataElement> mDataElementStore;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ITransactionManager transactionManager;
+    private final IModelUtils modelUtils;
 
     public DataElementController(IDataElementApiClient dataElementApiClient,
                                  ISystemInfoApiClient systemInfoApiClient,
                                  ILastUpdatedPreferences lastUpdatedPreferences,
                                  IIdentifiableObjectStore<DataElement> mDataElementStore,
-                                 ITransactionManager transactionManager) {
+                                 ITransactionManager transactionManager, IModelUtils modelUtils) {
         this.dataElementApiClient = dataElementApiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.mDataElementStore = mDataElementStore;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.transactionManager = transactionManager;
+        this.modelUtils = modelUtils;
     }
 
     private void getProgramRulesDataFromServer() throws ApiException {
@@ -76,7 +77,7 @@ public final class DataElementController implements IDataController<DataElement>
 
         //merging updated items with persisted items, and removing ones not present in server.
         List<DataElement> existingPersistedAndUpdatedDataElements =
-                merge(allDataElements, updatedDataElements, mDataElementStore.queryAll());
+                modelUtils.merge(allDataElements, updatedDataElements, mDataElementStore.queryAll());
 
         List<IDbOperation> dbOperations = transactionManager.createOperations(mDataElementStore,
                 mDataElementStore.queryAll(), existingPersistedAndUpdatedDataElements);

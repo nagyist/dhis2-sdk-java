@@ -28,34 +28,25 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
-import org.hisp.dhis.sdk.java.common.controllers.IDataController;
-import org.hisp.dhis.sdk.java.common.network.ApiException;
-import org.hisp.dhis.sdk.java.common.network.Response;
-import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
-import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
-import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
-import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
-import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.common.controllers.IDataController;
+import org.hisp.dhis.sdk.java.common.network.ApiException;
+import org.hisp.dhis.sdk.java.common.network.Response;
+import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
+import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
+import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.toListIds;
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
+import java.util.*;
 
 public final class DashboardController implements IDataController<Dashboard> {
     private final IDashboardStore dashboardStore;
@@ -74,6 +65,8 @@ public final class DashboardController implements IDataController<Dashboard> {
     /* database transaction manager */
     private final ITransactionManager transactionManager;
 
+    private final IModelUtils modelUtils;
+
     public DashboardController(IDashboardStore dashboardStore,
                                IDashboardItemStore dashboardItemStore,
                                IDashboardElementStore dashboardElementStore,
@@ -82,7 +75,7 @@ public final class DashboardController implements IDataController<Dashboard> {
                                IDashboardApiClient dashboardApiClient,
                                ISystemInfoApiClient systemInfoApiClient,
                                ILastUpdatedPreferences lastUpdatedPreferences,
-                               ITransactionManager transactionManager) {
+                               ITransactionManager transactionManager, IModelUtils modelUtils) {
         this.dashboardStore = dashboardStore;
         this.dashboardItemStore = dashboardItemStore;
         this.dashboardElementStore = dashboardElementStore;
@@ -92,6 +85,7 @@ public final class DashboardController implements IDataController<Dashboard> {
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.transactionManager = transactionManager;
+        this.modelUtils = modelUtils;
     }
 
     @Override
@@ -152,7 +146,7 @@ public final class DashboardController implements IDataController<Dashboard> {
             dashboard.setDashboardItems(items);
         }
 
-        return merge(actualDashboards, updatedDashboards, persistedDashboards);
+        return modelUtils.merge(actualDashboards, updatedDashboards, persistedDashboards);
     }
 
     private List<DashboardItem> updateDashboardItems(List<Dashboard> dashboards, DateTime lastUpdated) {
@@ -165,14 +159,14 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         // List of persisted dashboard items
         Map<String, DashboardItem> persistedDashboardItems =
-                toMap(stateStore.queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
+                modelUtils.toMap(stateStore.queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
 
         // List of updated dashboard items. We need this only to get
         // information about updates of item shape.
         List<DashboardItem> updatedItems = dashboardApiClient.getBasicDashboardItems(lastUpdated);
 
         // Map of items where keys are UUIDs.
-        Map<String, DashboardItem> updatedItemsMap = toMap(updatedItems);
+        Map<String, DashboardItem> updatedItemsMap = modelUtils.toMap(updatedItems);
 
         // merging updated items with actual
         for (DashboardItem actualItem : actualItems) {
@@ -223,8 +217,8 @@ public final class DashboardController implements IDataController<Dashboard> {
                 refreshedElementList = new ArrayList<>();
             }
 
-            List<String> persistedElementIds = toListIds(persistedElementList);
-            List<String> refreshedElementIds = toListIds(refreshedElementList);
+            List<String> persistedElementIds = modelUtils.toUidList(persistedElementList);
+            List<String> refreshedElementIds = modelUtils.toUidList(refreshedElementList);
 
             List<String> itemIdsToInsert = subtract(refreshedElementIds, persistedElementIds);
             List<String> itemIdsToDelete = subtract(persistedElementIds, refreshedElementIds);
@@ -319,7 +313,6 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         return dashboardElementMap;
     }
-
 
 
     private void sendLocalChanges() {
@@ -710,7 +703,7 @@ public final class DashboardController implements IDataController<Dashboard> {
         List<DashboardContent> persistedItems =
                 dashboardItemContentStore.queryByTypes(Arrays.asList(type));
 
-        return merge(actualItems, updatedItems, persistedItems);
+        return modelUtils.merge(actualItems, updatedItems, persistedItems);
     }
 
     private List<DashboardContent> getApiResourceByType(String type, Map<String, String> queryParams) {

@@ -40,14 +40,13 @@ import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.user.IUserAccountService;
 import org.hisp.dhis.sdk.java.user.IUserStore;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
 
 public final class InterpretationController implements IDataController<Interpretation> {
     private final IInterpretationService mInterpretationService;
@@ -58,18 +57,21 @@ public final class InterpretationController implements IDataController<Interpret
     private final IInterpretationCommentStore mInterpretationCommentStore;
 
     private final IUserStore mUserStore;
+    private final IModelUtils modelUtils;
 
     public InterpretationController(IInterpretationService interpretationsService,
                                     IUserAccountService userAccountService,
                                     IIdentifiableObjectStore<Interpretation> mInterpretationStore,
                                     IInterpretationElementStore mInterpretationElementStore,
-                                    IInterpretationCommentStore mInterpretationCommentStore, IUserStore mUserStore) {
+                                    IInterpretationCommentStore mInterpretationCommentStore,
+                                    IUserStore mUserStore, IModelUtils modelUtils) {
         this.mInterpretationService = interpretationsService;
         this.mUserAccountService = userAccountService;
         this.mInterpretationStore = mInterpretationStore;
         this.mInterpretationElementStore = mInterpretationElementStore;
         this.mInterpretationCommentStore = mInterpretationCommentStore;
         this.mUserStore = mUserStore;
+        this.modelUtils = modelUtils;
     }
 
     private void sendLocalChanges() throws ApiException {
@@ -520,8 +522,8 @@ public final class InterpretationController implements IDataController<Interpret
                                                List<Interpretation> newModels) {
         List<DbOperation> ops = new ArrayList<>();
 
-        Map<String, Interpretation> newModelsMap = toMap(newModels);
-        Map<String, Interpretation> oldModelsMap = toMap(oldModels);
+        Map<String, Interpretation> newModelsMap = modelUtils.toMap(newModels);
+        Map<String, Interpretation> oldModelsMap = modelUtils.toMap(oldModels);
 
         for (String oldModelKey : oldModelsMap.keySet()) {
             Interpretation newModel = newModelsMap.get(oldModelKey);

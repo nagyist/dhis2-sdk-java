@@ -28,10 +28,12 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
+import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.utils.ModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -41,14 +43,16 @@ public class DashboardController2 implements IDashboardController {
     private final IDashboardApiClient dashboardApiClient;
     private final IDashboardStore dashboardStore;
     private final IStateStore stateStore;
+    private final ModelUtils modelUtils;
 
     public DashboardController2(ILastUpdatedPreferences lastUpdatedPreferences,
                                 IDashboardApiClient dashboardApiClient, IDashboardStore dashboardStore,
-                                IStateStore stateStore) {
+                                IStateStore stateStore, ModelUtils modelUtils) {
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.dashboardApiClient = dashboardApiClient;
         this.dashboardStore = dashboardStore;
         this.stateStore = stateStore;
+        this.modelUtils = modelUtils;
     }
 
     @Override
@@ -62,8 +66,7 @@ public class DashboardController2 implements IDashboardController {
 
         List<Dashboard> basicDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
         List<Dashboard> fullDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
-        List<Dashboard> persistedDashboards = dashboardStore.queryAll();
-
-
+        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(
+                Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
     }
 }

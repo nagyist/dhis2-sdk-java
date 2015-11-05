@@ -32,8 +32,13 @@ import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 import java.util.*;
 
-public class ModelUtils {
-    public static <T extends IdentifiableObject> Map<String, T> toMap(Collection<T> objects) {
+public class ModelUtils implements IModelUtils {
+    private ModelUtils() {
+        // private constructor
+    }
+
+    @Override
+    public <T extends IdentifiableObject> Map<String, T> toMap(Collection<T> objects) {
         Map<String, T> map = new HashMap<>();
         if (objects != null && objects.size() > 0) {
             for (T object : objects) {
@@ -45,7 +50,8 @@ public class ModelUtils {
         return map;
     }
 
-    public static <T extends IdentifiableObject> List<String> toListIds(List<T> objects) {
+    @Override
+    public <T extends IdentifiableObject> List<String> toUidList(List<T> objects) {
         List<String> ids = new ArrayList<>();
         if (objects != null && objects.size() > 0) {
             for (T object : objects) {
@@ -55,20 +61,28 @@ public class ModelUtils {
         return ids;
     }
 
+    @Override
+    public <T extends IdentifiableObject> Set<String> toUidSet(Collection<T> items) {
+        Set<String> uIds = new HashSet<>();
+
+        if (items != null && !items.isEmpty()) {
+            for (T item : items) {
+                uIds.add(item.getUId());
+            }
+        }
+
+        return uIds;
+    }
+
     /**
      * Returns a list of items taken from updatedItems and persistedItems, based on the items in
      * the passed existingItems List. Items that are not present in existingItems will not be
      * included.
-     *
-     * @param existingItems
-     * @param updatedItems
-     * @param persistedItems
-     * @param <T>
-     * @return
      */
-    public static <T extends IdentifiableObject> List<T> merge(List<T> existingItems,
-                                                               List<T> updatedItems,
-                                                               List<T> persistedItems) {
+    @Override
+    public <T extends IdentifiableObject> List<T> merge(List<T> existingItems,
+                                                        List<T> updatedItems,
+                                                        List<T> persistedItems) {
         Map<String, T> updatedItemsMap = toMap(updatedItems);
         Map<String, T> persistedItemsMap = toMap(persistedItems);
         Map<String, T> existingItemsMap = new HashMap<>();
@@ -96,17 +110,5 @@ public class ModelUtils {
         }
 
         return new ArrayList<>(existingItemsMap.values());
-    }
-
-    public static <T extends IdentifiableObject> Set<String> getUids(Collection<T> items) {
-        Set<String> uIds = new HashSet<>();
-
-        if (items != null && !items.isEmpty()) {
-            for (T item : items) {
-                uIds.add(item.getUId());
-            }
-        }
-
-        return uIds;
     }
 }

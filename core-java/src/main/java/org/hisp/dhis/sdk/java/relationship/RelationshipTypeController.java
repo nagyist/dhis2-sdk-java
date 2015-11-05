@@ -37,13 +37,12 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class RelationshipTypeController implements IDataController<RelationshipType> {
     private final ITransactionManager transactionManager;
@@ -51,17 +50,19 @@ public final class RelationshipTypeController implements IDataController<Relatio
     private final IRelationshipTypeApiClient relationshipTypeApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore;
+    private final IModelUtils modelUtils;
 
     public RelationshipTypeController(IRelationshipTypeApiClient relationshipApiClient,
                                       ITransactionManager transactionManager,
                                       IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore,
                                       ILastUpdatedPreferences lastUpdatedPreferences,
-                                      ISystemInfoApiClient systemInfoApiClient) {
+                                      ISystemInfoApiClient systemInfoApiClient, IModelUtils modelUtils) {
         this.relationshipTypeApiClient = relationshipApiClient;
         this.transactionManager = transactionManager;
         this.mRelationshipTypeStore = mRelationshipTypeStore;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.systemInfoApiClient = systemInfoApiClient;
+        this.modelUtils = modelUtils;
     }
 
     private void getRelationshipTypesDataFromServer() throws ApiException {
@@ -79,7 +80,7 @@ public final class RelationshipTypeController implements IDataController<Relatio
 
         //merging updated items with persisted items, and removing ones not present in server.
         List<RelationshipType> existingPersistedAndUpdatedRelationshipTypes =
-                merge(allRelationshipTypes, updatedRelationshipTypes, mRelationshipTypeStore.
+                modelUtils.merge(allRelationshipTypes, updatedRelationshipTypes, mRelationshipTypeStore.
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();

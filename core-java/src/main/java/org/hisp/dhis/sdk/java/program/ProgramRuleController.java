@@ -38,13 +38,12 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class ProgramRuleController implements IDataController<ProgramRule> {
     private final ITransactionManager transactionManager;
@@ -52,17 +51,19 @@ public final class ProgramRuleController implements IDataController<ProgramRule>
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IProgramRuleApiClient programRuleApiClient;
+    private final IModelUtils modelUtils;
 
     public ProgramRuleController(ITransactionManager transactionManager,
                                  ILastUpdatedPreferences lastUpdatedPreferences,
                                  IIdentifiableObjectStore<ProgramRule> mProgramRuleStore,
                                  ISystemInfoApiClient systemInfoApiClient,
-                                 IProgramRuleApiClient programRuleApiClient) {
+                                 IProgramRuleApiClient programRuleApiClient, IModelUtils modelUtils) {
         this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.mProgramRuleStore = mProgramRuleStore;
         this.systemInfoApiClient = systemInfoApiClient;
         this.programRuleApiClient = programRuleApiClient;
+        this.modelUtils = modelUtils;
     }
 
     private void getProgramRulesDataFromServer() throws ApiException {
@@ -79,7 +80,7 @@ public final class ProgramRuleController implements IDataController<ProgramRule>
 
         // merging updated items with persisted items, and removing ones not present in server.
         List<ProgramRule> existingPersistedAndUpdatedProgramRules =
-                merge(allProgramRules, updatedProgramRules, mProgramRuleStore.queryAll());
+                modelUtils.merge(allProgramRules, updatedProgramRules, mProgramRuleStore.queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
         operations.addAll(transactionManager.createOperations(mProgramRuleStore, existingPersistedAndUpdatedProgramRules, mProgramRuleStore.queryAll()));

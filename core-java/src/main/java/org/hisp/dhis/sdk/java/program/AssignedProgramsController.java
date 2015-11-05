@@ -39,14 +39,13 @@ import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitController;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.getUids;
 
 public final class AssignedProgramsController implements IDataController<Program> {
     private final IProgramController programController;
@@ -58,6 +57,7 @@ public final class AssignedProgramsController implements IDataController<Program
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IAssignedProgramApiClient assignedProgramApiClient;
+    private final IModelUtils modelUtils;
 
 
     public AssignedProgramsController(IProgramController programController,
@@ -67,7 +67,7 @@ public final class AssignedProgramsController implements IDataController<Program
                                       ITransactionManager transactionManager,
                                       ILastUpdatedPreferences lastUpdatedPreferences,
                                       ISystemInfoApiClient systemInfoApiClient,
-                                      IAssignedProgramApiClient assignedProgramApiClient) {
+                                      IAssignedProgramApiClient assignedProgramApiClient, IModelUtils modelUtils) {
         this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.programController = programController;
@@ -77,6 +77,7 @@ public final class AssignedProgramsController implements IDataController<Program
 
         this.systemInfoApiClient = systemInfoApiClient;
         this.assignedProgramApiClient = assignedProgramApiClient;
+        this.modelUtils = modelUtils;
     }
 
     @Override
@@ -88,10 +89,10 @@ public final class AssignedProgramsController implements IDataController<Program
         DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
         Map<OrganisationUnit, Set<Program>> assignedPrograms = assignedProgramApiClient.getAssignedPrograms();
 
-        Set<String> organisationUnitsToLoad = getUids(assignedPrograms.keySet());
+        Set<String> organisationUnitsToLoad = modelUtils.toUidSet(assignedPrograms.keySet());
         Set<String> programsToLoad = new HashSet<>();
         for (OrganisationUnit organisationUnit : assignedPrograms.keySet()) {
-            programsToLoad.addAll(getUids(assignedPrograms.get(organisationUnit)));
+            programsToLoad.addAll(modelUtils.toUidSet(assignedPrograms.get(organisationUnit)));
         }
 
         //Load the programs and organisation units from server with full data

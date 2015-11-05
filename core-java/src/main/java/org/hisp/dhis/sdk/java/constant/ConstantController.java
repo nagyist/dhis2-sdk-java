@@ -37,13 +37,12 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class ConstantController implements IDataController<Constant> {
     private final IConstantApiClient constantApiClient;
@@ -51,17 +50,19 @@ public final class ConstantController implements IDataController<Constant> {
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<Constant> constantStore;
+    private final IModelUtils modelUtils;
 
     public ConstantController(IConstantApiClient constantApiClient,
                               ITransactionManager transactionManager,
                               ISystemInfoApiClient systemInfoApiClient,
                               ILastUpdatedPreferences lastUpdatedPreferences,
-                              IIdentifiableObjectStore<Constant> constantStore) {
+                              IIdentifiableObjectStore<Constant> constantStore, IModelUtils modelUtils) {
         this.constantApiClient = constantApiClient;
         this.transactionManager = transactionManager;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.constantStore = constantStore;
+        this.modelUtils = modelUtils;
     }
 
     private void getConstantsDataFromServer() throws ApiException {
@@ -78,11 +79,11 @@ public final class ConstantController implements IDataController<Constant> {
 
         //merging updated items with persisted items, and removing ones not present in server.
         List<Constant> existingPersistedAndUpdatedConstants =
-                merge(allConstants, updatedConstants, constantStore.
-                        queryAll());
+                modelUtils.merge(allConstants, updatedConstants, constantStore.queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(transactionManager.createOperations(constantStore, existingPersistedAndUpdatedConstants, constantStore.queryAll()));
+        operations.addAll(transactionManager.createOperations(constantStore,
+                existingPersistedAndUpdatedConstants, constantStore.queryAll()));
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);

@@ -36,6 +36,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -43,23 +44,23 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
-
 public final class OrganisationUnitController implements IOrganisationUnitController {
     private final IOrganisationUnitStore mOrganisationUnitStore;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IOrganisationUnitApiClient organisationUnitApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ITransactionManager transactionManager;
+    private final IModelUtils modelUtils;
 
     public OrganisationUnitController(IOrganisationUnitStore mOrganisationUnitStore, ISystemInfoApiClient systemInfoApiClient,
                                       IOrganisationUnitApiClient organisationUnitApiClient,
-                                      ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager) {
+                                      ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IModelUtils modelUtils) {
         this.mOrganisationUnitStore = mOrganisationUnitStore;
         this.systemInfoApiClient = systemInfoApiClient;
         this.organisationUnitApiClient = organisationUnitApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.transactionManager = transactionManager;
+        this.modelUtils = modelUtils;
     }
 
     private void getOrganisationUnitsFromServer(List<OrganisationUnit> organisationUnits) {
@@ -71,8 +72,8 @@ public final class OrganisationUnitController implements IOrganisationUnitContro
         }
         List<OrganisationUnit> updatedOrganisationUnits = organisationUnitApiClient.getFullOrganisationUnits(organisationUnitIds);
         List<OrganisationUnit> persistedOrganisationUnits = mOrganisationUnitStore.queryAll();
-        Map<String, OrganisationUnit> persistedOrganisationUnitsMap = toMap(persistedOrganisationUnits);
-        Map<String, OrganisationUnit> updatedOrganisationUnitsMap = toMap(updatedOrganisationUnits);
+        Map<String, OrganisationUnit> persistedOrganisationUnitsMap = modelUtils.toMap(persistedOrganisationUnits);
+        Map<String, OrganisationUnit> updatedOrganisationUnitsMap = modelUtils.toMap(updatedOrganisationUnits);
         for(OrganisationUnit persistedOrganisationUnit : persistedOrganisationUnits) {
             OrganisationUnit updatedOrganisationUnit = updatedOrganisationUnitsMap.get(persistedOrganisationUnit.getUId());
             if(updatedOrganisationUnit != null) {

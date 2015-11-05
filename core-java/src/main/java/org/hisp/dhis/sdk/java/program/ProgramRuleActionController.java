@@ -37,13 +37,12 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.merge;
 
 public final class ProgramRuleActionController implements IDataController<ProgramRuleAction> {
     private final IProgramRuleActionApiClient programRuleActionApiClient;
@@ -51,17 +50,20 @@ public final class ProgramRuleActionController implements IDataController<Progra
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore;
+    private final IModelUtils modelUtils;
 
     public ProgramRuleActionController(IProgramRuleActionApiClient programRuleActionApiClient,
                                        ITransactionManager transactionManager,
                                        ISystemInfoApiClient systemInfoApiClient,
                                        ILastUpdatedPreferences lastUpdatedPreferences,
-                                       IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore) {
+                                       IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore,
+                                       IModelUtils modelUtils) {
         this.programRuleActionApiClient = programRuleActionApiClient;
         this.transactionManager = transactionManager;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.mProgramRuleActionStore = mProgramRuleActionStore;
+        this.modelUtils = modelUtils;
     }
 
     private void getProgramRuleVariablesDataFromServer() throws ApiException {
@@ -77,7 +79,7 @@ public final class ProgramRuleActionController implements IDataController<Progra
         List<ProgramRuleAction> updatedProgramRuleActions = programRuleActionApiClient.getFullProgramRuleActions(lastUpdated);
         //merging updated items with persisted items, and removing ones not present in server.
         List<ProgramRuleAction> existingPersistedAndUpdatedProgramRuleActions =
-                merge(allProgramRuleActions, updatedProgramRuleActions, mProgramRuleActionStore.
+                modelUtils.merge(allProgramRuleActions, updatedProgramRuleActions, mProgramRuleActionStore.
                         queryAll());
 
         Queue<IDbOperation> operations = new LinkedList<>();

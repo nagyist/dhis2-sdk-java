@@ -28,10 +28,12 @@
 
 package org.hisp.dhis.sdk.java.dashboard;
 
+import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
+import org.hisp.dhis.sdk.java.utils.ModelUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,6 +50,7 @@ public class DashboardControllerTest {
     private IStateStore stateStoreMock;
 
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
+    private ModelUtils modelUtilsMock;
 
     private Dashboard dashboardSyncedMock;
     private Dashboard dashboardSyncedTwoMock;
@@ -68,8 +71,10 @@ public class DashboardControllerTest {
         dashboardStoreMock = mock(IDashboardStore.class);
         stateStoreMock = mock(IStateStore.class);
 
+        modelUtilsMock = mock(ModelUtils.class);
+
         dashboardController = new DashboardController2(lastUpdatedPreferencesMock,
-                dashboardApiClientMock, dashboardStoreMock, stateStoreMock);
+                dashboardApiClientMock, dashboardStoreMock, stateStoreMock, modelUtilsMock);
 
         dashboardSyncedMock = mock(Dashboard.class);
         dashboardSyncedTwoMock = mock(Dashboard.class);
@@ -99,7 +104,8 @@ public class DashboardControllerTest {
         verify(lastUpdatedPreferencesMock, times(1)).get(ResourceType.DASHBOARDS);
         verify(dashboardApiClientMock, times(1)).getBasicDashboards(null);
         verify(dashboardApiClientMock, times(1)).getFullDashboards(null);
-        verify(dashboardStoreMock, times(1)).queryAll();
+        verify(stateStoreMock, times(1)).queryModelsWithActions(
+                Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
     }
 
     @Test

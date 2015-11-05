@@ -29,14 +29,18 @@
 package org.hisp.dhis.sdk.java.common.persistence;
 
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.hisp.dhis.sdk.java.utils.ModelUtils.toMap;
-
 public abstract class AbsTransactionManager implements ITransactionManager {
+    private final IModelUtils modelUtils;
+
+    protected AbsTransactionManager(IModelUtils modelUtils) {
+        this.modelUtils = modelUtils;
+    }
 
     /**
      * {@inheritDoc}
@@ -45,8 +49,8 @@ public abstract class AbsTransactionManager implements ITransactionManager {
                                                                                      List<T> oldModels, List<T> newModels) {
         List<IDbOperation> ops = new ArrayList<>();
 
-        Map<String, T> newModelsMap = toMap(newModels);
-        Map<String, T> oldModelsMap = toMap(oldModels);
+        Map<String, T> newModelsMap = modelUtils.toMap(newModels);
+        Map<String, T> oldModelsMap = modelUtils.toMap(oldModels);
 
         // As we will go through map of persisted items, we will try to update existing data.
         // Also, during each iteration we will remove old model key from list of new models.
