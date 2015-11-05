@@ -28,16 +28,23 @@
 
 package org.hisp.dhis.sdk.java.constant;
 
+import org.hisp.dhis.java.sdk.models.common.SystemInfo;
 import org.hisp.dhis.java.sdk.models.constant.Constant;
+import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
 import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Mockito.mock;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 public class ConstantControllerTest {
     private IConstantApiClient constantApiClientMock;
@@ -61,8 +68,53 @@ public class ConstantControllerTest {
     }
 
     @Test
-    public void testConstantsFromServerShouldBeSavedInStore() {
+    public void testAllConstantsFromServerShouldBeSavedInStoreWhenNoConstantsHaveBeenLoadedBefore() {
+        Constant constant1 = new Constant();
+        constant1.setUId("aaaaaaaa");
 
+        Constant constant2 = new Constant();
+        constant2.setUId("bbbbbbbb");
+
+        Constant constant3 = new Constant();
+        constant3.setUId("cccccccc");
+
+        List<Constant> updatedConstantsFromServer = new ArrayList<>();
+        updatedConstantsFromServer.add(constant1);
+        updatedConstantsFromServer.add(constant2);
+        updatedConstantsFromServer.add(constant3);
+
+        List<Constant> persistedConstants = new ArrayList<>();
+
+        SystemInfo systemInfo = new SystemInfo();
+        DateTime dateTime = new DateTime(2015, 1, 1, 12, 30);
+        systemInfo.setServerDate(dateTime);
+        when(systemInfoApiClientMock.getSystemInfo()).thenReturn(systemInfo);
+        when(lastUpdatedPreferencesMock.get(ResourceType.CONSTANTS)).thenReturn(null);
+
+        when(constantApiClientMock.getBasicConstants(null)).thenReturn(updatedConstantsFromServer);
+        when(constantApiClientMock.getFullConstants(null)).thenReturn(updatedConstantsFromServer);
+
+        when(modelUtilsMock.merge(updatedConstantsFromServer, updatedConstantsFromServer,
+                persistedConstants)).thenReturn(updatedConstantsFromServer);
+
+        List<IDbOperation> operations = new ArrayList<>();
+
+        when(transactionManagerMock.createOperations(constantStoreMock,
+                updatedConstantsFromServer, persistedConstants)).thenReturn(operations);
+
+        when(lastUpdatedPreferencesMock.save(ResourceType.CONSTANTS, systemInfo.getServerDate(), null)).thenReturn(true);
+
+        constantController.sync();
+
+        verify(systemInfoApiClientMock, times(1)).getSystemInfo();
+        verify(lastUpdatedPreferencesMock, times(1)).get(ResourceType.CONSTANTS);
+        verify(constantApiClientMock, times(1)).getBasicConstants(null);
+        verify(constantApiClientMock, times(1)).getFullConstants(null);
+        verify(modelUtilsMock, times(1)).merge(updatedConstantsFromServer,
+                updatedConstantsFromServer, persistedConstants);
+        verify(constantStoreMock, atLeastOnce()).queryAll();
+        verify(transactionManagerMock, times(1)).transact(operations);
+        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.CONSTANTS, dateTime);
     }
 
     @Test

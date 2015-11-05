@@ -86,7 +86,7 @@ public final class ConstantController implements IDataController<Constant> {
                 existingPersistedAndUpdatedConstants, constantStore.queryAll()));
 
         transactionManager.transact(operations);
-        lastUpdatedPreferences.save(resource, serverTime, null);
+        lastUpdatedPreferences.save(resource, serverTime);
     }
 
     @Override
