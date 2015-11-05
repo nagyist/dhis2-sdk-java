@@ -111,7 +111,7 @@ public class EnrollmentService implements IEnrollmentService {
         enrollment.setFollowup(followUp);
         enrollment.setDateOfEnrollment(dateOfEnrollment);
         enrollment.setDateOfIncident(dateOfIncident);
-        add(enrollment);
+        save(enrollment);
 
         List<Event> events = new ArrayList<>();
         for (ProgramStage programStage : program.getProgramStages()) {
@@ -137,17 +137,6 @@ public class EnrollmentService implements IEnrollmentService {
     @Override
     public List<Enrollment> list(Program program, OrganisationUnit organisationUnit) {
         return enrollmentStore.query(program, organisationUnit);
-    }
-
-    @Override
-    public boolean add(Enrollment object) {
-        isNull(object, "Enrollment object must not be null");
-
-        if (!enrollmentStore.insert(object)) {
-            return false;
-        }
-
-        return stateStore.saveActionForModel(object, Action.TO_POST);
     }
 
     @Override
@@ -190,24 +179,5 @@ public class EnrollmentService implements IEnrollmentService {
         } else {
             return stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
-    }
-
-    @Override
-    public boolean update(Enrollment object) {
-        isNull(object, "Enrollment argument must not be null");
-
-        Action action = stateStore.queryActionForModel(object);
-        if (Action.TO_DELETE.equals(action)) {
-            throw new IllegalArgumentException("The object with Action." +
-                    "TO_DELETE cannot be updated");
-        }
-
-        /* if object was not posted to the server before,
-        you don't have anything to update */
-        if (!Action.TO_POST.equals(action)) {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
-        }
-
-        return enrollmentStore.update(object);
     }
 }

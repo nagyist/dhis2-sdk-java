@@ -87,7 +87,6 @@ public final class ConstantController implements IDataController<Constant> {
 
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resource, serverTime, null);
-
     }
 
     @Override

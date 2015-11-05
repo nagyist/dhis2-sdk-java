@@ -37,8 +37,8 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-public interface IEnrollmentService extends IService, IAdd<Enrollment>, ISave<Enrollment>,
-        IUpdate<Enrollment>, IRemove<Enrollment>, IGet<Enrollment>, IList<Enrollment> {
+public interface IEnrollmentService extends IService, ISave<Enrollment>,
+        IRemove<Enrollment>, IGet<Enrollment>, IList<Enrollment> {
     Enrollment get(String uid);
     Enrollment create(OrganisationUnit organisationUnit,
                       TrackedEntityInstance trackedEntityInstance,

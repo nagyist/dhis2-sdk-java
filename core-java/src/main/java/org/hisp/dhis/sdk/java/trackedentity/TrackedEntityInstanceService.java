@@ -75,11 +75,9 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
         trackedEntityInstance.setOrgUnit(organisationUnit.getUId());
         trackedEntityInstance.setTrackedEntity(trackedEntity.getUId());
         trackedEntityInstance.setTrackedEntityInstanceUid(CodeGenerator.generateCode());
-        if (add(trackedEntityInstance)) {
-            return trackedEntityInstance;
-        } else {
-            return null;
-        }
+        save(trackedEntityInstance);
+
+        return trackedEntityInstance;
     }
 
     @Override
@@ -92,7 +90,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
         for (Relationship existingRelationship : existingRelationships) {
             if (existingRelationship.getTrackedEntityInstanceB().getTrackedEntityInstanceUid()
                     .equals(trackedEntityInstanceB.getTrackedEntityInstanceUid()) &&
-                    relationshipType.equals(existingRelationship.getRelationship())) {
+                    relationshipType.getUId().equals(existingRelationship.getRelationship())) {
                 return false;
             }
         }
@@ -103,8 +101,8 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
         relationshipStore.insert(relationship);
         trackedEntityInstanceA.getRelationships().add(relationship);
         trackedEntityInstanceB.getRelationships().add(relationship);
-        update(trackedEntityInstanceA);
-        update(trackedEntityInstanceB);
+        save(trackedEntityInstanceA);
+        save(trackedEntityInstanceB);
         return true;
     }
 
@@ -114,19 +112,9 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
         relationshipStore.delete(relationship);
         relationship.getTrackedEntityInstanceA().getRelationships().remove(relationship);
         relationship.getTrackedEntityInstanceB().getRelationships().remove(relationship);
-        update(relationship.getTrackedEntityInstanceA());
-        update(relationship.getTrackedEntityInstanceB());
+        save(relationship.getTrackedEntityInstanceA());
+        save(relationship.getTrackedEntityInstanceB());
         return true;
-    }
-
-    @Override
-    public boolean add(TrackedEntityInstance object) {
-        isNull(object, "Tracked entity instance must not be null");
-
-        if(!trackedEntityInstanceStore.insert(object)) {
-            return false;
-        }
-        return stateStore.saveActionForModel(object, Action.TO_POST);
     }
 
     @Override
@@ -159,8 +147,9 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
     public boolean save(TrackedEntityInstance object) {
         isNull(object, "Tracked entity instance must not be null");
 
-        if (!trackedEntityInstanceStore.save(object))
+        if (!trackedEntityInstanceStore.save(object)){
             return false;
+        }
 
         // TODO check if object was created earlier (then set correct flag)
         Action action = stateStore.queryActionForModel(object);
@@ -171,26 +160,5 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
             return stateStore.saveActionForModel(object, Action.TO_UPDATE);
         }
 
-    }
-
-    @Override
-    public boolean update(TrackedEntityInstance object) {
-        isNull(object, "object argument must not be null");
-
-        Action action = stateStore.queryActionForModel(object);
-        if (Action.TO_DELETE.equals(action)) {
-            throw new IllegalArgumentException("The object with Action." +
-                    "TO_DELETE cannot be updated");
-        }
-
-        /* if object was not posted to the server before,
-        you don't have anything to update */
-        if (!Action.TO_POST.equals(action)) {
-            stateStore.saveActionForModel(object, Action.TO_UPDATE);
-        }
-
-        trackedEntityInstanceStore.update(object);
-
-        return true;
     }
 }

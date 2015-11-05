@@ -35,8 +35,8 @@ import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntity;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.sdk.java.common.services.*;
 
-public interface ITrackedEntityInstanceService extends IService, IAdd<TrackedEntityInstance>, ISave<TrackedEntityInstance>,
-        IUpdate<TrackedEntityInstance>, IRemove<TrackedEntityInstance>, IGet<TrackedEntityInstance>, IList<TrackedEntityInstance> {
+public interface ITrackedEntityInstanceService extends IService, ISave<TrackedEntityInstance>,
+        IRemove<TrackedEntityInstance>, IGet<TrackedEntityInstance>, IList<TrackedEntityInstance> {
     TrackedEntityInstance get(String uid);
     TrackedEntityInstance create(TrackedEntity trackedEntity, OrganisationUnit organisationUnit);
 
