@@ -65,7 +65,8 @@ public final class TrackedEntityAttributeController implements IDataController<T
         this.modelUtils = modelUtils;
     }
 
-    private void getProgramRulesDataFromServer() throws ApiException {
+
+    private void getTrackedEntityAttributesFromServer() throws ApiException {
         ResourceType resource = ResourceType.TRACKED_ENTITY_ATTRIBUTES;
         DateTime serverTime = systemInfoApiClient.getSystemInfo().getServerDate();
         DateTime lastUpdated = lastUpdatedPreferences.get(resource);
@@ -95,6 +96,6 @@ public final class TrackedEntityAttributeController implements IDataController<T
 
     @Override
     public void sync() throws ApiException {
-        getProgramRulesDataFromServer();
+        getTrackedEntityAttributesFromServer();
     }
 }
