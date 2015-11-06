@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.java.sdk.models.common.base.IModel;
@@ -43,7 +44,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class Enrollment implements Serializable, IModel {
+public final class Enrollment implements Serializable, IdentifiableObject {
 
     public static final String ACTIVE = "ACTIVE";
     public static final String COMPLETED = "COMPLETED";
@@ -101,20 +102,14 @@ public final class Enrollment implements Serializable, IModel {
 
     }
 
+    @Override
     public long getId() {
         return id;
     }
 
+    @Override
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getEnrollmentUid() {
-        return enrollmentUid;
-    }
-
-    public void setEnrollmentUid(String enrollmentUid) {
-        this.enrollmentUid = enrollmentUid;
     }
 
     public String getOrgUnit() {
@@ -183,42 +178,61 @@ public final class Enrollment implements Serializable, IModel {
         this.status = status;
     }
 
+    @Override
+    public String getUId() {
+        return enrollmentUid;
+    }
+
+    @Override
+    public void setUId(String uId) {
+        this.enrollmentUid = uId;
+    }
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
+    @Override
     public DateTime getCreated() {
         return created;
     }
 
+    @Override
     public void setCreated(DateTime created) {
         this.created = created;
     }
 
+    @Override
     public DateTime getLastUpdated() {
         return lastUpdated;
     }
 
+    @Override
     public void setLastUpdated(DateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 
+    @Override
     public Access getAccess() {
         return access;
     }
 
+    @Override
     public void setAccess(Access access) {
         this.access = access;
     }

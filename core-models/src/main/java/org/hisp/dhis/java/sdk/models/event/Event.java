@@ -185,13 +185,13 @@ public final class Event implements Serializable, IModel {
 
     @JsonProperty("enrollment")
     public String getEnrollmentUid() {
-        return enrollment.getEnrollmentUid();
+        return enrollment.getUId();
     }
 
     @JsonProperty("enrollment")
     public void setEnrollmentUid(String enrollmentUid) {
         this.enrollment = new Enrollment();
-        this.enrollment.setEnrollmentUid(enrollmentUid);
+        this.enrollment.setUId(enrollmentUid);
     }
 
     public Enrollment getEnrollment() {

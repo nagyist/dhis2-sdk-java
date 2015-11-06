@@ -114,7 +114,7 @@ public final class EventController extends PushableDataController implements IEv
         if (enrollment == null) {
             return;
         }
-        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, enrollment.getEnrollmentUid());
+        DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.EVENTS, enrollment.getUId());
         DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
         Program program = programStore.queryByUid(enrollment.getProgram());
         if (program == null || program.getUId() == null) {
@@ -127,7 +127,7 @@ public final class EventController extends PushableDataController implements IEv
             event.setEnrollment(enrollment);
         }
 
-        saveResourceDataFromServer(ResourceType.EVENTS, enrollment.getEnrollmentUid(),
+        saveResourceDataFromServer(ResourceType.EVENTS, enrollment.getUId(),
                 existingPersistedAndUpdatedEvents, eventStore.query(enrollment), serverDateTime);
     }
 

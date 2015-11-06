@@ -126,7 +126,7 @@ public final class EnrollmentController extends PushableDataController implement
         //todo: be sure to check if the enrollment has ever been on the server, or if it is still pending first time registration sync
 
         Enrollment persistedEnrollment = enrollmentStore.query(uid);
-        if (updatedEnrollment.getEnrollmentUid() == null) {
+        if (updatedEnrollment.getUId() == null) {
             //either the uid provided was invalid, or the enrollment has not been updated since lastUpdated
             return persistedEnrollment;
         }
@@ -237,7 +237,7 @@ public final class EnrollmentController extends PushableDataController implement
         }
 
         for (Enrollment existingItem : existingItems) {
-            String id = existingItem.getEnrollmentUid();
+            String id = existingItem.getUId();
             Enrollment updatedItem = updatedItemsMap.get(id);
             Enrollment persistedItem = persistedItemsMap.get(id);
 
@@ -261,8 +261,8 @@ public final class EnrollmentController extends PushableDataController implement
         Map<String, Enrollment> map = new HashMap<>();
         if (objects != null && objects.size() > 0) {
             for (Enrollment object : objects) {
-                if (object.getEnrollmentUid() != null) {
-                    map.put(object.getEnrollmentUid(), object);
+                if (object.getUId() != null) {
+                    map.put(object.getUId(), object);
                 }
             }
         }
@@ -377,7 +377,7 @@ public final class EnrollmentController extends PushableDataController implement
     private void UpdateEnrollmentTimestamp(Enrollment enrollment) throws ApiException {
         try {
             Enrollment updatedEnrollment = enrollmentApiClient
-                    .getBasicEnrollment(enrollment.getEnrollmentUid(), null);
+                    .getBasicEnrollment(enrollment.getUId(), null);
 
             // merging updated timestamp to local enrollment model
             enrollment.setCreated(updatedEnrollment.getCreated());

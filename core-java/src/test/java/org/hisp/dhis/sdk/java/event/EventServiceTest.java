@@ -114,7 +114,7 @@ public class EventServiceTest {
         programStage.setMinDaysFromStart(programStageNumberOfDaysFromStart);
 
         enrollment = new Enrollment();
-        enrollment.setEnrollmentUid(enrollmentUid);
+        enrollment.setUId(enrollmentUid);
         enrollment.setDateOfEnrollment(enrollmentDate);
 
         trackedEntityInstance = new TrackedEntityInstance();
@@ -356,7 +356,7 @@ public class EventServiceTest {
         CodeGenerator.generateCode();
 
         assertTrue(event.getTrackedEntityInstanceUid().equals(trackedEntityInstance.getTrackedEntityInstanceUid()));
-        assertTrue(event.getEnrollmentUid().equals(enrollment.getEnrollmentUid()));
+        assertTrue(event.getEnrollmentUid().equals(enrollment.getUId()));
         assertTrue(event.getOrganisationUnitId().equals(organisationUnit.getUId()));
         assertTrue(event.getProgramId().equals(program.getUId()));
         assertTrue(event.getProgramStageId().equals(programStage.getUId()));
@@ -379,7 +379,7 @@ public class EventServiceTest {
         CodeGenerator.generateCode();
 
         assertTrue(event.getTrackedEntityInstanceUid().equals(trackedEntityInstance.getTrackedEntityInstanceUid()));
-        assertTrue(event.getEnrollmentUid().equals(enrollment.getEnrollmentUid()));
+        assertTrue(event.getEnrollmentUid().equals(enrollment.getUId()));
         assertTrue(event.getOrganisationUnitId().equals(organisationUnit.getUId()));
         assertTrue(event.getProgramId().equals(program.getUId()));
         assertTrue(event.getProgramStageId().equals(programStage.getUId()));
@@ -402,7 +402,7 @@ public class EventServiceTest {
         CodeGenerator.generateCode();
 
         assertTrue(event.getTrackedEntityInstanceUid().equals(trackedEntityInstance.getTrackedEntityInstanceUid()));
-        assertTrue(event.getEnrollmentUid().equals(enrollment.getEnrollmentUid()));
+        assertTrue(event.getEnrollmentUid().equals(enrollment.getUId()));
         assertTrue(event.getOrganisationUnitId().equals(organisationUnit.getUId()));
         assertTrue(event.getProgramId().equals(program.getUId()));
         assertTrue(event.getProgramStageId().equals(programStage.getUId()));
@@ -425,7 +425,7 @@ public class EventServiceTest {
         CodeGenerator.generateCode();
 
         assertTrue(event.getTrackedEntityInstanceUid().equals(trackedEntityInstance.getTrackedEntityInstanceUid()));
-        assertTrue(event.getEnrollmentUid().equals(enrollment.getEnrollmentUid()));
+        assertTrue(event.getEnrollmentUid().equals(enrollment.getUId()));
         assertTrue(event.getOrganisationUnitId().equals(organisationUnit.getUId()));
         assertTrue(event.getProgramId().equals(program.getUId()));
         assertTrue(event.getProgramStageId().equals(programStage.getUId()));

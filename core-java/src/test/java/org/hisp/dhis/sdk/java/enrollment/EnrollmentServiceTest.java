@@ -96,7 +96,7 @@ public class EnrollmentServiceTest {
         program.setProgramStages(Arrays.asList(programStage));
 
         enrollmentMock = new Enrollment();
-        enrollmentMock.setEnrollmentUid(ENROLLMENT_MOCK_UID);
+        enrollmentMock.setUId(ENROLLMENT_MOCK_UID);
         enrollmentMock.setId(ENROLLMENT_MOCK_ID);
 
         enrollmentToDelete = new Enrollment();

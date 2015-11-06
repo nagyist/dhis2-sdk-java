@@ -103,7 +103,7 @@ public class EnrollmentService implements IEnrollmentService {
         }
 
         Enrollment enrollment = new Enrollment();
-        enrollment.setEnrollmentUid(CodeGenerator.generateCode());
+        enrollment.setUId(CodeGenerator.generateCode());
         enrollment.setTrackedEntityInstance(trackedEntityInstance);
         enrollment.setOrgUnit(organisationUnit.getUId());
         enrollment.setProgram(program.getUId());
