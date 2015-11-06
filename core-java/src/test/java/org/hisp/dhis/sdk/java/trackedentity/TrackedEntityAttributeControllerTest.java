@@ -105,21 +105,16 @@ public class TrackedEntityAttributeControllerTest {
         when(systemInfoApiClient.getSystemInfo()).thenReturn(systemInfo);
         when(lastUpdatedPreferencesMock.get(ResourceType.TRACKED_ENTITY_ATTRIBUTES)).thenReturn(lastUpdated);
         when(trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null)).thenReturn(trackedEntityAttributeList);
+        when(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated)).thenReturn(trackedEntityAttributeListLastUpdated);
         trackedEntityAttributeController = new TrackedEntityAttributeController(trackedEntityAttributeApiClient, transactionManagerMock,
                 lastUpdatedPreferencesMock, trackedEntityAttributeStore, systemInfoApiClient, modelUtilsMock);
     }
 
-    @Test
-    public void testGetTrackedEntityAttributesFromServerShouldBeSavedInStore() {
-        when(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated)).thenReturn(trackedEntityAttributeListLastUpdated);
-        trackedEntityAttributeController.sync();
-
-        verify(trackedEntityAttributeApiClient, times(1)).getBasicTrackedEntityAttributes(null);
-        verify(trackedEntityAttributeApiClient, times(1)).getFullTrackedEntityAttributes(lastUpdated);
-        assertEquals(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated), trackedEntityAttributeListLastUpdated);
-        assertEquals(trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null), trackedEntityAttributeList);
-        verify(transactionManagerMock, atLeastOnce()).transact(any(Collection.class));
-    }
+    /**
+     * This test synchronizes with the server and tests that the mock methods is
+     * being called. This includes data(locally and from server) is being merged,
+     * being saved in store and updating lastUpdated fields
+     */
 
     @Test
     public void testGetTrackedEntityAttributesFromServer() {
@@ -129,8 +124,10 @@ public class TrackedEntityAttributeControllerTest {
         mergedLists.addAll(trackedEntityAttributeListLastUpdated);
 
         List<IDbOperation> operations = new ArrayList<>();
+
         when(transactionManagerMock.createOperations(trackedEntityAttributeStore,
                 mergedLists, trackedEntityAttributeStore.queryAll())).thenReturn(operations);
+
         verify(modelUtilsMock, times(1)).merge(trackedEntityAttributeList, trackedEntityAttributeListLastUpdated, trackedEntityAttributeStore.queryAll());
         verify(trackedEntityAttributeApiClient, times(1)).getBasicTrackedEntityAttributes(null);
         verify(trackedEntityAttributeApiClient, times(1)).getFullTrackedEntityAttributes(lastUpdated);
