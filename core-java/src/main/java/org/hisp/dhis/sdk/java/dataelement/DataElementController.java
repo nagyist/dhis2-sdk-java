@@ -37,7 +37,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -48,13 +48,13 @@ public final class DataElementController implements IDataController<DataElement>
     private final IIdentifiableObjectStore<DataElement> mDataElementStore;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ITransactionManager transactionManager;
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
     public DataElementController(IDataElementApiClient dataElementApiClient,
                                  ISystemInfoApiClient systemInfoApiClient,
                                  ILastUpdatedPreferences lastUpdatedPreferences,
                                  IIdentifiableObjectStore<DataElement> mDataElementStore,
-                                 ITransactionManager transactionManager, IModelUtils modelUtils) {
+                                 ITransactionManager transactionManager, IIdentifialModelUtils modelUtils) {
         this.dataElementApiClient = dataElementApiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.mDataElementStore = mDataElementStore;

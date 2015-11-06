@@ -35,7 +35,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class TrackedEntityAttributeControllerTest {
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
     private ISystemInfoApiClient systemInfoApiClient;
     private IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore;
-    private IModelUtils modelUtilsMock;
+    private IIdentifialModelUtils modelUtilsMock;
     private TrackedEntityAttributeController trackedEntityAttributeController;
     private List<TrackedEntityAttribute> trackedEntityAttributeList;
     private List<TrackedEntityAttribute> trackedEntityAttributeListLastUpdated;
@@ -74,7 +74,7 @@ public class TrackedEntityAttributeControllerTest {
         transactionManagerMock = mock(ITransactionManager.class);
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
         systemInfoApiClient = mock(ISystemInfoApiClient.class);
-        modelUtilsMock = mock(IModelUtils.class);
+        modelUtilsMock = mock(IIdentifialModelUtils.class);
 
         trackedEntityAttribute1 = new TrackedEntityAttribute();
         trackedEntityAttribute2 = new TrackedEntityAttribute();

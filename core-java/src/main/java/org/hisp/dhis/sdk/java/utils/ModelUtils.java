@@ -32,7 +32,7 @@ import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 import java.util.*;
 
-public class ModelUtils implements IModelUtils {
+public class ModelUtils implements IIdentifialModelUtils {
     private ModelUtils() {
         // private constructor
     }

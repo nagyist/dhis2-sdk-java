@@ -36,7 +36,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class ConstantControllerTest {
     private ITransactionManager transactionManagerMock;
     private ISystemInfoApiClient systemInfoApiClientMock;
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
-    private IModelUtils modelUtilsMock;
+    private IIdentifialModelUtils modelUtilsMock;
     private IIdentifiableObjectStore<Constant> constantStoreMock;
     private ConstantController constantController;
 
@@ -61,7 +61,7 @@ public class ConstantControllerTest {
         transactionManagerMock = mock(ITransactionManager.class);
         systemInfoApiClientMock = mock(ISystemInfoApiClient.class);
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
-        modelUtilsMock = mock(IModelUtils.class);
+        modelUtilsMock = mock(IIdentifialModelUtils.class);
         constantStoreMock = mock(IIdentifiableObjectStore.class);
         constantController = new ConstantController(constantApiClientMock, transactionManagerMock,
                 systemInfoApiClientMock, lastUpdatedPreferencesMock, constantStoreMock, modelUtilsMock);

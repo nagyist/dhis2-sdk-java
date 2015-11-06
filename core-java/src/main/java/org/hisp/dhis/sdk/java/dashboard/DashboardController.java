@@ -43,7 +43,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -65,7 +65,7 @@ public final class DashboardController implements IDataController<Dashboard> {
     /* database transaction manager */
     private final ITransactionManager transactionManager;
 
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
     public DashboardController(IDashboardStore dashboardStore,
                                IDashboardItemStore dashboardItemStore,
@@ -75,7 +75,7 @@ public final class DashboardController implements IDataController<Dashboard> {
                                IDashboardApiClient dashboardApiClient,
                                ISystemInfoApiClient systemInfoApiClient,
                                ILastUpdatedPreferences lastUpdatedPreferences,
-                               ITransactionManager transactionManager, IModelUtils modelUtils) {
+                               ITransactionManager transactionManager, IIdentifialModelUtils modelUtils) {
         this.dashboardStore = dashboardStore;
         this.dashboardItemStore = dashboardItemStore;
         this.dashboardElementStore = dashboardElementStore;

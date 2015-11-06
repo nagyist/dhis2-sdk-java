@@ -39,7 +39,7 @@ import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitController;
 import org.hisp.dhis.sdk.java.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public final class AssignedProgramsController implements IDataController<Program
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IAssignedProgramApiClient assignedProgramApiClient;
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
 
     public AssignedProgramsController(IProgramController programController,
@@ -67,7 +67,7 @@ public final class AssignedProgramsController implements IDataController<Program
                                       ITransactionManager transactionManager,
                                       ILastUpdatedPreferences lastUpdatedPreferences,
                                       ISystemInfoApiClient systemInfoApiClient,
-                                      IAssignedProgramApiClient assignedProgramApiClient, IModelUtils modelUtils) {
+                                      IAssignedProgramApiClient assignedProgramApiClient, IIdentifialModelUtils modelUtils) {
         this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.programController = programController;

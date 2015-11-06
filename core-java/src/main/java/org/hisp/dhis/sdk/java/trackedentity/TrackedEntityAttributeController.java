@@ -37,7 +37,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
@@ -50,13 +50,13 @@ public final class TrackedEntityAttributeController implements IDataController<T
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore;
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
     public TrackedEntityAttributeController(ITrackedEntityAttributeApiClient trackedEntityAttributeApiClient,
                                             ITransactionManager transactionManager,
                                             ILastUpdatedPreferences lastUpdatedPreferences,
                                             IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore,
-                                            ISystemInfoApiClient systemInfoApiClient, IModelUtils modelUtils) {
+                                            ISystemInfoApiClient systemInfoApiClient, IIdentifialModelUtils modelUtils) {
         this.trackedEntityAttributeApiClient = trackedEntityAttributeApiClient;
         this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;

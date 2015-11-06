@@ -26,43 +26,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.sdk.java;
+package org.hisp.dhis.sdk.java.utils;
 
-import org.hisp.dhis.sdk.java.dashboard.*;
-import org.hisp.dhis.sdk.java.enrollment.EnrollmentControllerTest;
-import org.hisp.dhis.sdk.java.enrollment.EnrollmentServiceTest;
-import org.hisp.dhis.sdk.java.event.EventServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramRuleVariableServiceTest;
-import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
-import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityAttributeController;
-import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityAttributeControllerTest;
-import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityInstanceServiceTest;
-import org.hisp.dhis.sdk.java.user.UserAccountControllerTest;
-import org.hisp.dhis.sdk.java.user.UserAccountServiceTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        DashboardContentServiceTest.class,
-        DashboardElementServiceTest.class,
-        DashboardItemServiceTest.class,
-        DashboardServiceTest.class,
-        DashboardControllerTest.class,
+public interface IIdentifialModelUtils {
+    <T extends IdentifiableObject> Map<String, T> toMap(Collection<T> objects);
 
-        ProgramServiceTest.class,
-        ProgramRuleServiceTest.class,
-        ProgramRuleVariableServiceTest.class,
-        UserAccountServiceTest.class,
+    <T extends IdentifiableObject> List<String> toUidList(List<T> objects);
 
-        UserAccountControllerTest.class,
-        TrackedEntityInstanceServiceTest.class,
-        TrackedEntityAttributeControllerTest.class,
-        EnrollmentServiceTest.class,
-        EnrollmentControllerTest.class,
-        EventServiceTest.class
-})
-public class CoreTestSuite {
+    <T extends IdentifiableObject> Set<String> toUidSet(Collection<T> items);
+
+    <T extends IdentifiableObject> List<T> merge(List<T> existingItems, List<T> updatedItems, List<T> persistedItems);
 }

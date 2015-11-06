@@ -47,6 +47,7 @@ import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.event.IEventController;
 import org.hisp.dhis.sdk.java.event.IEventStore;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -63,10 +64,11 @@ public final class EnrollmentController extends PushableDataController implement
     private final IEventStore eventStore;
     private final IStateStore stateStore;
     private final IFailedItemStore failedItemStore;
+    private final IModelUtils modelUtils;
 
     public EnrollmentController(IEnrollmentApiClient apiClient, ISystemInfoApiClient systemInfoApiClient, ILastUpdatedPreferences preferences,
                                 ITransactionManager transactionManager, IEventController eventController, IEnrollmentStore enrollmentStore,
-                                IEventStore eventStore, IStateStore stateStore, IFailedItemStore failedItemStore) {
+                                IEventStore eventStore, IStateStore stateStore, IFailedItemStore failedItemStore, IModelUtils modelUtils) {
         this.enrollmentApiClient = apiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = preferences;
@@ -76,6 +78,7 @@ public final class EnrollmentController extends PushableDataController implement
         this.eventStore = eventStore;
         this.stateStore = stateStore;
         this.failedItemStore = failedItemStore;
+        this.modelUtils = modelUtils;
     }
 
     private List<Enrollment> getEnrollmentsDataFromServer(TrackedEntityInstance trackedEntityInstance) throws ApiException {

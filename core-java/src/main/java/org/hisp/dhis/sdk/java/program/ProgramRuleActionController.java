@@ -37,7 +37,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
@@ -50,14 +50,14 @@ public final class ProgramRuleActionController implements IDataController<Progra
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore;
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
     public ProgramRuleActionController(IProgramRuleActionApiClient programRuleActionApiClient,
                                        ITransactionManager transactionManager,
                                        ISystemInfoApiClient systemInfoApiClient,
                                        ILastUpdatedPreferences lastUpdatedPreferences,
                                        IIdentifiableObjectStore<ProgramRuleAction> mProgramRuleActionStore,
-                                       IModelUtils modelUtils) {
+                                       IIdentifialModelUtils modelUtils) {
         this.programRuleActionApiClient = programRuleActionApiClient;
         this.transactionManager = transactionManager;
         this.systemInfoApiClient = systemInfoApiClient;

@@ -37,7 +37,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IModelUtils;
+import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
@@ -50,13 +50,13 @@ public final class ConstantController implements IDataController<Constant> {
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final IIdentifiableObjectStore<Constant> constantStore;
-    private final IModelUtils modelUtils;
+    private final IIdentifialModelUtils modelUtils;
 
     public ConstantController(IConstantApiClient constantApiClient,
                               ITransactionManager transactionManager,
                               ISystemInfoApiClient systemInfoApiClient,
                               ILastUpdatedPreferences lastUpdatedPreferences,
-                              IIdentifiableObjectStore<Constant> constantStore, IModelUtils modelUtils) {
+                              IIdentifiableObjectStore<Constant> constantStore, IIdentifialModelUtils modelUtils) {
         this.constantApiClient = constantApiClient;
         this.transactionManager = transactionManager;
         this.systemInfoApiClient = systemInfoApiClient;
