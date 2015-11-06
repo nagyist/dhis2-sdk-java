@@ -25,9 +25,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.hisp.dhis.sdk.java.utils;
 
-import org.hisp.dhis.java.sdk.models.common.base.IModel;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,12 +36,11 @@ import java.util.Map;
 import java.util.Set;
 
 public interface IModelUtils {
-    <T extends IModel> Map<String, T> toMap(Collection<T> objects);
+    <T extends IdentifiableObject> Map<String, T> toMap(Collection<T> objects);
 
-    <T extends IModel> List<String> toUidList(List<T> objects);
+    <T extends IdentifiableObject> List<String> toUidList(List<T> objects);
 
-    <T extends IModel> Set<String> toUidSet(Collection<T> items);
+    <T extends IdentifiableObject> Set<String> toUidSet(Collection<T> items);
 
-    <T extends IModel> List<T> merge(List<T> existingItems, List<T> updatedItems, List<T> persistedItems);
-
+    <T extends IdentifiableObject> List<T> merge(List<T> existingItems, List<T> updatedItems, List<T> persistedItems);
 }

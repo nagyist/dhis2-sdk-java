@@ -40,7 +40,7 @@ import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.user.IUserAccountService;
 import org.hisp.dhis.sdk.java.user.IUserStore;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -57,14 +57,14 @@ public final class InterpretationController implements IDataController<Interpret
     private final IInterpretationCommentStore mInterpretationCommentStore;
 
     private final IUserStore mUserStore;
-    private final IIdentifialModelUtils modelUtils;
+    private final IModelUtils modelUtils;
 
     public InterpretationController(IInterpretationService interpretationsService,
                                     IUserAccountService userAccountService,
                                     IIdentifiableObjectStore<Interpretation> mInterpretationStore,
                                     IInterpretationElementStore mInterpretationElementStore,
                                     IInterpretationCommentStore mInterpretationCommentStore,
-                                    IUserStore mUserStore, IIdentifialModelUtils modelUtils) {
+                                    IUserStore mUserStore, IModelUtils modelUtils) {
         this.mInterpretationService = interpretationsService;
         this.mUserAccountService = userAccountService;
         this.mInterpretationStore = mInterpretationStore;

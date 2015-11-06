@@ -28,15 +28,15 @@
 
 package org.hisp.dhis.sdk.java.organisationunit;
 
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.sdk.java.common.network.ApiException;
 import org.hisp.dhis.sdk.java.common.persistence.DbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
-import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -50,11 +50,11 @@ public final class OrganisationUnitController implements IOrganisationUnitContro
     private final IOrganisationUnitApiClient organisationUnitApiClient;
     private final ILastUpdatedPreferences lastUpdatedPreferences;
     private final ITransactionManager transactionManager;
-    private final IIdentifialModelUtils modelUtils;
+    private final IModelUtils modelUtils;
 
     public OrganisationUnitController(IOrganisationUnitStore mOrganisationUnitStore, ISystemInfoApiClient systemInfoApiClient,
                                       IOrganisationUnitApiClient organisationUnitApiClient,
-                                      ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IIdentifialModelUtils modelUtils) {
+                                      ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IModelUtils modelUtils) {
         this.mOrganisationUnitStore = mOrganisationUnitStore;
         this.systemInfoApiClient = systemInfoApiClient;
         this.organisationUnitApiClient = organisationUnitApiClient;

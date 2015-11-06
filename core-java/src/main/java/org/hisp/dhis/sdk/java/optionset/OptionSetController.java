@@ -39,7 +39,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -53,14 +53,14 @@ public final class OptionSetController implements IDataController<OptionSet> {
 
     private final IOptionStore mOptionStore;
     private final IIdentifiableObjectStore<OptionSet> mOptionSetStore;
-    private final IIdentifialModelUtils modelUtils;
+    private final IModelUtils modelUtils;
 
 
     public OptionSetController(IOptionSetApiClient optionSetApiClient, IOptionStore mOptionStore,
                                IIdentifiableObjectStore<OptionSet> mOptionSetStore,
                                ISystemInfoApiClient systemInfoApiClient,
                                ILastUpdatedPreferences lastUpdatedPreferences,
-                               ITransactionManager transactionManager, IIdentifialModelUtils modelUtils) {
+                               ITransactionManager transactionManager, IModelUtils modelUtils) {
         this.transactionManager = transactionManager;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
         this.optionSetApiClient = optionSetApiClient;

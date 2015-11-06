@@ -35,7 +35,6 @@ import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.event.IEventController;
 import org.hisp.dhis.sdk.java.event.IEventStore;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
 import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.junit.Before;
 import org.junit.Test;

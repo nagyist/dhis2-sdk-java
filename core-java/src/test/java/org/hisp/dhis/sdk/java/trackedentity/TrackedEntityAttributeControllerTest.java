@@ -29,13 +29,12 @@ package org.hisp.dhis.sdk.java.trackedentity;
 
 import org.hisp.dhis.java.sdk.models.common.SystemInfo;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
-import org.hisp.dhis.sdk.java.common.persistence.IDbOperation;
 import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class TrackedEntityAttributeControllerTest {
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
     private ISystemInfoApiClient systemInfoApiClient;
     private IIdentifiableObjectStore<TrackedEntityAttribute> trackedEntityAttributeStore;
-    private IIdentifialModelUtils modelUtilsMock;
+    private IModelUtils modelUtils;
     private TrackedEntityAttributeController trackedEntityAttributeController;
     private List<TrackedEntityAttribute> trackedEntityAttributeList;
     private List<TrackedEntityAttribute> trackedEntityAttributeListLastUpdated;
@@ -74,7 +73,7 @@ public class TrackedEntityAttributeControllerTest {
         transactionManagerMock = mock(ITransactionManager.class);
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
         systemInfoApiClient = mock(ISystemInfoApiClient.class);
-        modelUtilsMock = mock(IIdentifialModelUtils.class);
+        modelUtils = mock(IModelUtils.class);
 
         trackedEntityAttribute1 = new TrackedEntityAttribute();
         trackedEntityAttribute2 = new TrackedEntityAttribute();
@@ -105,37 +104,39 @@ public class TrackedEntityAttributeControllerTest {
         when(systemInfoApiClient.getSystemInfo()).thenReturn(systemInfo);
         when(lastUpdatedPreferencesMock.get(ResourceType.TRACKED_ENTITY_ATTRIBUTES)).thenReturn(lastUpdated);
         when(trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null)).thenReturn(trackedEntityAttributeList);
-        when(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated)).thenReturn(trackedEntityAttributeListLastUpdated);
         trackedEntityAttributeController = new TrackedEntityAttributeController(trackedEntityAttributeApiClient, transactionManagerMock,
-                lastUpdatedPreferencesMock, trackedEntityAttributeStore, systemInfoApiClient, modelUtilsMock);
+                lastUpdatedPreferencesMock, trackedEntityAttributeStore, systemInfoApiClient, modelUtils);
     }
 
-    /**
-     * This test synchronizes with the server and tests that the mock methods is
-     * being called. This includes data(locally and from server) is being merged,
-     * being saved in store and updating lastUpdated fields
-     */
-
     @Test
-    public void testGetTrackedEntityAttributesFromServer() {
+    public void testGetTrackedEntityAttributesFromServerShouldBeSavedInStore() {
+        when(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated)).thenReturn(trackedEntityAttributeListLastUpdated);
         trackedEntityAttributeController.sync();
-        List<TrackedEntityAttribute> mergedLists = new ArrayList<>();
-        mergedLists.addAll(trackedEntityAttributeList);
-        mergedLists.addAll(trackedEntityAttributeListLastUpdated);
 
-        List<IDbOperation> operations = new ArrayList<>();
-
-        when(transactionManagerMock.createOperations(trackedEntityAttributeStore,
-                mergedLists, trackedEntityAttributeStore.queryAll())).thenReturn(operations);
-
-        verify(modelUtilsMock, times(1)).merge(trackedEntityAttributeList, trackedEntityAttributeListLastUpdated, trackedEntityAttributeStore.queryAll());
         verify(trackedEntityAttributeApiClient, times(1)).getBasicTrackedEntityAttributes(null);
         verify(trackedEntityAttributeApiClient, times(1)).getFullTrackedEntityAttributes(lastUpdated);
         assertEquals(trackedEntityAttributeApiClient.getFullTrackedEntityAttributes(lastUpdated), trackedEntityAttributeListLastUpdated);
         assertEquals(trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null), trackedEntityAttributeList);
         verify(transactionManagerMock, atLeastOnce()).transact(any(Collection.class));
-        verify(transactionManagerMock, times(1)).transact(operations);
-        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.TRACKED_ENTITY_ATTRIBUTES, systemInfo.getServerDate(), null);
     }
 
+    @Test
+    public void testUpdatedTrackedEntityAttributesFromServerShouldUpdateLocallySavedTrackedEntityAttribute() {
+
+    }
+
+    @Test
+    public void testNewTrackedEntityAttributesOnServerShouldBeSavedLocallyWhenTrackedEntityAttributesHavePreviouslyBeenLoaded() {
+
+    }
+
+    @Test
+    public void testNonUpdatedTrackedEntityAttributesOnServerThatAlreadyHaveBeenSavedLocallyShouldNotBeLoaded() {
+
+    }
+
+    @Test
+    public void deletedTrackedEntityAttributesOnServerShouldDeleteLocallySavedTrackedEntityAttribtues() {
+
+    }
 }

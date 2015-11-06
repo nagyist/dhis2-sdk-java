@@ -33,7 +33,7 @@ import org.hisp.dhis.sdk.java.common.network.INetworkModule;
 import org.hisp.dhis.sdk.java.common.persistence.IPersistenceModule;
 import org.hisp.dhis.sdk.java.common.preferences.IPreferencesModule;
 import org.hisp.dhis.sdk.java.dashboard.DashboardController;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 
 import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 
@@ -42,7 +42,7 @@ public class ControllersModule implements IControllersModule {
 
     public ControllersModule(INetworkModule networkModule,
                              IPersistenceModule persistenceModule,
-                             IPreferencesModule preferencesModule, IIdentifialModelUtils modelUtils) {
+                             IPreferencesModule preferencesModule, IModelUtils modelUtils) {
         isNull(networkModule, "networkModule must not be null");
         isNull(persistenceModule, "persistenceModule must not be null");
         isNull(preferencesModule, "preferencesModule must not be null");

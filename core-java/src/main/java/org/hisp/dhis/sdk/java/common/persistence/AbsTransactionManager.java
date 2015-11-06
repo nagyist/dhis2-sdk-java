@@ -29,16 +29,16 @@
 package org.hisp.dhis.sdk.java.common.persistence;
 
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public abstract class AbsTransactionManager implements ITransactionManager {
-    private final IIdentifialModelUtils modelUtils;
+    private final IModelUtils modelUtils;
 
-    protected AbsTransactionManager(IIdentifialModelUtils modelUtils) {
+    protected AbsTransactionManager(IModelUtils modelUtils) {
         this.modelUtils = modelUtils;
     }
 

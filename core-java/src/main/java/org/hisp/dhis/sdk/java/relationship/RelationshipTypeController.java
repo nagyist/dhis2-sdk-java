@@ -37,7 +37,7 @@ import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.sdk.java.utils.IIdentifialModelUtils;
+import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedList;
@@ -50,13 +50,13 @@ public final class RelationshipTypeController implements IDataController<Relatio
     private final IRelationshipTypeApiClient relationshipTypeApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore;
-    private final IIdentifialModelUtils modelUtils;
+    private final IModelUtils modelUtils;
 
     public RelationshipTypeController(IRelationshipTypeApiClient relationshipApiClient,
                                       ITransactionManager transactionManager,
                                       IIdentifiableObjectStore<RelationshipType> mRelationshipTypeStore,
                                       ILastUpdatedPreferences lastUpdatedPreferences,
-                                      ISystemInfoApiClient systemInfoApiClient, IIdentifialModelUtils modelUtils) {
+                                      ISystemInfoApiClient systemInfoApiClient, IModelUtils modelUtils) {
         this.relationshipTypeApiClient = relationshipApiClient;
         this.transactionManager = transactionManager;
         this.mRelationshipTypeStore = mRelationshipTypeStore;
