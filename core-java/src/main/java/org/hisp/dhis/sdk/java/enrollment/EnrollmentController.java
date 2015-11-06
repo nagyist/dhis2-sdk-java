@@ -96,7 +96,7 @@ public final class EnrollmentController extends PushableDataController implement
                 .getFullEnrollments(trackedEntityInstance.getTrackedEntityInstanceUid(), lastUpdated);
 
         List<Enrollment> existingUpdatedAndPersistedEnrollments =
-                merge(allExistingEnrollments, updatedEnrollments, enrollmentStore.query(trackedEntityInstance));
+                modelUtils.merge(allExistingEnrollments, updatedEnrollments, enrollmentStore.query(trackedEntityInstance));
         for (Enrollment enrollment : existingUpdatedAndPersistedEnrollments) {
             enrollment.setTrackedEntityInstance(trackedEntityInstance);
         }
@@ -165,8 +165,8 @@ public final class EnrollmentController extends PushableDataController implement
                                                List<Enrollment> newModels) {
         List<DbOperation> ops = new ArrayList<>();
 
-        Map<String, Enrollment> newModelsMap = toMap(newModels);
-        Map<String, Enrollment> oldModelsMap = toMap(oldModels);
+        Map<String, Enrollment> newModelsMap = modelUtils.toMap(newModels);
+        Map<String, Enrollment> oldModelsMap = modelUtils.toMap(oldModels);
 
         // As we will go through map of persisted items, we will try to update existing data.
         // Also, during each iteration we will remove old model key from list of new models.
@@ -213,60 +213,6 @@ public final class EnrollmentController extends PushableDataController implement
         }
 
         return ops;
-    }
-
-    /**
-     * Returns a list of items taken from updatedItems and persistedItems, based on the items in
-     * the passed existingItems List. Items that are not present in existingItems will not be
-     * included.
-     *
-     * @param existingItems
-     * @param updatedItems
-     * @param persistedItems
-     * @return
-     */
-    private List<Enrollment> merge(List<Enrollment> existingItems,
-                                   List<Enrollment> updatedItems,
-                                   List<Enrollment> persistedItems) {
-        Map<String, Enrollment> updatedItemsMap = toMap(updatedItems);
-        Map<String, Enrollment> persistedItemsMap = toMap(persistedItems);
-        Map<String, Enrollment> existingItemsMap = new HashMap<>();
-
-        if (existingItems == null || existingItems.isEmpty()) {
-            return new ArrayList<>(existingItemsMap.values());
-        }
-
-        for (Enrollment existingItem : existingItems) {
-            String id = existingItem.getUId();
-            Enrollment updatedItem = updatedItemsMap.get(id);
-            Enrollment persistedItem = persistedItemsMap.get(id);
-
-            if (updatedItem != null) {
-                if (persistedItem != null) {
-                    updatedItem.setId(persistedItem.getId());
-                }
-                existingItemsMap.put(id, updatedItem);
-                continue;
-            }
-
-            if (persistedItem != null) {
-                existingItemsMap.put(id, persistedItem);
-            }
-        }
-
-        return new ArrayList<>(existingItemsMap.values());
-    }
-
-    private Map<String, Enrollment> toMap(Collection<Enrollment> objects) {
-        Map<String, Enrollment> map = new HashMap<>();
-        if (objects != null && objects.size() > 0) {
-            for (Enrollment object : objects) {
-                if (object.getUId() != null) {
-                    map.put(object.getUId(), object);
-                }
-            }
-        }
-        return map;
     }
 
     private void sendEnrollmentChanges(boolean sendEvents) throws ApiException {
