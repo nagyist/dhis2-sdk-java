@@ -28,6 +28,8 @@
 package org.hisp.dhis.sdk.java.enrollment;
 
 
+import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.sdk.java.common.IFailedItemStore;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.persistence.ITransactionManager;
@@ -39,6 +41,9 @@ import org.hisp.dhis.sdk.java.utils.IModelUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class EnrollmentControllerTest {
@@ -76,7 +81,10 @@ public class EnrollmentControllerTest {
 
 
     @Test
-    public void test() {
+    public void testGetEnrollmentsDataFromServerNullTrackedEntityInstance() {
+        TrackedEntityInstance trackedEntityInstance = null;
+        List<Enrollment> enrollmentsForTrackedEntityInstance = enrollmentController.sync(trackedEntityInstance);
 
+        assertTrue(enrollmentsForTrackedEntityInstance.size() == 0);
     }
 }
