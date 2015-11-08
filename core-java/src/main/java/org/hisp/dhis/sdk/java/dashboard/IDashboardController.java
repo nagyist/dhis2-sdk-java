@@ -30,7 +30,9 @@ package org.hisp.dhis.sdk.java.dashboard;
 
 public interface IDashboardController {
 
-    boolean sync();
+    boolean update();
 
-    void updateDashboards();
+    boolean send();
+
+    boolean sync();
 }

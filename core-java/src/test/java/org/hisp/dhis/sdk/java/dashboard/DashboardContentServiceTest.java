@@ -41,7 +41,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class DashboardContentServiceTest {
-    private DashboardContent dashboardContentMock;
+    private DashboardContent dashboardContent;
     private List<DashboardContent> dashboardContentsMockList;
 
     private IDashboardItemContentStore dashboardItemContentStoreMock;
@@ -49,15 +49,15 @@ public class DashboardContentServiceTest {
 
     @Before
     public void setUp() {
-        dashboardContentMock = mock(DashboardContent.class);
-        dashboardContentsMockList = Arrays.asList(dashboardContentMock, dashboardContentMock, dashboardContentMock);
+        dashboardContent = new DashboardContent();
+        dashboardContentsMockList = Arrays.asList(dashboardContent, dashboardContent, dashboardContent);
         dashboardItemContentStoreMock = mock(IDashboardItemContentStore.class);
         dashboardItemContentService = new DashboardContentService(dashboardItemContentStoreMock);
     }
 
     @Test
     public void testGetById() {
-        when(dashboardItemContentStoreMock.queryById(anyInt())).thenReturn(dashboardContentMock);
+        when(dashboardItemContentStoreMock.queryById(anyInt())).thenReturn(dashboardContent);
 
         dashboardItemContentService.get(12);
 
@@ -66,7 +66,7 @@ public class DashboardContentServiceTest {
 
     @Test
     public void testGetByUid() {
-        when(dashboardItemContentStoreMock.queryByUid(anyString())).thenReturn(dashboardContentMock);
+        when(dashboardItemContentStoreMock.queryByUid(anyString())).thenReturn(dashboardContent);
 
         dashboardItemContentService.get("123");
 

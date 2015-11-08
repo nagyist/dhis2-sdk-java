@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Dashboard extends BaseIdentifiableObject {
+public final class Dashboard extends BaseIdentifiableObject {
     /**
      * Maximum amount of items dashboard can hold.
      */

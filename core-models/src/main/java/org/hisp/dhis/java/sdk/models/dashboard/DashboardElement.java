@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DashboardElement extends BaseIdentifiableObject {
+public final class DashboardElement extends BaseIdentifiableObject {
 
     @JsonIgnore
     DashboardItem dashboardItem;

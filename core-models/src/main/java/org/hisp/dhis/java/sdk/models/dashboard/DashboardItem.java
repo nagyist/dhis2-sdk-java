@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DashboardItem extends BaseIdentifiableObject {
+public final class DashboardItem extends BaseIdentifiableObject {
     public static final int MAX_CONTENT = 8;
 
     public static final String SHAPE_NORMAL = "normal";

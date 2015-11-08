@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DashboardContent extends BaseIdentifiableObject {
+public final class DashboardContent extends BaseIdentifiableObject {
     public static final String TYPE_CHART = "chart";
     public static final String TYPE_EVENT_CHART = "eventChart";
     public static final String TYPE_MAP = "map";

@@ -66,11 +66,17 @@ public class DashboardController2 implements IDashboardController {
     }
 
     @Override
-    public void updateDashboards() {
+    public boolean update() {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
         List<Dashboard> updatedDashboards = getDashboards(lastUpdated);
 
+        return true;
+    }
+
+    @Override
+    public boolean send() {
+        return false;
     }
 
     private List<Dashboard> getDashboards(DateTime lastUpdated) {
@@ -84,23 +90,24 @@ public class DashboardController2 implements IDashboardController {
                 Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
         Map<Long, List<DashboardElement>> persistedDashboardElements = queryDashboardElements(
                 Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
-
-        /* build relationships */
-        for (Dashboard dashboard : persistedDashboards) {
-            List<DashboardItem> dashboardItems = persistedDashboardItems.get(dashboard.getId());
-            dashboard.setDashboardItems(dashboardItems);
-
-            if (dashboardItems == null) {
-                continue;
-            }
-
-            for (DashboardItem dashboardItem : dashboardItems) {
-                List<DashboardElement> dashboardElements = persistedDashboardElements.get(dashboardItem.getId());
-                dashboardItem.setDashboardElements(dashboardElements);
-            }
-        }
-
-        return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
+//
+//        /* build relationships */
+//        for (Dashboard dashboard : persistedDashboards) {
+//            List<DashboardItem> dashboardItems = persistedDashboardItems.get(dashboard.getId());
+//            dashboard.setDashboardItems(dashboardItems);
+//
+//            if (dashboardItems == null) {
+//                continue;
+//            }
+//
+//            for (DashboardItem dashboardItem : dashboardItems) {
+//                List<DashboardElement> dashboardElements = persistedDashboardElements.get(dashboardItem.getId());
+//                dashboardItem.setDashboardElements(dashboardElements);
+//            }
+//        }
+//
+//        return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
+        return null;
     }
 
     /* returns map where key is id of dashboard and value is list of dashboard items */

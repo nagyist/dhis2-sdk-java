@@ -43,9 +43,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class DashboardServiceTest {
-    private Dashboard dashboardMock;
-    private DashboardItem dashboardItemMock;
-    private DashboardContent dashboardContentMock;
+    private Dashboard dashboard;
+    private DashboardItem dashboardItem;
+    private DashboardContent dashboardContent;
 
     private IDashboardStore dashboardStoreMock;
     private IDashboardItemStore dashboardItemStoreMock;
@@ -59,9 +59,9 @@ public class DashboardServiceTest {
 
     @Before
     public void setUp() {
-        dashboardMock = mock(Dashboard.class);
-        dashboardItemMock = mock(DashboardItem.class);
-        dashboardContentMock = mock(DashboardContent.class);
+        dashboard = new Dashboard();
+        dashboardItem = new DashboardItem();
+        dashboardContent = new DashboardContent();
 
         dashboardStoreMock = mock(IDashboardStore.class);
         dashboardItemStoreMock = mock(IDashboardItemStore.class);
@@ -85,60 +85,60 @@ public class DashboardServiceTest {
     public void testRemoveDashboardWhichDoesNotExist() {
         when(stateStoreMock.queryActionForModel(any(Dashboard.class))).thenReturn(null);
 
-        boolean status = dashboardService.remove(dashboardMock);
+        boolean status = dashboardService.remove(dashboard);
 
         assertFalse(status);
-        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
+        verify(stateStoreMock, never()).saveActionForModel(dashboard, Action.TO_DELETE);
     }
 
     @Test
     public void testRemoveDashboardWithStateToPost() {
-        when(dashboardStoreMock.delete(dashboardMock)).thenReturn(true);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+        when(dashboardStoreMock.delete(dashboard)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_POST);
 
-        boolean status = dashboardService.remove(dashboardMock);
+        boolean status = dashboardService.remove(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
-        verify(dashboardStoreMock, times(1)).delete(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, never()).saveActionForModel(dashboard, Action.TO_DELETE);
+        verify(dashboardStoreMock, times(1)).delete(dashboard);
     }
 
     @Test
     public void testRemoveDashboardWithStateToUpdate() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_UPDATE);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_DELETE)).thenReturn(true);
 
-        boolean status = dashboardService.remove(dashboardMock);
+        boolean status = dashboardService.remove(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_DELETE);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboard, Action.TO_DELETE);
     }
 
     @Test
     public void testRemoveDashboardWithStateSynced() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_DELETE)).thenReturn(true);
 
-        boolean status = dashboardService.remove(dashboardMock);
+        boolean status = dashboardService.remove(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_DELETE);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboard, Action.TO_DELETE);
     }
 
 
     @Test
     public void testRemoveDashboardWithStateToDelete() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_DELETE)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_DELETE);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_DELETE)).thenReturn(true);
 
-        boolean status = dashboardService.remove(dashboardMock);
+        boolean status = dashboardService.remove(dashboard);
 
         assertFalse(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_DELETE);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, never()).saveActionForModel(dashboard, Action.TO_DELETE);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -148,202 +148,202 @@ public class DashboardServiceTest {
 
     @Test
     public void testSaveDashboardWithoutState() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(null);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_POST)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(null);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_POST)).thenReturn(true);
         when(dashboardStoreMock.queryById(anyInt())).thenReturn(null);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(true);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_POST);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboard, Action.TO_POST);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
     }
 
     @Test
     public void testSaveDashboardWithStateToPost() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_POST);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(true);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
     }
 
     @Test
     public void testSaveDashboardWithStateToUpdate() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_UPDATE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(true);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
     }
 
     @Test
     public void testSaveDashboardWithStateSynced() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_UPDATE)).thenReturn(true);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(true);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_UPDATE)).thenReturn(true);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(true);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertTrue(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(stateStoreMock, times(1)).saveActionForModel(dashboardMock, Action.TO_UPDATE);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(stateStoreMock, times(1)).saveActionForModel(dashboard, Action.TO_UPDATE);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
     }
 
     @Test
     public void testSaveDashboardWithStateToDelete() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_DELETE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertFalse(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
     }
 
     @Test
     public void testSaveDashboardWithStoreFailingToSaveIt() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_UPDATE)).thenReturn(true);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(false);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.SYNCED);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_UPDATE)).thenReturn(true);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(false);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertFalse(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
-        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_UPDATE);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
+        verify(stateStoreMock, never()).saveActionForModel(dashboard, Action.TO_UPDATE);
     }
 
     @Test
     public void testSaveNewDashboardWithStoreFailingToSaveIt() {
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(null);
-        when(stateStoreMock.saveActionForModel(dashboardMock, Action.TO_POST)).thenReturn(true);
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(dashboardStoreMock.save(dashboardMock)).thenReturn(false);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(null);
+        when(stateStoreMock.saveActionForModel(dashboard, Action.TO_POST)).thenReturn(true);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(dashboardStoreMock.save(dashboard)).thenReturn(false);
 
-        boolean status = dashboardService.save(dashboardMock);
+        boolean status = dashboardService.save(dashboard);
 
         assertFalse(status);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
-        verify(dashboardStoreMock, times(1)).save(dashboardMock);
-        verify(stateStoreMock, never()).saveActionForModel(dashboardMock, Action.TO_POST);
+        verify(stateStoreMock, times(1)).queryActionForModel(dashboard);
+        verify(dashboardStoreMock, times(1)).save(dashboard);
+        verify(stateStoreMock, never()).saveActionForModel(dashboard, Action.TO_POST);
     }
 
     @Test
     public void testGetDashboardByIdWithStateSynced() {
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.SYNCED);
 
         Dashboard dashboard = dashboardService.get(12);
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryById(12);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByIdWithStateToPost() {
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_POST);
 
         Dashboard dashboard = dashboardService.get(12);
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryById(12);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByIdWithStateToUpdate() {
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_UPDATE);
 
         Dashboard dashboard = dashboardService.get(12);
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryById(12);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByIdWithStateToDelete() {
-        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+        when(dashboardStoreMock.queryById(anyInt())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_DELETE);
 
         Dashboard dashboard = dashboardService.get(12);
 
         assertNull(dashboard);
         verify(dashboardStoreMock, times(1)).queryById(12);
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByUidWithStateSynced() {
-        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.SYNCED);
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.SYNCED);
 
         Dashboard dashboard = dashboardService.get("asfkj234");
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByUidWithStateToPost() {
-        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_POST);
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_POST);
 
         Dashboard dashboard = dashboardService.get("asfkj234");
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByUidWithStateToUpdate() {
-        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_UPDATE);
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_UPDATE);
 
         Dashboard dashboard = dashboardService.get("asfkj234");
 
-        assertSame(dashboard, dashboardMock);
+        assertSame(dashboard, this.dashboard);
         verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
 
     @Test
     public void testGetDashboardByUidWithStateToDelete() {
-        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboardMock);
-        when(stateStoreMock.queryActionForModel(dashboardMock)).thenReturn(Action.TO_DELETE);
+        when(dashboardStoreMock.queryByUid(anyString())).thenReturn(dashboard);
+        when(stateStoreMock.queryActionForModel(dashboard)).thenReturn(Action.TO_DELETE);
 
         Dashboard dashboard = dashboardService.get("asfkj234");
 
         assertNull(dashboard);
         verify(dashboardStoreMock, times(1)).queryByUid("asfkj234");
-        verify(stateStoreMock, times(1)).queryActionForModel(dashboardMock);
+        verify(stateStoreMock, times(1)).queryActionForModel(this.dashboard);
     }
 
     @Test
@@ -361,23 +361,23 @@ public class DashboardServiceTest {
 
     @Test
     public void testCountItemsOnEmptyDashboard() {
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(null);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(null);
 
-        int itemCount = dashboardService.countItems(dashboardMock);
+        int itemCount = dashboardService.countItems(dashboard);
 
         assertEquals(itemCount, 0);
-        verify(dashboardItemServiceMock, times(1)).list(dashboardMock);
+        verify(dashboardItemServiceMock, times(1)).list(dashboard);
     }
 
     @Test
     public void testCountItemsOnNoneEmptyDashboard() {
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(
-                dashboardItemMock, dashboardItemMock, dashboardItemMock));
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(
+                dashboardItem, dashboardItem, dashboardItem));
 
-        int itemCount = dashboardService.countItems(dashboardMock);
+        int itemCount = dashboardService.countItems(dashboard);
 
         assertEquals(itemCount, 3);
-        verify(dashboardItemServiceMock, times(1)).list(dashboardMock);
+        verify(dashboardItemServiceMock, times(1)).list(dashboard);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -400,37 +400,37 @@ public class DashboardServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddContentToNullDashboard() {
-        dashboardService.addContent(null, dashboardContentMock);
+        dashboardService.addContent(null, dashboardContent);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddNullContentToDashboard() {
-        dashboardService.addContent(dashboardMock, null);
+        dashboardService.addContent(dashboard, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddContentWithUnsupportedType() {
-        when(dashboardContentMock.getType()).thenReturn("UnknownType");
+        dashboardContent.setType("UnknownType");
 
-        dashboardService.addContent(dashboardMock, dashboardContentMock);
+        dashboardService.addContent(dashboard, dashboardContent);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddContentWithNullTypeToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(null);
+        dashboardContent.setType(null);
 
-        dashboardService.addContent(dashboardMock, dashboardContentMock);
+        dashboardService.addContent(dashboard, dashboardContent);
     }
 
     @Test
     public void testAddContentToFullDashboard() {
-        doReturn(40).when(dashboardService).countItems(dashboardMock);
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_MAP);
+        doReturn(40).when(dashboardService).countItems(dashboard);
+        dashboardContent.setType(DashboardContent.TYPE_MAP);
 
-        boolean flag = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean flag = dashboardService.addContent(dashboard, dashboardContent);
 
         assertFalse(flag);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
 
@@ -440,15 +440,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddChartToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_CHART);
+        dashboardContent.setType(DashboardContent.TYPE_CHART);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(16).when(dashboardService).countItems(dashboardMock);
+        doReturn(16).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -458,15 +459,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddEventChartToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_EVENT_CHART);
+        dashboardContent.setType(DashboardContent.TYPE_EVENT_CHART);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(16).when(dashboardService).countItems(dashboardMock);
+        doReturn(16).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -476,15 +478,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddMapToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_MAP);
+        dashboardContent.setType(DashboardContent.TYPE_MAP);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(16).when(dashboardService).countItems(dashboardMock);
+        doReturn(16).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -494,15 +497,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddEventReportToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_EVENT_REPORT);
+        dashboardContent.setType(DashboardContent.TYPE_EVENT_REPORT);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(16).when(dashboardService).countItems(dashboardMock);
+        doReturn(16).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -512,15 +516,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddReportTableToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_REPORT_TABLE);
+        dashboardContent.setType(DashboardContent.TYPE_REPORT_TABLE);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(16).when(dashboardService).countItems(dashboardMock);
+        doReturn(16).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -529,22 +534,22 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddListItemToDashboardWithItemOfSameType() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_USERS);
 
-        doReturn(1).when(dashboardService).countItems(dashboardMock);
+        doReturn(1).when(dashboardService).countItems(dashboard);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(3);
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(dashboardItemMock));
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(3);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(dashboardItem));
 
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardItemServiceMock, never()).create(dashboardMock, DashboardContent.TYPE_USERS);
-        verify(dashboardElementServiceMock, times(1)).create(dashboardItemMock, dashboardContentMock);
+        verify(dashboardItemServiceMock, never()).create(dashboard, DashboardContent.TYPE_USERS);
+        verify(dashboardElementServiceMock, times(1)).create(dashboardItem, dashboardContent);
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
     }
@@ -552,21 +557,21 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddListItemToDashboardWithFullItemOfSameType() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_USERS);
 
-        doReturn(1).when(dashboardService).countItems(dashboardMock);
+        doReturn(1).when(dashboardService).countItems(dashboard);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(8);
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(dashboardItemMock));
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(8);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(dashboardItem));
 
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardItemServiceMock, times(1)).create(dashboardMock, DashboardContent.TYPE_USERS);
+        verify(dashboardItemServiceMock, times(1)).create(dashboard, DashboardContent.TYPE_USERS);
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -575,22 +580,22 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddListItemToFullDashboardWithItemWithFreeSpace() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_USERS);
 
-        doReturn(40).when(dashboardService).countItems(dashboardMock);
+        doReturn(40).when(dashboardService).countItems(dashboard);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(4);
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(dashboardItemMock));
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(4);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(dashboardItem));
 
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardItemServiceMock, never()).create(dashboardMock, DashboardContent.TYPE_USERS);
-        verify(dashboardElementServiceMock, times(1)).create(dashboardItemMock, dashboardContentMock);
+        verify(dashboardItemServiceMock, never()).create(dashboard, DashboardContent.TYPE_USERS);
+        verify(dashboardElementServiceMock, times(1)).create(dashboardItem, dashboardContent);
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
     }
@@ -598,18 +603,18 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddListItemToFullDashboardWithItemWithoutFreeSpace() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_USERS);
 
-        doReturn(40).when(dashboardService).countItems(dashboardMock);
+        doReturn(40).when(dashboardService).countItems(dashboard);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(8);
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(dashboardItemMock));
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(8);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(dashboardItem));
 
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertFalse(status);
         verify(dashboardItemStoreMock, never()).save(any(DashboardItem.class));
@@ -619,21 +624,21 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddListItemToDashboardWithoutItemOfSameType() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_REPORTS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_REPORTS);
 
-        doReturn(1).when(dashboardService).countItems(dashboardMock);
+        doReturn(1).when(dashboardService).countItems(dashboard);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(3);
-        when(dashboardItemServiceMock.list(dashboardMock)).thenReturn(Arrays.asList(dashboardItemMock));
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(3);
+        when(dashboardItemServiceMock.list(dashboard)).thenReturn(Arrays.asList(dashboardItem));
 
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardItemServiceMock, times(1)).create(dashboardMock, DashboardContent.TYPE_USERS);
+        verify(dashboardItemServiceMock, times(1)).create(dashboard, DashboardContent.TYPE_USERS);
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
@@ -642,15 +647,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddContentWithStoreFailingItToSaveItem() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_CHART);
+        dashboardContent.setType(DashboardContent.TYPE_CHART);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(false);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
-        doReturn(0).when(dashboardService).countItems(dashboardMock);
+        doReturn(0).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertFalse(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
@@ -659,15 +665,16 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddContentWithStoreFailingItToSaveElement() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_CHART);
+        dashboardContent.setType(DashboardContent.TYPE_CHART);
+
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(false);
-        doReturn(0).when(dashboardService).countItems(dashboardMock);
+        doReturn(0).when(dashboardService).countItems(dashboard);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertFalse(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardItemServiceMock, times(1)).create(any(Dashboard.class), anyString());
         verify(dashboardElementServiceMock, times(1)).create(any(DashboardItem.class), any(DashboardContent.class));
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
@@ -677,20 +684,20 @@ public class DashboardServiceTest {
 
     @Test
     public void testAddUserToDashboard() {
-        when(dashboardContentMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
-        when(dashboardItemMock.getType()).thenReturn(DashboardContent.TYPE_USERS);
+        dashboardContent.setType(DashboardContent.TYPE_USERS);
+        dashboardItem.setType(DashboardContent.TYPE_USERS);
 
-        when(dashboardItemStoreMock.queryByDashboard(dashboardMock))
-                .thenReturn(Arrays.asList(dashboardItemMock, dashboardItemMock));
+        when(dashboardItemStoreMock.queryByDashboard(dashboard))
+                .thenReturn(Arrays.asList(dashboardItem, dashboardItem));
         when(dashboardItemStoreMock.save(any(DashboardItem.class))).thenReturn(true);
         when(dashboardElementStoreMock.save(any(DashboardElement.class))).thenReturn(true);
 
-        when(dashboardItemServiceMock.countElements(dashboardItemMock)).thenReturn(6);
+        when(dashboardItemServiceMock.countElements(dashboardItem)).thenReturn(6);
 
-        boolean status = dashboardService.addContent(dashboardMock, dashboardContentMock);
+        boolean status = dashboardService.addContent(dashboard, dashboardContent);
 
         assertTrue(status);
-        verify(dashboardService, times(1)).countItems(dashboardMock);
+        verify(dashboardService, times(1)).countItems(dashboard);
         verify(dashboardElementStoreMock, times(1)).save(any(DashboardElement.class));
         verify(dashboardItemStoreMock, times(1)).save(any(DashboardItem.class));
     }
