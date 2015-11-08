@@ -28,12 +28,16 @@
 
 package org.hisp.dhis.sdk.java.interpretation;
 
+import org.hisp.dhis.java.sdk.models.common.Access;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
 import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.sdk.java.common.IStateStore;
-import org.hisp.dhis.sdk.java.utils.Preconditions;
+import org.hisp.dhis.sdk.java.utils.CodeGenerator;
+import org.joda.time.DateTime;
+
+import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 
 public class InterpretationCommentService implements IInterpretationCommentService {
     private final IInterpretationCommentStore interpretationCommentStore;
@@ -44,6 +48,29 @@ public class InterpretationCommentService implements IInterpretationCommentServi
         this.stateStore = stateStore;
     }
 
+    @Override
+    public InterpretationComment create(Interpretation interpretation, User user, String text) {
+        isNull(interpretation, "Interpretation object must not be null");
+        isNull(user, "User object must not be null");
+        isNull(text, "InterpretationComment text must not be null");
+
+        DateTime created = DateTime.now();
+        Access access = Access.createDefaultAccess();
+
+        InterpretationComment interpretationComment = new InterpretationComment();
+        interpretationComment.setUId(CodeGenerator.generateCode());
+        interpretationComment.setName(text);
+        interpretationComment.setDisplayName(text);
+        interpretationComment.setCreated(created);
+        interpretationComment.setLastUpdated(created);
+        interpretationComment.setAccess(access);
+        interpretationComment.setText(text);
+        interpretationComment.setUser(user);
+        interpretationComment.setInterpretation(interpretation);
+
+        return interpretationComment;
+    }
+
     /**
      * Performs soft delete of model. If Action of object was SYNCED, it will be set to TO_DELETE.
      * If the model is persisted only in the local database, it will be removed immediately.
@@ -52,52 +79,70 @@ public class InterpretationCommentService implements IInterpretationCommentServi
      */
     @Override
     public boolean remove(InterpretationComment interpretationComment) {
-        Preconditions.isNull(interpretationComment, "interpretationComment should not be null");
+        isNull(interpretationComment, "InterpretationComment object must not be null");
 
         Action action = stateStore.queryActionForModel(interpretationComment);
-        if (Action.TO_POST.equals(action)) {
-            stateStore.deleteActionForModel(interpretationComment);
-            interpretationCommentStore.delete(interpretationComment);
-        } else {
-            stateStore.saveActionForModel(interpretationComment, Action.TO_DELETE);
-            interpretationCommentStore.save(interpretationComment);
+        if (action == null) {
+            return false;
         }
 
-        return false;
-    }
-
-    /**
-     * Method modifies the original comment text and sets TO_UPDATE as state,
-     * if the object was received from server. If the model was persisted only locally,
-     * the Action will be the TO_POST.
-     *
-     * @param interpretationComment comment which should be updated.
-     * @param text                  Edited text of comment.
-     */
-    public void update(InterpretationComment interpretationComment, String text) {
-        Preconditions.isNull(interpretationComment, "interpretationComment must not be null");
-
-        Action action = stateStore.queryActionForModel(interpretationComment);
-        if (Action.TO_DELETE.equals(action)) {
-            throw new IllegalArgumentException("The text of interpretation comment with Action." +
-                    "TO_DELETE cannot be updated");
+        boolean status = false;
+        switch (action) {
+            case SYNCED:
+            case TO_UPDATE: {
+                status = stateStore.saveActionForModel(interpretationComment, Action.TO_DELETE);
+                break;
+            }
+            case TO_POST: {
+                status = interpretationCommentStore.delete(interpretationComment);
+                break;
+            }
+            case TO_DELETE: {
+                status = false;
+                break;
+            }
         }
 
-        if (!Action.TO_POST.equals(action)) {
-            stateStore.saveActionForModel(interpretationComment, Action.TO_UPDATE);
-        }
-
-        interpretationComment.setText(text);
-        interpretationCommentStore.save(interpretationComment);
-    }
-
-    @Override
-    public InterpretationComment create(Interpretation interpretation, User user, String text) {
-        return null;
+        return status;
     }
 
     @Override
     public boolean save(InterpretationComment object) {
-        return false;
+        isNull(object, "InterpretationComment object must not be null");
+
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null) {
+            boolean status = interpretationCommentStore.save(object);
+
+            if (status) {
+                status = stateStore.saveActionForModel(object, Action.TO_POST);
+            }
+
+            return status;
+        }
+
+        boolean status = false;
+        switch (action) {
+            case TO_POST:
+            case TO_UPDATE: {
+                status = interpretationCommentStore.save(object);
+                break;
+            }
+            case SYNCED: {
+                status = interpretationCommentStore.save(object);
+
+                if (status) {
+                    status = stateStore.saveActionForModel(object, Action.TO_UPDATE);
+                }
+                break;
+            }
+            case TO_DELETE: {
+                status = false;
+                break;
+            }
+
+        }
+
+        return status;
     }
 }
