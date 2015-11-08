@@ -30,13 +30,18 @@ package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.common.preferences.ResourceType;
 import org.hisp.dhis.sdk.java.utils.ModelUtils;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DashboardController2 implements IDashboardController {
     private final ILastUpdatedPreferences lastUpdatedPreferences;
@@ -65,13 +70,78 @@ public class DashboardController2 implements IDashboardController {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
         List<Dashboard> updatedDashboards = getDashboards(lastUpdated);
+
     }
 
     private List<Dashboard> getDashboards(DateTime lastUpdated) {
         List<Dashboard> existingDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
         List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
+
+        /* reading persisted dashboards (excluding those which were not posted to server yet) */
         List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(
                 Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        Map<Long, List<DashboardItem>> persistedDashboardItems = queryDashboardItems(
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        Map<Long, List<DashboardElement>> persistedDashboardElements = queryDashboardElements(
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+
+        /* build relationships */
+        for (Dashboard dashboard : persistedDashboards) {
+            List<DashboardItem> dashboardItems = persistedDashboardItems.get(dashboard.getId());
+            dashboard.setDashboardItems(dashboardItems);
+
+            if (dashboardItems == null) {
+                continue;
+            }
+
+            for (DashboardItem dashboardItem : dashboardItems) {
+                List<DashboardElement> dashboardElements = persistedDashboardElements.get(dashboardItem.getId());
+                dashboardItem.setDashboardElements(dashboardElements);
+            }
+        }
+
         return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
+    }
+
+    /* returns map where key is id of dashboard and value is list of dashboard items */
+    private Map<Long, List<DashboardItem>> queryDashboardItems(Action... actions) {
+        List<DashboardItem> dashboardItemsList = stateStore
+                .queryModelsWithActions(DashboardItem.class, actions);
+        Map<Long, List<DashboardItem>> dashboardItemMap = new HashMap<>();
+
+        for (DashboardItem dashboardItem : dashboardItemsList) {
+            Long dashboardId = dashboardItem.getDashboard().getId();
+
+            List<DashboardItem> bag = dashboardItemMap.get(dashboardId);
+            if (bag == null) {
+                bag = new ArrayList<>();
+                dashboardItemMap.put(dashboardId, bag);
+            }
+
+            bag.add(dashboardItem);
+        }
+
+        return dashboardItemMap;
+    }
+
+    /* returns map where key is id of dashboard item and value is list of dashboard elements */
+    private Map<Long, List<DashboardElement>> queryDashboardElements(Action... actions) {
+        List<DashboardElement> dashboardElementsList = stateStore
+                .queryModelsWithActions(DashboardElement.class, actions);
+        Map<Long, List<DashboardElement>> dashboardElementMap = new HashMap<>();
+
+        for (DashboardElement dashboardElement : dashboardElementsList) {
+            Long dashboardItemId = dashboardElement.getDashboardItem().getId();
+
+            List<DashboardElement> bag = dashboardElementMap.get(dashboardItemId);
+            if (bag == null) {
+                bag = new ArrayList<>();
+                dashboardElementMap.put(dashboardItemId, bag);
+            }
+
+            bag.add(dashboardElement);
+        }
+
+        return dashboardElementMap;
     }
 }

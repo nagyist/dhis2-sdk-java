@@ -35,7 +35,6 @@ import org.hisp.dhis.sdk.java.event.EventServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleVariableServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
-import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityAttributeController;
 import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityAttributeControllerTest;
 import org.hisp.dhis.sdk.java.trackedentity.TrackedEntityInstanceServiceTest;
 import org.hisp.dhis.sdk.java.user.UserAccountControllerTest;
