@@ -35,6 +35,7 @@ import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.sdk.java.utils.CodeGenerator;
 import org.joda.time.DateTime;
 
 import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
@@ -66,14 +67,20 @@ public class InterpretationService implements IInterpretationService {
      */
     @Override
     public Interpretation create(DashboardItem item, User user, String text) {
-        DateTime lastUpdated = new DateTime();
+        isNull(item, "DashboardItem object must not be null");
+        isNull(user, "User object must not be null");
+        isNull(text, "text must not be null");
+
+        DateTime created = DateTime.now();
 
         Interpretation interpretation = new Interpretation();
-        interpretation.setCreated(lastUpdated);
-        interpretation.setLastUpdated(lastUpdated);
+        interpretation.setUId(CodeGenerator.generateCode());
+        interpretation.setCreated(created);
+        interpretation.setLastUpdated(created);
+        interpretation.setName(text);
+        interpretation.setDisplayName(text);
         interpretation.setAccess(Access.createDefaultAccess());
         interpretation.setText(text);
-        // interpretation.setAction(Action.TO_POST);
         interpretation.setUser(user);
 
         switch (item.getType()) {

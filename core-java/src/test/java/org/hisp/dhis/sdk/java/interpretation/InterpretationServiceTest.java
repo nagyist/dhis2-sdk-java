@@ -1,13 +1,17 @@
 package org.hisp.dhis.sdk.java.interpretation;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
+import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
+import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -15,8 +19,14 @@ public class InterpretationServiceTest {
     private IInterpretationStore interpretationStoreMock;
     private IStateStore stateStoreMock;
     private IInterpretationElementService interpretationElementServiceMock;
-    private IInterpretationService interpretationService;
+
+    private User user;
     private Interpretation interpretation;
+    private InterpretationElement interpretationElement;
+    private DashboardItem dashboardItem;
+    private DashboardElement dashboardElement;
+
+    private IInterpretationService interpretationService;
 
     @Before
     public void setUp() {
@@ -24,9 +34,14 @@ public class InterpretationServiceTest {
         interpretationElementServiceMock = mock(IInterpretationElementService.class);
         stateStoreMock = mock(IStateStore.class);
 
+        user = new User();
+        interpretation = new Interpretation();
+        interpretationElement = new InterpretationElement();
+        dashboardItem = new DashboardItem();
+        dashboardElement = new DashboardElement();
+
         interpretationService = new InterpretationService(interpretationStoreMock,
                 stateStoreMock, interpretationElementServiceMock);
-        interpretation = new Interpretation();
     }
 
 
@@ -196,5 +211,48 @@ public class InterpretationServiceTest {
         verify(stateStoreMock, times(1)).queryActionForModel(interpretation);
         verify(interpretationStoreMock, times(1)).save(interpretation);
         verify(stateStoreMock, never()).saveActionForModel(interpretation, Action.TO_POST);
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInterpretationWithNullDashboardItem() {
+        interpretationService.create(null, user, "Interpretation Text");
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInterpretationWithNullUser() {
+        interpretationService.create(dashboardItem, null, "Interpretation text");
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInterpretationWithNullText() {
+        interpretationService.create(dashboardItem, user, null);
+    }
+
+    @Test
+    public void testCreateInterpretationCommentReturnsValidObject() {
+        final String text = "SomeComment";
+        dashboardItem.setType(DashboardContent.TYPE_CHART);
+        dashboardItem.setChart(dashboardElement);
+
+        when(interpretationElementServiceMock.create(any(Interpretation.class),
+                any(DashboardElement.class), anyString())).thenReturn(interpretationElement);
+
+        Interpretation interpretation = interpretationService
+                .create(dashboardItem, user, text);
+
+        assertNotNull(interpretation.getUId());
+        assertNotNull(interpretation.getCreated());
+        assertNotNull(interpretation.getLastUpdated());
+        assertNotNull(interpretation.getAccess());
+        assertNotNull(interpretation.getChart());
+
+        assertEquals(interpretation.getName(), text);
+        assertEquals(interpretation.getDisplayName(), text);
+        assertEquals(interpretation.getText(), text);
+        assertEquals(interpretation.getUser(), user);
+        assertEquals(interpretation.getType(), DashboardContent.TYPE_CHART);
     }
 }
