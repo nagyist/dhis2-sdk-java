@@ -34,6 +34,7 @@ import org.hisp.dhis.sdk.java.enrollment.EnrollmentServiceTest;
 import org.hisp.dhis.sdk.java.event.EventServiceTest;
 import org.hisp.dhis.sdk.java.interpretation.InterpretationCommentServiceTest;
 import org.hisp.dhis.sdk.java.interpretation.InterpretationElementServiceTest;
+import org.hisp.dhis.sdk.java.interpretation.InterpretationServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleVariableServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
@@ -67,6 +68,7 @@ import org.junit.runners.Suite;
 
         InterpretationElementServiceTest.class,
         InterpretationCommentServiceTest.class,
+        InterpretationServiceTest.class,
 })
 public class CoreTestSuite {
 }

@@ -29,51 +29,26 @@
 package org.hisp.dhis.sdk.java.interpretation;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
-import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 import org.hisp.dhis.java.sdk.models.user.User;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
-import org.hisp.dhis.sdk.java.utils.Preconditions;
+import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.hisp.dhis.sdk.java.utils.Preconditions.isNull;
 
 public class InterpretationService implements IInterpretationService {
-    private final IIdentifiableObjectStore<Interpretation> interpretationStore;
+    private final IInterpretationStore interpretationStore;
+    private final IStateStore stateStore;
     private final IInterpretationElementService interpretationElementService;
 
-    public InterpretationService(IIdentifiableObjectStore<Interpretation> interpretationStore,
-                                 IInterpretationElementService interpretationElementService) {
+    public InterpretationService(IInterpretationStore interpretationStore,
+                                 IStateStore stateStore, IInterpretationElementService interpretationElementService) {
         this.interpretationStore = interpretationStore;
+        this.stateStore = stateStore;
         this.interpretationElementService = interpretationElementService;
-    }
-
-    /**
-     * Creates comment for given interpretation. Comment is assigned to given user.
-     *
-     * @param interpretation Interpretation to associate comment with.
-     * @param user           User who wants to create comment.
-     * @param text           The actual content of comment.
-     * @return Intrepretation comment.
-     */
-    public InterpretationComment addComment(Interpretation interpretation, User user, String text) {
-        Preconditions.isNull(interpretation, "interpretation must not be null");
-        Preconditions.isNull(user, "user must not be null");
-
-        DateTime lastUpdated = new DateTime();
-
-        InterpretationComment comment = new InterpretationComment();
-        comment.setCreated(lastUpdated);
-        comment.setLastUpdated(lastUpdated);
-        comment.setAccess(Access.createDefaultAccess());
-        comment.setText(text);
-        // comment.setAction(Action.TO_POST);
-        comment.setUser(user);
-        comment.setInterpretation(interpretation);
-        return comment;
     }
 
     /**
@@ -131,113 +106,72 @@ public class InterpretationService implements IInterpretationService {
         return interpretation;
     }
 
-    public void update(Interpretation interpretation) { //, String text) {
-        // interpretation.setText(text);
-
-        /* if (interpretation.getAction() != Action.TO_DELETE &&
-                interpretation.getAction() != Action.TO_POST) {
-            interpretation.setAction(Action.TO_UPDATE);
-        } */
-
-        interpretationStore.save(interpretation);
-    }
-
     @Override
-    public boolean remove(Interpretation interpretation) {
-        /* if (Action.TO_POST.equals(interpretation.getAction())) {
-            interpretationStore.delete(interpretation);
-        } else {
-            interpretation.setAction(Action.TO_DELETE);
-            interpretationStore.save(interpretation);
-        } */
-        return false;
-    }
+    public boolean remove(Interpretation object) {
+        isNull(object, "Interpretation object must not be null");
 
-    /**
-     * Convenience method which allows to set InterpretationElements
-     * to Interpretation depending on their mime-type.
-     *
-     * @param elements List of interpretation elements.
-     */
-    public void setInterpretationElements(Interpretation interpretation, List<InterpretationElement> elements) {
-        if (elements == null || elements.isEmpty()) {
-            return;
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null) {
+            return false;
         }
 
-        if (interpretation.getType() == null) {
-            return;
-        }
-
-        if (interpretation.getType().equals(Interpretation.TYPE_DATA_SET_REPORT)) {
-            for (InterpretationElement element : elements) {
-                switch (element.getType()) {
-                    case InterpretationElement.TYPE_DATA_SET: {
-                        interpretation.setDataSet(element);
-                        break;
-                    }
-                    case InterpretationElement.TYPE_PERIOD: {
-                        interpretation.setPeriod(element);
-                        break;
-                    }
-                    case InterpretationElement.TYPE_ORGANISATION_UNIT: {
-                        interpretation.setOrganisationUnit(element);
-                        break;
-                    }
-                }
-            }
-        } else {
-            switch (interpretation.getType()) {
-                case InterpretationElement.TYPE_CHART: {
-                    interpretation.setChart(elements.get(0));
-                    break;
-                }
-                case InterpretationElement.TYPE_MAP: {
-                    interpretation.setMap(elements.get(0));
-                    break;
-                }
-                case InterpretationElement.TYPE_REPORT_TABLE: {
-                    interpretation.setReportTable(elements.get(0));
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Convenience method which allows to get
-     * interpretation elements assigned to current object.
-     *
-     * @return List of interpretation elements.
-     */
-    public List<InterpretationElement> getInterpretationElements(Interpretation interpretation) {
-        List<InterpretationElement> elements = new ArrayList<>();
-
-        switch (interpretation.getType()) {
-            case Interpretation.TYPE_CHART: {
-                elements.add(interpretation.getChart());
+        boolean status = false;
+        switch (action) {
+            case SYNCED:
+            case TO_UPDATE: {
+                status = stateStore.saveActionForModel(object, Action.TO_DELETE);
                 break;
             }
-            case Interpretation.TYPE_MAP: {
-                elements.add(interpretation.getMap());
+            case TO_POST: {
+                status = interpretationStore.delete(object);
                 break;
             }
-            case Interpretation.TYPE_REPORT_TABLE: {
-                elements.add(interpretation.getReportTable());
-                break;
-            }
-            case Interpretation.TYPE_DATA_SET_REPORT: {
-                elements.add(interpretation.getDataSet());
-                elements.add(interpretation.getPeriod());
-                elements.add(interpretation.getOrganisationUnit());
+            case TO_DELETE: {
+                status = false;
                 break;
             }
         }
 
-        return elements;
+        return status;
     }
 
     @Override
     public boolean save(Interpretation object) {
-        return false;
+        isNull(object, "Dashboard object must not be null");
+
+        Action action = stateStore.queryActionForModel(object);
+        if (action == null) {
+            boolean status = interpretationStore.save(object);
+
+            if (status) {
+                status = stateStore.saveActionForModel(object, Action.TO_POST);
+            }
+
+            return status;
+        }
+
+        boolean status = false;
+        switch (action) {
+            case TO_POST:
+            case TO_UPDATE: {
+                status = interpretationStore.save(object);
+                break;
+            }
+            case SYNCED: {
+                status = interpretationStore.save(object);
+
+                if (status) {
+                    status = stateStore.saveActionForModel(object, Action.TO_UPDATE);
+                }
+                break;
+            }
+            case TO_DELETE: {
+                status = false;
+                break;
+            }
+
+        }
+
+        return status;
     }
 }
