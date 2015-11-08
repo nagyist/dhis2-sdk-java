@@ -29,8 +29,10 @@
 package org.hisp.dhis.sdk.java.interpretation;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
-import org.hisp.dhis.sdk.java.common.IStateStore;
+import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
+import org.hisp.dhis.java.sdk.models.user.User;
+import org.hisp.dhis.sdk.java.common.IStateStore;
 import org.hisp.dhis.sdk.java.utils.Preconditions;
 
 public class InterpretationCommentService implements IInterpretationCommentService {
@@ -49,7 +51,7 @@ public class InterpretationCommentService implements IInterpretationCommentServi
      * @param interpretationComment comment to delete.
      */
     @Override
-    public void remove(InterpretationComment interpretationComment) {
+    public boolean remove(InterpretationComment interpretationComment) {
         Preconditions.isNull(interpretationComment, "interpretationComment should not be null");
 
         Action action = stateStore.queryActionForModel(interpretationComment);
@@ -60,6 +62,8 @@ public class InterpretationCommentService implements IInterpretationCommentServi
             stateStore.saveActionForModel(interpretationComment, Action.TO_DELETE);
             interpretationCommentStore.save(interpretationComment);
         }
+
+        return false;
     }
 
     /**
@@ -70,7 +74,6 @@ public class InterpretationCommentService implements IInterpretationCommentServi
      * @param interpretationComment comment which should be updated.
      * @param text                  Edited text of comment.
      */
-    @Override
     public void update(InterpretationComment interpretationComment, String text) {
         Preconditions.isNull(interpretationComment, "interpretationComment must not be null");
 
@@ -86,5 +89,15 @@ public class InterpretationCommentService implements IInterpretationCommentServi
 
         interpretationComment.setText(text);
         interpretationCommentStore.save(interpretationComment);
+    }
+
+    @Override
+    public InterpretationComment create(Interpretation interpretation, User user, String text) {
+        return null;
+    }
+
+    @Override
+    public boolean save(InterpretationComment object) {
+        return false;
     }
 }

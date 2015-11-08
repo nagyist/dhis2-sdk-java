@@ -28,11 +28,13 @@
 
 package org.hisp.dhis.sdk.java.interpretation;
 
-import org.hisp.dhis.sdk.java.common.services.IService;
+import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
+import org.hisp.dhis.java.sdk.models.user.User;
+import org.hisp.dhis.sdk.java.common.services.IRemove;
+import org.hisp.dhis.sdk.java.common.services.ISave;
+import org.hisp.dhis.sdk.java.common.services.IService;
 
-public interface IInterpretationCommentService extends IService {
-    void remove(InterpretationComment comment);
-
-    void update(InterpretationComment comment, String text);
+public interface IInterpretationCommentService extends IService, IRemove<InterpretationComment>, ISave<InterpretationComment> {
+    InterpretationComment create(Interpretation interpretation, User user, String text);
 }

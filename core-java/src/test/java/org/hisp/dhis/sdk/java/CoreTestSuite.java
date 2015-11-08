@@ -32,6 +32,7 @@ import org.hisp.dhis.sdk.java.dashboard.*;
 import org.hisp.dhis.sdk.java.enrollment.EnrollmentControllerTest;
 import org.hisp.dhis.sdk.java.enrollment.EnrollmentServiceTest;
 import org.hisp.dhis.sdk.java.event.EventServiceTest;
+import org.hisp.dhis.sdk.java.interpretation.InterpretationElementServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramRuleVariableServiceTest;
 import org.hisp.dhis.sdk.java.program.ProgramServiceTest;
@@ -61,7 +62,9 @@ import org.junit.runners.Suite;
         TrackedEntityAttributeControllerTest.class,
         EnrollmentServiceTest.class,
         EnrollmentControllerTest.class,
-        EventServiceTest.class
+        EventServiceTest.class,
+
+        InterpretationElementServiceTest.class,
 })
 public class CoreTestSuite {
 }

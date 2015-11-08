@@ -50,9 +50,8 @@ public class InterpretationElementService implements IInterpretationElementServi
      * @return new InterpretationElement
      */
     @Override
-    public InterpretationElement add(Interpretation interpretation,
-                                     DashboardElement dashboardElement,
-                                     String mimeType) {
+    public InterpretationElement create(Interpretation interpretation, DashboardElement dashboardElement,
+                                        String mimeType) {
         isNull(interpretation, "interpretation must not be null");
         isNull(dashboardElement, "dashboardElement must not be null");
         isNull(mimeType, "mimeType must not be null");

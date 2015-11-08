@@ -28,26 +28,13 @@
 
 package org.hisp.dhis.sdk.java.interpretation;
 
-import org.hisp.dhis.sdk.java.common.services.IService;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
-import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
-import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 import org.hisp.dhis.java.sdk.models.user.User;
+import org.hisp.dhis.sdk.java.common.services.IRemove;
+import org.hisp.dhis.sdk.java.common.services.ISave;
+import org.hisp.dhis.sdk.java.common.services.IService;
 
-import java.util.List;
-
-public interface IInterpretationService extends IService {
-    InterpretationComment addComment(Interpretation interpretation, User user, String text);
-
-    Interpretation add(DashboardItem item, User user, String text);
-
-    void update(Interpretation interpretation, String text);
-
-    void remove(Interpretation interpretation);
-
-    /* very strange location for these methods. Consider to refactor them out */
-    void setInterpretationElements(Interpretation interpretation, List<InterpretationElement> elements);
-
-    List<InterpretationElement> getInterpretationElements(Interpretation interpretation);
+public interface IInterpretationService extends IService, IRemove<Interpretation>, ISave<Interpretation> {
+    Interpretation create(DashboardItem item, User user, String text);
 }

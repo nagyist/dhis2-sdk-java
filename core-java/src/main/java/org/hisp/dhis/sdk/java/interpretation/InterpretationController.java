@@ -88,9 +88,9 @@ public final class InterpretationController implements IDataController<Interpret
         }
 
         for (Interpretation interpretation : interpretations) {
-            List<InterpretationElement> elements =
+            /* List<InterpretationElement> elements =
                     mInterpretationElementStore.list(interpretation);
-            mInterpretationService.setInterpretationElements(interpretation, elements);
+            mInterpretationService.setInterpretationElements(interpretation, elements); */
         }
 
         /* for (Interpretation interpretation : interpretations) {
@@ -456,7 +456,7 @@ public final class InterpretationController implements IDataController<Interpret
             for (Interpretation interpretation : persistedInterpretations) {
                 List<InterpretationElement> elements =
                         mInterpretationElementStore.list(interpretation);
-                mInterpretationService.setInterpretationElements(interpretation, elements);
+                // mInterpretationService.setInterpretationElements(interpretation, elements);
 
                 List<InterpretationComment> comments = null;
                 // mInterpretationCommentStore.queryByInterpretation(interpretation, Action.TO_POST);
@@ -548,8 +548,8 @@ public final class InterpretationController implements IDataController<Interpret
             // we also have to insert interpretation elements here
             ops.add(DbOperation.with(mInterpretationStore).insert(item));
 
-            List<InterpretationElement> elements
-                    = mInterpretationService.getInterpretationElements(item);
+            List<InterpretationElement> elements = new ArrayList<>();
+            // = mInterpretationService.getInterpretationElements(item);
             for (InterpretationElement element : elements) {
                 ops.add(DbOperation.with(mInterpretationElementStore).insert(element));
             }

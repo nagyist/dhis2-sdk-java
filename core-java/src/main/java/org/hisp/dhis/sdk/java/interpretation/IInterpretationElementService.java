@@ -34,5 +34,5 @@ import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 
 public interface IInterpretationElementService extends IService {
-    InterpretationElement add(Interpretation interpretation, DashboardElement dashboardElement, String mimeType);
+    InterpretationElement create(Interpretation interpretation, DashboardElement dashboardElement, String mimeType);
 }

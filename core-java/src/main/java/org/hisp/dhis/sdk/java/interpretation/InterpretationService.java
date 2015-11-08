@@ -29,12 +29,12 @@
 package org.hisp.dhis.sdk.java.interpretation;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
-import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationComment;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 import org.hisp.dhis.java.sdk.models.user.User;
+import org.hisp.dhis.sdk.java.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.sdk.java.utils.Preconditions;
 import org.joda.time.DateTime;
 
@@ -59,7 +59,6 @@ public class InterpretationService implements IInterpretationService {
      * @param text           The actual content of comment.
      * @return Intrepretation comment.
      */
-    @Override
     public InterpretationComment addComment(Interpretation interpretation, User user, String text) {
         Preconditions.isNull(interpretation, "interpretation must not be null");
         Preconditions.isNull(user, "user must not be null");
@@ -80,8 +79,8 @@ public class InterpretationService implements IInterpretationService {
     /**
      * Creates interpretation from: chart, map, reportTable.
      * Please note, it won't work for data sets.
-     * <p>
-     * <p>
+     * <p/>
+     * <p/>
      * Note, model won't be saved to database automatically. You have to call .save()
      * both on interpretation and interpretation elements of current object.
      *
@@ -91,7 +90,7 @@ public class InterpretationService implements IInterpretationService {
      * @return new Interpretation.
      */
     @Override
-    public Interpretation add(DashboardItem item, User user, String text) {
+    public Interpretation create(DashboardItem item, User user, String text) {
         DateTime lastUpdated = new DateTime();
 
         Interpretation interpretation = new Interpretation();
@@ -105,21 +104,21 @@ public class InterpretationService implements IInterpretationService {
         switch (item.getType()) {
             case Interpretation.TYPE_CHART: {
                 InterpretationElement element = interpretationElementService
-                        .add(interpretation, item.getChart(), Interpretation.TYPE_CHART);
+                        .create(interpretation, item.getChart(), Interpretation.TYPE_CHART);
                 interpretation.setType(Interpretation.TYPE_CHART);
                 interpretation.setChart(element);
                 break;
             }
             case Interpretation.TYPE_MAP: {
                 InterpretationElement element = interpretationElementService
-                        .add(interpretation, item.getMap(), Interpretation.TYPE_MAP);
+                        .create(interpretation, item.getMap(), Interpretation.TYPE_MAP);
                 interpretation.setType(Interpretation.TYPE_MAP);
                 interpretation.setMap(element);
                 break;
             }
             case Interpretation.TYPE_REPORT_TABLE: {
                 InterpretationElement element = interpretationElementService
-                        .add(interpretation, item.getReportTable(), Interpretation.TYPE_REPORT_TABLE);
+                        .create(interpretation, item.getReportTable(), Interpretation.TYPE_REPORT_TABLE);
                 interpretation.setType(Interpretation.TYPE_REPORT_TABLE);
                 interpretation.setReportTable(element);
                 break;
@@ -132,9 +131,8 @@ public class InterpretationService implements IInterpretationService {
         return interpretation;
     }
 
-    @Override
-    public void update(Interpretation interpretation, String text) {
-        interpretation.setText(text);
+    public void update(Interpretation interpretation) { //, String text) {
+        // interpretation.setText(text);
 
         /* if (interpretation.getAction() != Action.TO_DELETE &&
                 interpretation.getAction() != Action.TO_POST) {
@@ -145,13 +143,14 @@ public class InterpretationService implements IInterpretationService {
     }
 
     @Override
-    public void remove(Interpretation interpretation) {
+    public boolean remove(Interpretation interpretation) {
         /* if (Action.TO_POST.equals(interpretation.getAction())) {
             interpretationStore.delete(interpretation);
         } else {
             interpretation.setAction(Action.TO_DELETE);
             interpretationStore.save(interpretation);
         } */
+        return false;
     }
 
     /**
@@ -160,7 +159,6 @@ public class InterpretationService implements IInterpretationService {
      *
      * @param elements List of interpretation elements.
      */
-    @Override
     public void setInterpretationElements(Interpretation interpretation, List<InterpretationElement> elements) {
         if (elements == null || elements.isEmpty()) {
             return;
@@ -211,7 +209,6 @@ public class InterpretationService implements IInterpretationService {
      *
      * @return List of interpretation elements.
      */
-    @Override
     public List<InterpretationElement> getInterpretationElements(Interpretation interpretation) {
         List<InterpretationElement> elements = new ArrayList<>();
 
@@ -237,5 +234,10 @@ public class InterpretationService implements IInterpretationService {
         }
 
         return elements;
+    }
+
+    @Override
+    public boolean save(Interpretation object) {
+        return false;
     }
 }
