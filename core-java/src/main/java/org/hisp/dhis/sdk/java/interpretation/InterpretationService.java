@@ -72,6 +72,7 @@ public class InterpretationService implements IInterpretationService {
         isNull(text, "text must not be null");
 
         DateTime created = DateTime.now();
+        Access access = Access.createDefaultAccess();
 
         Interpretation interpretation = new Interpretation();
         interpretation.setUId(CodeGenerator.generateCode());
@@ -79,7 +80,7 @@ public class InterpretationService implements IInterpretationService {
         interpretation.setLastUpdated(created);
         interpretation.setName(text);
         interpretation.setDisplayName(text);
-        interpretation.setAccess(Access.createDefaultAccess());
+        interpretation.setAccess(access);
         interpretation.setText(text);
         interpretation.setUser(user);
 

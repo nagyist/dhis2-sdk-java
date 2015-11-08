@@ -231,6 +231,64 @@ public class InterpretationServiceTest {
         interpretationService.create(dashboardItem, user, null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInterpretationWithWrongDashboardItemType() {
+        dashboardItem.setType("UnsupportedType");
+
+        interpretationService.create(dashboardItem, user, "InterpretationText");
+    }
+
+    @Test
+    public void testCreateInterpretationWithChartDashboardItem() {
+        dashboardItem.setType(DashboardContent.TYPE_CHART);
+        dashboardItem.setChart(dashboardElement);
+
+        when(interpretationElementServiceMock.create(any(Interpretation.class),
+                any(DashboardElement.class), anyString())).thenReturn(interpretationElement);
+
+        Interpretation interpretation = interpretationService
+                .create(dashboardItem, user, "Chart interpretation");
+
+        assertNotNull(interpretation.getChart());
+        assertEquals(interpretation.getType(), Interpretation.TYPE_CHART);
+        verify(interpretationElementServiceMock, times(1))
+                .create(any(Interpretation.class), any(DashboardElement.class), anyString());
+    }
+
+    @Test
+    public void testCreateInterpretationWithMapDashboardItem() {
+        dashboardItem.setType(DashboardContent.TYPE_MAP);
+        dashboardItem.setMap(dashboardElement);
+
+        when(interpretationElementServiceMock.create(any(Interpretation.class),
+                any(DashboardElement.class), anyString())).thenReturn(interpretationElement);
+
+        Interpretation interpretation = interpretationService
+                .create(dashboardItem, user, "Map interpretation");
+
+        assertNotNull(interpretation.getMap());
+        assertEquals(interpretation.getType(), Interpretation.TYPE_MAP);
+        verify(interpretationElementServiceMock, times(1))
+                .create(any(Interpretation.class), any(DashboardElement.class), anyString());
+    }
+
+    @Test
+    public void testCreateInterpretationWithReportTableDashboardItem() {
+        dashboardItem.setType(DashboardContent.TYPE_REPORT_TABLE);
+        dashboardItem.setReportTable(dashboardElement);
+
+        when(interpretationElementServiceMock.create(any(Interpretation.class),
+                any(DashboardElement.class), anyString())).thenReturn(interpretationElement);
+
+        Interpretation interpretation = interpretationService
+                .create(dashboardItem, user, "Report table interpretation");
+
+        assertNotNull(interpretation.getReportTable());
+        assertEquals(interpretation.getType(), Interpretation.TYPE_REPORT_TABLE);
+        verify(interpretationElementServiceMock, times(1))
+                .create(any(Interpretation.class), any(DashboardElement.class), anyString());
+    }
+
     @Test
     public void testCreateInterpretationCommentReturnsValidObject() {
         final String text = "SomeComment";
