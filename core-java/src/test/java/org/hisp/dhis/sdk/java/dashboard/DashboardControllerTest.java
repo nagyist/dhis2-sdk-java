@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -80,37 +81,6 @@ public class DashboardControllerTest {
     }
 
     @Test
-    public void testUpdateDashboardsShouldGetUpdatedModelsAndMergeItWithPersistedData() {
-        /* List<Dashboard> basicDashboards = Arrays.asList(dashboard, dashboard, dashboard, dashboard);
-        List<Dashboard> fullDashboards = Arrays.asList(dashboard, dashboard);
-
-        List<Dashboard> persistedDashboards = Arrays.asList(dashboard, dashboard, dashboard);
-        List<DashboardItem> persistedDashboardItems = Arrays.asList(dashboardItem,
-                dashboardItem, dashboardItem);
-        List<DashboardElement> persistedDashboardElements = Arrays.asList(dashboardElement,
-                dashboardElement, dashboardElement);
-
-        when(dashboardApiClientMock.getBasicDashboards(null)).thenReturn(basicDashboards);
-        when(dashboardApiClientMock.getFullDashboards(null)).thenReturn(fullDashboards);
-
-        when(stateStoreMock.queryModelsWithActions(Dashboard.class,
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(persistedDashboards);
-        when(stateStoreMock.queryModelsWithActions(DashboardItem.class,
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(persistedDashboardItems);
-        when(stateStoreMock.queryModelsWithActions(DashboardElement.class,
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(persistedDashboardElements);
-
-        dashboardController.update();
-
-        verify(lastUpdatedPreferencesMock, times(1)).get(ResourceType.DASHBOARDS);
-        verify(dashboardApiClientMock, times(1)).getBasicDashboards(null);
-        verify(dashboardApiClientMock, times(1)).getFullDashboards(null);
-        verify(stateStoreMock, times(1)).queryModelsWithActions(
-                Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
-        verify(modelUtilsMock, times(1)).merge(basicDashboards, fullDashboards, persistedDashboards); */
-    }
-
-    @Test
     public void testUpdateShouldPullNewDashboardsFromServer() {
         dashboardController.update();
 
@@ -128,5 +98,26 @@ public class DashboardControllerTest {
                 Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
         verify(stateStoreMock, times(1)).queryModelsWithActions(DashboardElement.class,
                 Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+    }
+
+    @Test
+    public void testUpdateShouldQueryRelatedItemsFromStorage() {
+        dashboard.setId(1L);
+        dashboardItem.setId(1L);
+        dashboardElement.setId(1L);
+
+        dashboardItem.setDashboard(dashboard);
+        dashboardElement.setDashboardItem(dashboardItem);
+
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
+        when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboardItem));
+        when(stateStoreMock.queryModelsWithActions(DashboardElement.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboardElement));
+
+        dashboardController.update();
+
+        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), any(List.class));
     }
 }
