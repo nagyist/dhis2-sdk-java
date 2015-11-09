@@ -70,6 +70,7 @@ public class DashboardController2 implements IDashboardController {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
         List<Dashboard> updatedDashboards = getDashboards(lastUpdated);
+        List<DashboardItem> updateDashboardItems = getDashboardItems(updatedDashboards, lastUpdated);
     }
 
     @Override
@@ -104,6 +105,10 @@ public class DashboardController2 implements IDashboardController {
         }
 
         return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
+    }
+
+    private List<DashboardItem> getDashboardItems(List<Dashboard> dashboards, DateTime lastUpdated) {
+        return null;
     }
 
     /* returns map where key is id of dashboard and value is list of dashboard items */

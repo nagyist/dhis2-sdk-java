@@ -30,6 +30,7 @@ package org.hisp.dhis.sdk.java.dashboard;
 
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.sdk.java.common.IStateStore;
@@ -37,7 +38,9 @@ import org.hisp.dhis.sdk.java.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.sdk.java.utils.ModelUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -101,10 +104,13 @@ public class DashboardControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testUpdateShouldQueryRelatedItemsFromStorage() {
         dashboard.setId(1L);
-        dashboardItem.setId(1L);
         dashboardElement.setId(1L);
+
+        dashboardItem.setId(1L);
+        dashboardItem.setType(DashboardContent.TYPE_CHART);
 
         dashboardItem.setDashboard(dashboard);
         dashboardElement.setDashboardItem(dashboardItem);
@@ -118,6 +124,79 @@ public class DashboardControllerTest {
 
         dashboardController.update();
 
-        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), any(List.class));
+        ArgumentMatcher<List<Dashboard>> matcher = new ArgumentMatcher<List<Dashboard>>() {
+            @Override
+            public boolean matches(Object argument) {
+                List<Dashboard> dashboardList = (List<Dashboard>) argument;
+                if (dashboardList == null || dashboardList.isEmpty()) {
+                    return false;
+                }
+
+                Dashboard expectedDashboard = dashboardList.get(0);
+                if (!dashboard.equals(expectedDashboard)) {
+                    return false;
+                }
+
+                List<DashboardItem> expectedDashboardItems = expectedDashboard.getDashboardItems();
+                if (expectedDashboardItems == null || expectedDashboardItems.isEmpty()) {
+                    return false;
+                }
+
+                DashboardItem expectedDashboardItem = expectedDashboardItems.get(0);
+                if (!dashboardItem.equals(expectedDashboardItem)) {
+                    return false;
+                }
+
+                List<DashboardElement> expectedDashboardElements = expectedDashboardItem.getDashboardElements();
+                if (expectedDashboardElements == null || expectedDashboardElements.isEmpty()) {
+                    return false;
+                }
+
+                DashboardElement expectedDashboardElement = expectedDashboardElements.get(0);
+                if (!dashboardElement.equals(expectedDashboardElement)) {
+                    return false;
+                }
+
+                return true;
+            }
+        };
+
+        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), argThat(matcher));
+    }
+
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testUpdateShouldQueryRelatedItemsFromStorageAndGetEmptyListBack() {
+        dashboard.setId(1L);
+
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
+        when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<DashboardItem>());
+        when(stateStoreMock.queryModelsWithActions(DashboardElement.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<DashboardElement>());
+
+        dashboardController.update();
+
+        ArgumentMatcher<List<Dashboard>> matcher = new ArgumentMatcher<List<Dashboard>>() {
+            @Override
+            public boolean matches(Object argument) {
+                List<Dashboard> dashboardList = (List<Dashboard>) argument;
+                if (dashboardList == null || dashboardList.isEmpty()) {
+                    return false;
+                }
+
+                Dashboard expectedDashboard = dashboardList.get(0);
+                if (!dashboard.equals(expectedDashboard)) {
+                    return false;
+                }
+
+                List<DashboardItem> expectedDashboardItems = expectedDashboard.getDashboardItems();
+                return expectedDashboardItems == null || expectedDashboardItems.isEmpty();
+            }
+        };
+
+        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), argThat(matcher));
     }
 }
