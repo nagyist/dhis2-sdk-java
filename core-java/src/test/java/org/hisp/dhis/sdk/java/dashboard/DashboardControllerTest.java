@@ -173,9 +173,9 @@ public class DashboardControllerTest {
         when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
                 Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
         when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
-                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<DashboardItem>());
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<>());
         when(stateStoreMock.queryModelsWithActions(DashboardElement.class, Action.SYNCED,
-                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<DashboardElement>());
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<>());
 
         dashboardController.update();
 
