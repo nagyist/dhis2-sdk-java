@@ -1,0 +1,14 @@
+language: java
+
+jdk:
+  - oraclejdk7
+
+branches:
+  - master 
+
+notifications:
+  email: false
+
+script:
+  - ./gradlew check
+
