@@ -29,24 +29,31 @@
 package org.hisp.dhis.java.sdk.dashboard;
 
 import org.hisp.dhis.java.sdk.common.IStateStore;
+import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.utils.ModelUtils;
-import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class DashboardControllerTest {
+
+    @Captor
+    private ArgumentCaptor<List<?>> dashboardCaptor;
+
     private IDashboardApiClient dashboardApiClientMock;
     private IDashboardStore dashboardStoreMock;
     private IStateStore stateStoreMock;
@@ -62,6 +69,8 @@ public class DashboardControllerTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
+
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
         dashboardApiClientMock = mock(IDashboardApiClient.class);
         dashboardStoreMock = mock(IDashboardStore.class);
@@ -79,8 +88,14 @@ public class DashboardControllerTest {
         dashboardItem = new DashboardItem();
         dashboardElement = new DashboardElement();
 
-        Arrays.asList(dashboardItem, dashboardItem, dashboardItem);
-        Arrays.asList(dashboard, dashboard);
+        dashboard.setId(1L);
+        dashboardElement.setId(1L);
+
+        dashboardItem.setId(1L);
+        dashboardItem.setType(DashboardContent.TYPE_CHART);
+
+        dashboardItem.setDashboard(dashboard);
+        dashboardElement.setDashboardItem(dashboardItem);
     }
 
     @Test
@@ -105,16 +120,48 @@ public class DashboardControllerTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testUpdateShouldQueryRelatedItemsFromStorage() {
-        dashboard.setId(1L);
-        dashboardElement.setId(1L);
+    public void testUpdateShouldQueryDashboardsFromStorage() {
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
 
-        dashboardItem.setId(1L);
-        dashboardItem.setType(DashboardContent.TYPE_CHART);
+        dashboardController.update();
 
-        dashboardItem.setDashboard(dashboard);
-        dashboardElement.setDashboardItem(dashboardItem);
+        verify(modelUtilsMock, atLeastOnce()).merge(anyListOf(Dashboard.class),
+                anyListOf(Dashboard.class), (List<Dashboard>) dashboardCaptor.capture());
 
+        List<Dashboard> dashboardList = (List<Dashboard>) dashboardCaptor.getAllValues().get(0);
+
+        assertNotNull(dashboardList);
+        assertFalse(dashboardList.isEmpty());
+        assertEquals(dashboardList.get(0), dashboard);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testUpdateShouldQueryRelatedDashboardItemsFromStorage() {
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
+        when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboardItem));
+
+        dashboardController.update();
+
+        verify(modelUtilsMock, atLeastOnce()).merge(anyListOf(Dashboard.class),
+                anyListOf(Dashboard.class), (List<Dashboard>) dashboardCaptor.capture());
+
+        List<Dashboard> captureDashboards = (List<Dashboard>) dashboardCaptor.getAllValues().get(0);
+        dashboardCaptor.getAllValues().get(0);
+
+        Dashboard dashboard = captureDashboards.get(0);
+
+        assertNotNull(dashboard.getDashboardItems());
+        assertFalse(dashboard.getDashboardItems().isEmpty());
+        assertEquals(dashboard.getDashboardItems().get(0), dashboardItem);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testUpdateShouldQueryRelatedDashboardElementsFromStorage() {
         when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
                 Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
         when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
@@ -124,79 +171,27 @@ public class DashboardControllerTest {
 
         dashboardController.update();
 
-        ArgumentMatcher<List<Dashboard>> matcher = new ArgumentMatcher<List<Dashboard>>() {
-            @Override
-            public boolean matches(Object argument) {
-                List<Dashboard> dashboardList = (List<Dashboard>) argument;
-                if (dashboardList == null || dashboardList.isEmpty()) {
-                    return false;
-                }
+        verify(modelUtilsMock, atLeastOnce()).merge(anyListOf(Dashboard.class),
+                anyListOf(Dashboard.class), (List<Dashboard>) dashboardCaptor.capture());
 
-                Dashboard expectedDashboard = dashboardList.get(0);
-                if (!dashboard.equals(expectedDashboard)) {
-                    return false;
-                }
+        List<Dashboard> dashboardList = (List<Dashboard>) dashboardCaptor.getAllValues().get(0);
+        Dashboard dashboard = dashboardList.get(0);
 
-                List<DashboardItem> expectedDashboardItems = expectedDashboard.getDashboardItems();
-                if (expectedDashboardItems == null || expectedDashboardItems.isEmpty()) {
-                    return false;
-                }
+        List<DashboardItem> dashboardItems = dashboard.getDashboardItems();
+        DashboardItem dashboardItem = dashboardItems.get(0);
 
-                DashboardItem expectedDashboardItem = expectedDashboardItems.get(0);
-                if (!dashboardItem.equals(expectedDashboardItem)) {
-                    return false;
-                }
-
-                List<DashboardElement> expectedDashboardElements = expectedDashboardItem.getDashboardElements();
-                if (expectedDashboardElements == null || expectedDashboardElements.isEmpty()) {
-                    return false;
-                }
-
-                DashboardElement expectedDashboardElement = expectedDashboardElements.get(0);
-                if (!dashboardElement.equals(expectedDashboardElement)) {
-                    return false;
-                }
-
-                return true;
-            }
-        };
-
-        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), argThat(matcher));
+        assertNotNull(dashboardItem.getDashboardElements());
+        assertFalse(dashboardItem.getDashboardElements().isEmpty());
+        assertEquals(dashboardItem.getDashboardElements().get(0), dashboardElement);
     }
 
-
     @Test
-    @SuppressWarnings("unchecked")
-    public void testUpdateShouldQueryRelatedItemsFromStorageAndGetEmptyListBack() {
-        dashboard.setId(1L);
-
-        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED,
-                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
-        when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
-                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<>());
-        when(stateStoreMock.queryModelsWithActions(DashboardElement.class, Action.SYNCED,
-                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(new ArrayList<>());
+    public void testUpdateShouldUpdateDashboardItemsShape() {
+        when(dashboardApiClientMock.getBasicDashboardItems(any(DateTime.class)))
+                .thenReturn(Arrays.asList(dashboardItem));
+        when(stateStoreMock.queryModelsWithActions(DashboardItem.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboardItem));
 
         dashboardController.update();
-
-        ArgumentMatcher<List<Dashboard>> matcher = new ArgumentMatcher<List<Dashboard>>() {
-            @Override
-            public boolean matches(Object argument) {
-                List<Dashboard> dashboardList = (List<Dashboard>) argument;
-                if (dashboardList == null || dashboardList.isEmpty()) {
-                    return false;
-                }
-
-                Dashboard expectedDashboard = dashboardList.get(0);
-                if (!dashboard.equals(expectedDashboard)) {
-                    return false;
-                }
-
-                List<DashboardItem> expectedDashboardItems = expectedDashboard.getDashboardItems();
-                return expectedDashboardItems == null || expectedDashboardItems.isEmpty();
-            }
-        };
-
-        verify(modelUtilsMock, times(1)).merge(any(List.class), any(List.class), argThat(matcher));
     }
 }

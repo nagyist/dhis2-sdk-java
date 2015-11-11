@@ -28,13 +28,13 @@
 
 package org.hisp.dhis.java.sdk.dashboard;
 
+import org.hisp.dhis.java.sdk.common.IStateStore;
+import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
-import org.hisp.dhis.java.sdk.common.IStateStore;
-import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
-import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.utils.ModelUtils;
 import org.joda.time.DateTime;
 
@@ -62,59 +62,100 @@ public class DashboardController2 implements IDashboardController {
 
     @Override
     public void sync() {
-
+        update();
+        send();
     }
 
     @Override
     public void update() {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
-        List<Dashboard> updatedDashboards = getDashboards(lastUpdated);
-        List<DashboardItem> updateDashboardItems = getDashboardItems(updatedDashboards, lastUpdated);
+        List<Dashboard> updatedDashboards = updateDashboards(lastUpdated);
+        List<DashboardItem> updateDashboardItems = updateDashboardItems(updatedDashboards, lastUpdated);
+        List<DashboardElement> updateDashboardElements = updateDashboardElements(updateDashboardItems);
     }
 
     @Override
     public void send() {
+
     }
 
-    private List<Dashboard> getDashboards(DateTime lastUpdated) {
-        List<Dashboard> existingDashboards = dashboardApiClient.getBasicDashboards(lastUpdated);
-        List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
+    private List<Dashboard> updateDashboards(DateTime lastUpdated) {
+        return modelUtils.merge(dashboardApiClient.getBasicDashboards(lastUpdated),
+                dashboardApiClient.getFullDashboards(lastUpdated),
+                queryDashboards(Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
+    }
 
+    private List<DashboardItem> updateDashboardItems(List<Dashboard> dashboards, DateTime lastUpdated) {
+        List<DashboardItem> actualDashboardItems = new ArrayList<>();
+        for (Dashboard dashboard : dashboards) {
+            actualDashboardItems.addAll(dashboard.getDashboardItems());
+        }
+
+        Map<String, DashboardItem> updatedItemsMap = modelUtils
+                .toMap(dashboardApiClient.getBasicDashboardItems(lastUpdated));
+        Map<String, DashboardItem> persistedItemsMap = modelUtils.toMap(stateStore
+                .queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
+
+        // merging updated items with actual
+        for (DashboardItem actualItem : actualDashboardItems) {
+            DashboardItem updatedItem = updatedItemsMap.get(actualItem.getUId());
+            DashboardItem persistedItem = persistedItemsMap.get(actualItem.getUId());
+
+            if (persistedItem != null) {
+                actualItem.setId(persistedItem.getId());
+            }
+
+            if (updatedItem != null) {
+                actualItem.setCreated(updatedItem.getCreated());
+                actualItem.setLastUpdated(updatedItem.getLastUpdated());
+                actualItem.setShape(updatedItem.getShape());
+            }
+//
+//            if (actualItem.getDashboardElements() != null &&
+//                    !actualItem.getDashboardElements().isEmpty()) {
+//                for (DashboardElement element : actualItem.getDashboardElements()) {
+//                    element.setDashboardItem(actualItem);
+//                }
+//            }
+        }
+
+        return actualDashboardItems;
+    }
+
+    private List<DashboardElement> updateDashboardElements(List<DashboardItem> dashboardItems) {
+        return null;
+    }
+
+    private List<Dashboard> queryDashboards(Action... actions) {
         /* reading persisted dashboards (excluding those which were not posted to server yet) */
-        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(
-                Dashboard.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
-        Map<Long, List<DashboardItem>> persistedDashboardItems = queryDashboardItems(
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
-        Map<Long, List<DashboardElement>> persistedDashboardElements = queryDashboardElements(
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+        List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class, actions);
+        Map<Long, List<DashboardItem>> persistedDashboardItems = queryDashboardItems(actions);
+        Map<Long, List<DashboardElement>> persistedDashboardElements = queryDashboardElements(actions);
 
         /* build relationships */
         for (Dashboard dashboard : persistedDashboards) {
             List<DashboardItem> dashboardItems = persistedDashboardItems.get(dashboard.getId());
-            dashboard.setDashboardItems(dashboardItems);
 
-            if (dashboardItems == null) {
-                continue;
-            }
+            if (dashboardItems != null) {
+                dashboard.setDashboardItems(dashboardItems);
 
-            for (DashboardItem dashboardItem : dashboardItems) {
-                List<DashboardElement> dashboardElements = persistedDashboardElements.get(dashboardItem.getId());
-                dashboardItem.setDashboardElements(dashboardElements);
+                for (DashboardItem dashboardItem : dashboardItems) {
+                    List<DashboardElement> dashboardElements = persistedDashboardElements.get(dashboardItem.getId());
+
+                    if (dashboardElements != null) {
+                        dashboardItem.setDashboardElements(dashboardElements);
+                    }
+                }
             }
         }
 
-        return modelUtils.merge(existingDashboards, updatedDashboards, persistedDashboards);
-    }
-
-    private List<DashboardItem> getDashboardItems(List<Dashboard> dashboards, DateTime lastUpdated) {
-        return null;
+        return persistedDashboards;
     }
 
     /* returns map where key is id of dashboard and value is list of dashboard items */
     private Map<Long, List<DashboardItem>> queryDashboardItems(Action... actions) {
-        List<DashboardItem> dashboardItemsList = stateStore
-                .queryModelsWithActions(DashboardItem.class, actions);
+        List<DashboardItem> dashboardItemsList = stateStore.queryModelsWithActions(DashboardItem.class, actions);
         Map<Long, List<DashboardItem>> dashboardItemMap = new HashMap<>();
 
         for (DashboardItem dashboardItem : dashboardItemsList) {
@@ -134,8 +175,7 @@ public class DashboardController2 implements IDashboardController {
 
     /* returns map where key is id of dashboard item and value is list of dashboard elements */
     private Map<Long, List<DashboardElement>> queryDashboardElements(Action... actions) {
-        List<DashboardElement> dashboardElementsList = stateStore
-                .queryModelsWithActions(DashboardElement.class, actions);
+        List<DashboardElement> dashboardElementsList = stateStore.queryModelsWithActions(DashboardElement.class, actions);
         Map<Long, List<DashboardElement>> dashboardElementMap = new HashMap<>();
 
         for (DashboardElement dashboardElement : dashboardElementsList) {

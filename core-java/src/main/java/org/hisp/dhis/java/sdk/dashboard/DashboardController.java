@@ -159,7 +159,8 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         // List of persisted dashboard items
         Map<String, DashboardItem> persistedDashboardItems =
-                modelUtils.toMap(stateStore.queryModelsWithActions(DashboardItem.class, Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
+                modelUtils.toMap(stateStore.queryModelsWithActions(DashboardItem.class,
+                        Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE));
 
         // List of updated dashboard items. We need this only to get
         // information about updates of item shape.
