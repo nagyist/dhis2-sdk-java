@@ -12,6 +12,7 @@ import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.Program;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityDataValue;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.java.sdk.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.java.sdk.program.IProgramStore;
@@ -22,7 +23,9 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -51,6 +54,8 @@ public class EventControllerTest {
     private Event fullEvent;
     private Event basicEvent;
     private TrackedEntityInstance trackedEntityInstance;
+    private TrackedEntityDataValue dataValue;
+
 
     private final String ENROLLMENT_UID = "Y6xLkm9oI4";
     private final String PROGRAM_UID = "B3xKcO3oI4";
@@ -91,6 +96,13 @@ public class EventControllerTest {
         organisationUnit = new OrganisationUnit();
         organisationUnit.setUId(ORGANISATIONUNIT_UID);
 
+        dataValue = new TrackedEntityDataValue();
+
+        basicEvent = new Event();
+
+        fullEvent = new Event();
+        fullEvent.setTrackedEntityDataValues(Arrays.asList(dataValue));
+
         lastUpdated = new DateTime(2015, 5, 1, 1, 1);
         systemInfo = new SystemInfo();
         serverDateTime = new DateTime();
@@ -99,6 +111,8 @@ public class EventControllerTest {
 
         when(lastUpdatedPreferencesMock.get(ResourceType.EVENTS, ENROLLMENT_UID)).thenReturn(lastUpdated);
         when(systemInfoApiClientMock.getSystemInfo()).thenReturn(systemInfo);
+        when(eventApiClientMock.getBasicEvents(program.getUId(), enrollment.getStatus(), trackedEntityInstance.getTrackedEntityInstanceUid(), null)).thenReturn(Arrays.asList(basicEvent));
+        when(eventApiClientMock.getFullEvents(program.getUId(), enrollment.getStatus(), trackedEntityInstance.getTrackedEntityInstanceUid(), lastUpdated)).thenReturn(Arrays.asList(basicEvent));
 
         eventController = new EventController(eventApiClientMock, systemInfoApiClientMock, lastUpdatedPreferencesMock,
                 transactionManagerMock, stateStoreMock, eventStoreMock, trackedEntityDataValueStoreMock,
@@ -107,9 +121,10 @@ public class EventControllerTest {
 
     @Test
     public void testGetEventsFromServer()
-    {   when(programStoreMock.queryByUid(enrollment.getProgram())).thenReturn(program);
-
-        eventController.getEventsDataFromServer(enrollment);
+    {
+        when(programStoreMock.queryByUid(enrollment.getProgram())).thenReturn(program);
+        when(modelUtilsMock.merge(any(List.class), any(List.class), any(List.class))).thenReturn(Arrays.asList(basicEvent, fullEvent));
+        eventController.sync(enrollment);
 
         verify(eventApiClientMock, times(1)).getBasicEvents(program.getUId(),
                 enrollment.getStatus(),
@@ -126,7 +141,7 @@ public class EventControllerTest {
 
     @Test
     public void testGetEventsFromServerNullEnrollmentArgument() {
-        eventController.getEventsDataFromServer(null);
+        eventController.sync(null);
     }
 
     @Test
