@@ -29,6 +29,7 @@
 package org.hisp.dhis.java.sdk;
 
 import org.hisp.dhis.java.sdk.dashboard.*;
+import org.hisp.dhis.java.sdk.event.EventControllerTest;
 import org.hisp.dhis.java.sdk.interpretation.InterpretationCommentServiceTest;
 import org.hisp.dhis.java.sdk.user.UserAccountServiceTest;
 import org.hisp.dhis.java.sdk.enrollment.EnrollmentControllerTest;
@@ -65,6 +66,7 @@ import org.junit.runners.Suite;
         EnrollmentServiceTest.class,
         EnrollmentControllerTest.class,
         EventServiceTest.class,
+        EventControllerTest.class,
 
         InterpretationElementServiceTest.class,
         InterpretationCommentServiceTest.class,
