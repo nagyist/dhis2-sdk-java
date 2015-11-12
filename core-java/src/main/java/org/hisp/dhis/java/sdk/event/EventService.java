@@ -74,7 +74,7 @@ public class EventService implements IEventService {
         Preconditions.isNull(status, "status argument must not be null");
 
         Event event = new Event();
-        event.setEventUid(CodeGenerator.generateCode());
+        event.setUId(CodeGenerator.generateCode());
         event.setEnrollment(enrollment);
         event.setOrganisationUnitId(organisationUnit.getUId());
         event.setStatus(status);
@@ -100,7 +100,7 @@ public class EventService implements IEventService {
         }
 
         Event event = new Event();
-        event.setEventUid(CodeGenerator.generateCode());
+        event.setUId(CodeGenerator.generateCode());
         event.setStatus(status);
         event.setOrganisationUnitId(organisationUnit.getUId());
         event.setProgramId(program.getUId());
