@@ -49,6 +49,7 @@ import org.hisp.dhis.java.sdk.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.java.sdk.trackedentity.ITrackedEntityDataValueStore;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityDataValue;
+import org.hisp.dhis.java.sdk.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -70,8 +71,9 @@ public final class EventController extends PushableDataController implements IEv
     private final IOrganisationUnitStore organisationUnitStore;
     private final IProgramStore programStore;
     private final IFailedItemStore failedItemStore;
+    private final IModelUtils modelUtils;
 
-    public EventController(IEventApiClient eventApiClient, ISystemInfoApiClient systemInfoApiClient, ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IStateStore stateStore, IEventStore eventStore, ITrackedEntityDataValueStore trackedEntityDataValueStore, IOrganisationUnitStore organisationUnitStore, IProgramStore programStore, IFailedItemStore failedItemStore) {
+    public EventController(IEventApiClient eventApiClient, ISystemInfoApiClient systemInfoApiClient, ILastUpdatedPreferences lastUpdatedPreferences, ITransactionManager transactionManager, IStateStore stateStore, IEventStore eventStore, ITrackedEntityDataValueStore trackedEntityDataValueStore, IOrganisationUnitStore organisationUnitStore, IProgramStore programStore, IFailedItemStore failedItemStore, IModelUtils modelUtils) {
         this.eventApiClient = eventApiClient;
         this.systemInfoApiClient = systemInfoApiClient;
         this.lastUpdatedPreferences = lastUpdatedPreferences;
@@ -82,6 +84,7 @@ public final class EventController extends PushableDataController implements IEv
         this.organisationUnitStore = organisationUnitStore;
         this.programStore = programStore;
         this.failedItemStore = failedItemStore;
+        this.modelUtils = modelUtils;
     }
 
     /**
@@ -122,7 +125,7 @@ public final class EventController extends PushableDataController implements IEv
         }
         List<Event> existingEvents = eventApiClient.getBasicEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), null);
         List<Event> updatedEvents = eventApiClient.getFullEvents(program.getUId(), enrollment.getStatus(), enrollment.getTrackedEntityInstance().getTrackedEntityInstanceUid(), lastUpdated);
-        List<Event> existingPersistedAndUpdatedEvents = merge(existingEvents, updatedEvents, eventStore.query(enrollment));
+        List<Event> existingPersistedAndUpdatedEvents = modelUtils.merge(existingEvents, updatedEvents, eventStore.query(enrollment));
         for (Event event : updatedEvents) {
             event.setEnrollment(enrollment);
         }
@@ -172,7 +175,7 @@ public final class EventController extends PushableDataController implements IEv
                                             List<Event> persistedItems,
                                             DateTime serverDateTime) {
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(createOperations(eventStore, persistedItems, updatedItems));
+        operations.addAll(transactionManager.createOperations(eventStore, persistedItems, updatedItems));
         transactionManager.transact(operations);
         operations.clear();
 
@@ -186,7 +189,7 @@ public final class EventController extends PushableDataController implements IEv
                         eventStore.queryById(event.getId()), event,
                         trackedEntityDataValueStore.query(event), updatedDataValues));
             }
-            lastUpdatedPreferences.save(ResourceType.EVENT, serverDateTime, event.getEventUid());
+            lastUpdatedPreferences.save(ResourceType.EVENT, serverDateTime, event.getUId());
         }
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
@@ -203,8 +206,8 @@ public final class EventController extends PushableDataController implements IEv
                                                List<Event> newModels) {
         List<DbOperation> ops = new ArrayList<>();
 
-        Map<String, Event> newModelsMap = toMap(newModels);
-        Map<String, Event> oldModelsMap = toMap(oldModels);
+        Map<String, Event> newModelsMap = modelUtils.toMap(newModels);
+        Map<String, Event> oldModelsMap = modelUtils.toMap(oldModels);
 
         // As we will go through map of persisted items, we will try to update existing data.
         // Also, during each iteration we will remove old model key from list of new models.
@@ -325,66 +328,12 @@ public final class EventController extends PushableDataController implements IEv
         return ops;
     }
 
-    /**
-     * Returns a list of items taken from updatedItems and persistedItems, based on the items in
-     * the passed existingItems List. Items that are not present in existingItems will not be
-     * included.
-     *
-     * @param existingItems
-     * @param updatedItems
-     * @param persistedItems
-     * @return
-     */
-    private static List<Event> merge(List<Event> existingItems,
-                                     List<Event> updatedItems,
-                                     List<Event> persistedItems) {
-        Map<String, Event> updatedItemsMap = toMap(updatedItems);
-        Map<String, Event> persistedItemsMap = toMap(persistedItems);
-        Map<String, Event> existingItemsMap = new HashMap<>();
-
-        if (existingItems == null || existingItems.isEmpty()) {
-            return new ArrayList<>(existingItemsMap.values());
-        }
-
-        for (Event existingItem : existingItems) {
-            String id = existingItem.getEventUid();
-            Event updatedItem = updatedItemsMap.get(id);
-            Event persistedItem = persistedItemsMap.get(id);
-
-            if (updatedItem != null) {
-                if (persistedItem != null) {
-                    updatedItem.setId(persistedItem.getId());
-                }
-                existingItemsMap.put(id, updatedItem);
-                continue;
-            }
-
-            if (persistedItem != null) {
-                existingItemsMap.put(id, persistedItem);
-            }
-        }
-
-        return new ArrayList<>(existingItemsMap.values());
-    }
-
-    private static Map<String, Event> toMap(List<Event> objects) {
-        Map<String, Event> map = new HashMap<>();
-        if (objects != null && objects.size() > 0) {
-            for (Event object : objects) {
-                if (object.getEventUid() != null) {
-                    map.put(object.getEventUid(), object);
-                }
-            }
-        }
-        return map;
-    }
-
     private static Map<String, TrackedEntityDataValue> toMap(Collection<TrackedEntityDataValue> objects) {
         Map<String, TrackedEntityDataValue> map = new HashMap<>();
         if (objects != null && objects.size() > 0) {
             for (TrackedEntityDataValue object : objects) {
                 if (object.getEvent() != null && object.getDataElement() != null) {
-                    map.put(object.getEvent().getEventUid() + object.getDataElement(), object);
+                    map.put(object.getEvent().getUId() + object.getDataElement(), object);
                 }
             }
         }
@@ -458,7 +407,7 @@ public final class EventController extends PushableDataController implements IEv
 
     private void postEvent(Event event) throws ApiException {
         //setting event to null to avoid sending temporary local reference
-        event.setEventUid(null);
+        event.setUId(null);
         try {
             ImportSummary importSummary = eventApiClient.postEvent(event);
             handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
@@ -508,7 +457,7 @@ public final class EventController extends PushableDataController implements IEv
 
     private Event updateEventTimestamp(Event event) throws ApiException {
         try {
-            Event updatedEvent = eventApiClient.getBasicEvent(event.getEventUid(), null);
+            Event updatedEvent = eventApiClient.getBasicEvent(event.getUId(), null);
 
             // merging updated timestamp to local event model
             event.setCreated(updatedEvent.getCreated());
