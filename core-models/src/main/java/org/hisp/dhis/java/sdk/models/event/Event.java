@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
 import org.hisp.dhis.java.sdk.models.common.base.IModel;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityDataValue;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class Event implements Serializable, IModel {
+public final class Event implements Serializable, IdentifiableObject {
 
     public static final String STATUS_ACTIVE = "ACTIVE";
     public static final String STATUS_COMPLETED = "COMPLETED";
@@ -130,14 +131,6 @@ public final class Event implements Serializable, IModel {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getEventUid() {
-        return eventUid;
-    }
-
-    public void setEventUid(String eventUid) {
-        this.eventUid = eventUid;
     }
 
     public String getStatus() {
@@ -248,6 +241,16 @@ public final class Event implements Serializable, IModel {
 
     public void setTrackedEntityDataValues(List<TrackedEntityDataValue> trackedEntityDataValues) {
         this.trackedEntityDataValues = trackedEntityDataValues;
+    }
+
+    @Override
+    public String getUId() {
+        return eventUid;
+    }
+
+    @Override
+    public void setUId(String uId) {
+        this.eventUid = uId;
     }
 
     public String getName() {
