@@ -28,6 +28,7 @@
 
 package org.hisp.dhis.java.sdk.event;
 
+import org.hisp.dhis.java.sdk.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.common.persistence.IStore;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
@@ -36,7 +37,7 @@ import org.hisp.dhis.java.sdk.models.program.Program;
 
 import java.util.List;
 
-public interface IEventStore extends IStore<Event> {
+public interface IEventStore extends IIdentifiableObjectStore<Event> {
     Event queryByUid(String uid);
     List<Event> query(Enrollment enrollment);
     List<Event> query(OrganisationUnit organisationUnit, Program program);
