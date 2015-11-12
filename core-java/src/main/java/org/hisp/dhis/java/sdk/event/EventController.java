@@ -193,72 +193,7 @@ public final class EventController extends PushableDataController implements IEv
         }
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-
-    /**
-     * This utility method allows to determine which type of operation to apply to
-     * each BaseIdentifiableObject$Flow depending on TimeStamp.
-     *
-     * @param oldModels List of models from local storage.
-     * @param newModels List of models of distance instance of DHIS.
-     */
-    private List<DbOperation> createOperations(IStore<Event> modelStore,
-                                               List<Event> oldModels,
-                                               List<Event> newModels) {
-        List<DbOperation> ops = new ArrayList<>();
-
-        Map<String, Event> newModelsMap = modelUtils.toMap(newModels);
-        Map<String, Event> oldModelsMap = modelUtils.toMap(oldModels);
-
-        // As we will go through map of persisted items, we will try to update existing data.
-        // Also, during each iteration we will remove old model key from list of new models.
-        // As the result, the list of remaining items in newModelsMap,
-        // will contain only those items which were not inserted before.
-        for (String oldModelKey : oldModelsMap.keySet()) {
-            Event newModel = newModelsMap.get(oldModelKey);
-            Event oldModel = oldModelsMap.get(oldModelKey);
-
-            // if there is no particular model with given uid in list of
-            // actual (up to date) items, it means it was removed on the server side,
-            // or the item was created locally and has not yet been posted.
-            if (newModel == null) {
-                Action action = stateStore.queryActionForModel(oldModel);
-                if (!Action.TO_UPDATE.equals(action) && !Action.TO_POST.equals(action)) {
-                    ops.add(DbOperation.with(modelStore)
-                            .delete(oldModel));
-                }
-
-                // in case if there is no new model object,
-                // we can jump to next iteration.
-                continue;
-            }
-
-            // if the last updated field in up to date model is after the same
-            // field in persisted model, it means we need to update it.
-            if (newModel.getLastUpdated().isAfter(oldModel.getLastUpdated())) {
-                // note, we need to pass database primary id to updated model
-                // in order to avoid creation of new object.
-                newModel.setId(oldModel.getId());
-                ops.add(DbOperation.with(modelStore)
-                        .update(newModel));
-                //todo: the data values related also depend on this..
-                //todo see createOperations for TrackedEntityDataValue
-            }
-
-            // as we have processed given old (persisted) model,
-            // we can remove it from map of new models.
-            newModelsMap.remove(oldModelKey);
-        }
-
-        // Inserting new items.
-        for (String newModelKey : newModelsMap.keySet()) {
-            Event item = newModelsMap.get(newModelKey);
-            ops.add(DbOperation.with(modelStore)
-                    .insert(item));
-        }
-
-        return ops;
-    }
-
+    
     /**
      * This utility method allows to determine which type of operation to apply to
      * each BaseIdentifiableObject$Flow depending on TimeStamp.
