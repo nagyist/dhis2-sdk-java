@@ -61,7 +61,7 @@ public class EventControllerTest {
     private final String PROGRAM_UID = "B3xKcO3oI4";
     private final String TRACKEDENITYINSTANCE_UID = "V5oPD34mIq";
     private final String ORGANISATIONUNIT_UID = "M8nK0i8y5Re";
-
+    private final String EVENT_UID = "O8jnG4t2Lkm1";
 
 
 
@@ -98,16 +98,19 @@ public class EventControllerTest {
 
         dataValue = new TrackedEntityDataValue();
 
-        basicEvent = new Event();
-
-        fullEvent = new Event();
-        fullEvent.setTrackedEntityDataValues(Arrays.asList(dataValue));
-
         lastUpdated = new DateTime(2015, 5, 1, 1, 1);
         systemInfo = new SystemInfo();
         serverDateTime = new DateTime();
         systemInfo.setServerDate(serverDateTime);
 
+        basicEvent = new Event();
+        basicEvent.setUId(EVENT_UID);
+        basicEvent.setLastUpdated(lastUpdated);
+
+        fullEvent = new Event();
+        fullEvent.setUId(EVENT_UID);
+        fullEvent.setLastUpdated(new DateTime());
+        fullEvent.setTrackedEntityDataValues(Arrays.asList(dataValue));
 
         when(lastUpdatedPreferencesMock.get(ResourceType.EVENTS, ENROLLMENT_UID)).thenReturn(lastUpdated);
         when(systemInfoApiClientMock.getSystemInfo()).thenReturn(systemInfo);
@@ -141,7 +144,8 @@ public class EventControllerTest {
 
     @Test
     public void testGetEventsFromServerNullEnrollmentArgument() {
-        eventController.sync(null);
+        Enrollment enrollment = null;
+        eventController.sync(enrollment);
     }
 
     @Test
@@ -150,5 +154,28 @@ public class EventControllerTest {
         eventController.getEventsDataFromServer(enrollment);
 
         verify(programStoreMock, times(1)).queryByUid(enrollment.getProgram());
+    }
+
+    @Test
+    public void testSyncWithOrgUnitProgramCountServerDateParameters() {
+        eventController.sync(organisationUnit.getUId(), program.getUId(), 100, serverDateTime);
+    }
+
+    @Test
+    public void testSyncWithEventUId() {
+        when(eventApiClientMock.getFullEvent(EVENT_UID, null)).thenReturn(fullEvent);
+        when(eventStoreMock.queryByUid(EVENT_UID)).thenReturn(basicEvent);
+        eventController.sync(EVENT_UID);
+
+        verify(eventStoreMock, times(1)).update(fullEvent);
+    }
+
+    @Test
+    public void testSyncWithEventUIdPersistedItemIsNull() {
+        when(eventApiClientMock.getFullEvent(EVENT_UID, null)).thenReturn(fullEvent);
+        when(eventStoreMock.queryByUid(EVENT_UID)).thenReturn(null);
+        eventController.sync(EVENT_UID);
+
+        verify(eventStoreMock, times(1)).insert(fullEvent);
     }
 }
