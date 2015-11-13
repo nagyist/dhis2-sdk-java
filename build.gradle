@@ -30,6 +30,7 @@ group 'org.hisp.dhis'
 version '0.2-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'checkstyle'
 
 sourceCompatibility = 1.7
 
