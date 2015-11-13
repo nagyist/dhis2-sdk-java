@@ -405,6 +405,7 @@ public final class EventController extends PushableDataController implements IEv
 
     @Override
     public void sync() throws ApiException {
+        sendEventChanges();
     }
 
     @Override
