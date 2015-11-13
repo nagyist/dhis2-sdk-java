@@ -8,6 +8,7 @@ import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.enrollment.EnrollmentController;
 import org.hisp.dhis.java.sdk.models.common.SystemInfo;
+import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
@@ -178,4 +179,21 @@ public class EventControllerTest {
 
         verify(eventStoreMock, times(1)).insert(fullEvent);
     }
+    @Test
+    public void testSyncSendEvents() {
+        Event eventToPost = new Event();
+        Event eventToUpdate = new Event();
+        eventToPost.setEnrollment(enrollment);
+        Enrollment enrollmentToUpdate = enrollment;
+        eventToUpdate.setEnrollment(enrollmentToUpdate);
+
+        when(stateStoreMock.queryModelsWithActions(Event.class, Action.TO_POST)).thenReturn(Arrays.asList(eventToPost));
+        when(stateStoreMock.queryModelsWithActions(Event.class, Action.TO_UPDATE)).thenReturn(Arrays.asList(eventToUpdate));
+        when(stateStoreMock.queryActionForModel(enrollment)).thenReturn(Action.TO_POST);
+        when(stateStoreMock.queryActionForModel(enrollmentToUpdate)).thenReturn(Action.TO_UPDATE);
+
+        eventController.sync();
+
+    }
+
 }
