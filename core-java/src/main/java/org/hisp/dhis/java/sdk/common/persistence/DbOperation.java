@@ -41,7 +41,7 @@ public final class DbOperation<T extends IModel> implements IDbOperation<T> {
     private final IStore<T> mModelStore;
 
     private DbOperation(DbAction dbAction, T model, IStore<T> store) {
-        mModel = Preconditions.isNull(model, "IdentifiableObject object must nto be null,");
+        mModel = Preconditions.isNull(model, "IdentifiableObject object must not be null,");
         mDbAction = Preconditions.isNull(dbAction, "BaseModel.DbAction object must not be null");
         mModelStore = Preconditions.isNull(store, "IStore object must not be null");
     }

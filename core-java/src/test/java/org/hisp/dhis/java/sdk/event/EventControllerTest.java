@@ -8,6 +8,7 @@ import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.enrollment.EnrollmentController;
 import org.hisp.dhis.java.sdk.models.common.SystemInfo;
+import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
@@ -61,7 +62,7 @@ public class EventControllerTest {
     private final String PROGRAM_UID = "B3xKcO3oI4";
     private final String TRACKEDENITYINSTANCE_UID = "V5oPD34mIq";
     private final String ORGANISATIONUNIT_UID = "M8nK0i8y5Re";
-
+    private final String EVENT_UID = "O8jnG4t2Lkm1";
 
 
 
@@ -98,16 +99,19 @@ public class EventControllerTest {
 
         dataValue = new TrackedEntityDataValue();
 
-        basicEvent = new Event();
-
-        fullEvent = new Event();
-        fullEvent.setTrackedEntityDataValues(Arrays.asList(dataValue));
-
         lastUpdated = new DateTime(2015, 5, 1, 1, 1);
         systemInfo = new SystemInfo();
         serverDateTime = new DateTime();
         systemInfo.setServerDate(serverDateTime);
 
+        basicEvent = new Event();
+        basicEvent.setUId(EVENT_UID);
+        basicEvent.setLastUpdated(lastUpdated);
+
+        fullEvent = new Event();
+        fullEvent.setUId(EVENT_UID);
+        fullEvent.setLastUpdated(new DateTime());
+        fullEvent.setTrackedEntityDataValues(Arrays.asList(dataValue));
 
         when(lastUpdatedPreferencesMock.get(ResourceType.EVENTS, ENROLLMENT_UID)).thenReturn(lastUpdated);
         when(systemInfoApiClientMock.getSystemInfo()).thenReturn(systemInfo);
@@ -141,7 +145,8 @@ public class EventControllerTest {
 
     @Test
     public void testGetEventsFromServerNullEnrollmentArgument() {
-        eventController.sync(null);
+        Enrollment enrollment = null;
+        eventController.sync(enrollment);
     }
 
     @Test
@@ -151,4 +156,44 @@ public class EventControllerTest {
 
         verify(programStoreMock, times(1)).queryByUid(enrollment.getProgram());
     }
+
+    @Test
+    public void testSyncWithOrgUnitProgramCountServerDateParameters() {
+        eventController.sync(organisationUnit.getUId(), program.getUId(), 100, serverDateTime);
+    }
+
+    @Test
+    public void testSyncWithEventUId() {
+        when(eventApiClientMock.getFullEvent(EVENT_UID, null)).thenReturn(fullEvent);
+        when(eventStoreMock.queryByUid(EVENT_UID)).thenReturn(basicEvent);
+        eventController.sync(EVENT_UID);
+
+        verify(eventStoreMock, times(1)).update(fullEvent);
+    }
+
+    @Test
+    public void testSyncWithEventUIdPersistedItemIsNull() {
+        when(eventApiClientMock.getFullEvent(EVENT_UID, null)).thenReturn(fullEvent);
+        when(eventStoreMock.queryByUid(EVENT_UID)).thenReturn(null);
+        eventController.sync(EVENT_UID);
+
+        verify(eventStoreMock, times(1)).insert(fullEvent);
+    }
+    @Test
+    public void testSyncSendEvents() {
+        Event eventToPost = new Event();
+        Event eventToUpdate = new Event();
+        eventToPost.setEnrollment(enrollment);
+        Enrollment enrollmentToUpdate = enrollment;
+        eventToUpdate.setEnrollment(enrollmentToUpdate);
+
+        when(stateStoreMock.queryModelsWithActions(Event.class, Action.TO_POST)).thenReturn(Arrays.asList(eventToPost));
+        when(stateStoreMock.queryModelsWithActions(Event.class, Action.TO_UPDATE)).thenReturn(Arrays.asList(eventToUpdate));
+        when(stateStoreMock.queryActionForModel(enrollment)).thenReturn(Action.TO_POST);
+        when(stateStoreMock.queryActionForModel(enrollmentToUpdate)).thenReturn(Action.TO_UPDATE);
+
+        eventController.sync();
+
+    }
+
 }
