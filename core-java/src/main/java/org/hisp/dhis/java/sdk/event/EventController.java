@@ -193,7 +193,7 @@ public final class EventController extends PushableDataController implements IEv
         }
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-    
+
     /**
      * This utility method allows to determine which type of operation to apply to
      * each BaseIdentifiableObject$Flow depending on TimeStamp.
@@ -415,5 +415,9 @@ public final class EventController extends PushableDataController implements IEv
     @Override
     public void sync(Enrollment enrollment) throws ApiException {
         getEventsDataFromServer(enrollment);
+    }
+
+    public void sync(String UId) {
+        getEventDataFromServer(UId);
     }
 }
