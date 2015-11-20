@@ -181,11 +181,11 @@ public final class EnrollmentController extends PushableDataController implement
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-    
 
-    private void sendEnrollmentChanges(boolean sendEvents) throws ApiException {
+
+    private void sendEnrollmentChanges() throws ApiException {
         List<Enrollment> enrollments = getLocallyChangedEnrollments();
-        sendEnrollmentChanges(enrollments, sendEvents);
+        sendEnrollmentChanges(enrollments);
     }
 
     private List<Enrollment> getLocallyChangedEnrollments() {
@@ -198,7 +198,7 @@ public final class EnrollmentController extends PushableDataController implement
     }
 
     @Override
-    public void sendEnrollmentChanges(List<Enrollment> enrollments, boolean sendEvents) throws ApiException {
+    public void sendEnrollmentChanges(List<Enrollment> enrollments) throws ApiException {
         if (enrollments == null || enrollments.isEmpty()) {
             return;
         }
@@ -222,11 +222,11 @@ public final class EnrollmentController extends PushableDataController implement
             }
         }
         for (Enrollment enrollment : enrollments) {
-            sendEnrollmentChanges(enrollment, actionMap.get(enrollment.getId()), sendEvents);
+            sendEnrollmentChanges(enrollment, actionMap.get(enrollment.getId()));
         }
     }
 
-    private void sendEnrollmentChanges(Enrollment enrollment, Action action, boolean sendEvents) throws ApiException {
+    private void sendEnrollmentChanges(Enrollment enrollment, Action action) throws ApiException {
         if (enrollment == null) {
             return;
         }
@@ -246,10 +246,9 @@ public final class EnrollmentController extends PushableDataController implement
         } else {
             putEnrollment(enrollment);
         }
-        if (sendEvents) {
-            List<Event> events = eventStore.query(enrollment);
-            eventController.sendEventChanges(events);
-        }
+
+        List<Event> events = eventStore.query(enrollment);
+        eventController.sendEventChanges(events);
     }
 
     private void postEnrollment(Enrollment enrollment) throws ApiException {
@@ -304,6 +303,7 @@ public final class EnrollmentController extends PushableDataController implement
 
     @Override
     public void sync() throws ApiException {
+        sendEnrollmentChanges();
     }
 
     @Override

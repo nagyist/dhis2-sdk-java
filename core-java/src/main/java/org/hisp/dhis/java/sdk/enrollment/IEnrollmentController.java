@@ -41,5 +41,5 @@ public interface IEnrollmentController {
 
     List<Enrollment> sync(TrackedEntityInstance trackedEntityInstance) throws ApiException;
 
-    void sendEnrollmentChanges(List<Enrollment> enrollments, boolean sendEvents) throws ApiException;
+    void sendEnrollmentChanges(List<Enrollment> enrollments) throws ApiException;
 }
