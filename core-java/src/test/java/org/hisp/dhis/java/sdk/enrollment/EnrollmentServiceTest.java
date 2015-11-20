@@ -380,14 +380,6 @@ public class EnrollmentServiceTest {
     }
 
     @Test
-    public void testGetDeletedEnrollmentById() {
-        when(stateStore.queryActionForModel(enrollmentToDelete)).thenReturn(Action.TO_DELETE);
-        enrollmentToDelete = enrollmentService.get(ENROLLMENT_MOCK_ID);
-        assertNull(enrollmentToDelete);
-        verify(enrollmentStore).queryById(ENROLLMENT_MOCK_ID);
-    }
-
-    @Test
     public void testGetToPostEnrollmentById() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_POST);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
