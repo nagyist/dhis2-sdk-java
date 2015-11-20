@@ -103,8 +103,8 @@ public class EnrollmentServiceTest {
         enrollmentToSync = new Enrollment();
         enrollmentToUpdate = new Enrollment();
 
-        when(enrollmentStore.query(ENROLLMENT_MOCK_UID)).thenReturn(enrollmentMock);
-        when(enrollmentStore.query(ENROLLMENT_MOCK_ID)).thenReturn(enrollmentMock);
+        when(enrollmentStore.queryByUid(ENROLLMENT_MOCK_UID)).thenReturn(enrollmentMock);
+        when(enrollmentStore.queryById(ENROLLMENT_MOCK_ID)).thenReturn(enrollmentMock);
         when(stateStore.queryActionForModel(enrollmentToSync)).thenReturn(Action.SYNCED);
         when(stateStore.queryActionForModel(enrollmentToPost)).thenReturn(Action.TO_POST);
         when(stateStore.queryActionForModel(enrollmentToUpdate)).thenReturn(Action.TO_UPDATE);
@@ -307,13 +307,13 @@ public class EnrollmentServiceTest {
 
     @Test
     public void testGetEnrollmentByLongId() {
-        Enrollment enrollment = enrollmentStore.query(ENROLLMENT_MOCK_ID);
+        Enrollment enrollment = enrollmentStore.queryById(ENROLLMENT_MOCK_ID);
         assertEquals(enrollment, enrollmentMock);
     }
 
     @Test
     public void testGetEnrollmentByStringUID() {
-        Enrollment enrollment = enrollmentStore.query(ENROLLMENT_MOCK_UID);
+        Enrollment enrollment = enrollmentStore.queryByUid(ENROLLMENT_MOCK_UID);
         assertEquals(enrollment, enrollmentMock);
     }
 
@@ -376,7 +376,7 @@ public class EnrollmentServiceTest {
     public void testGetSyncedEnrollmentById() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.SYNCED);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
@@ -391,7 +391,7 @@ public class EnrollmentServiceTest {
     public void testGetToPostEnrollmentById() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_POST);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
@@ -404,14 +404,14 @@ public class EnrollmentServiceTest {
     public void testGetToUpdateEnrollmentById() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_UPDATE);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
     public void testGetToDeleteEnrollmentById() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_DELETE);
         assertTrue(null == enrollmentService.get(ENROLLMENT_MOCK_UID));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
@@ -424,28 +424,28 @@ public class EnrollmentServiceTest {
     public void testGetToPostEnrollmentByUid() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_POST);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
     public void testGetToUpdateEnrollmentByUid() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_UPDATE);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
     public void testGetSyncedEnrollmentByUid() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.SYNCED);
         assertTrue(enrollmentMock.equals(enrollmentService.get(ENROLLMENT_MOCK_UID)));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test
     public void testGetToDeleteEnrollmentByUid() {
         when(stateStore.queryActionForModel(enrollmentMock)).thenReturn(Action.TO_DELETE);
         assertTrue(null == enrollmentService.get(ENROLLMENT_MOCK_UID));
-        verify(enrollmentStore).query(ENROLLMENT_MOCK_UID);
+        verify(enrollmentStore).queryByUid(ENROLLMENT_MOCK_UID);
     }
 
     @Test

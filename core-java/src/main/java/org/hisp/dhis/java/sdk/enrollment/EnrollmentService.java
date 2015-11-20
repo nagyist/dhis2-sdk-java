@@ -59,7 +59,7 @@ public class EnrollmentService implements IEnrollmentService {
     @Override
     public Enrollment get(String uid) {
         Preconditions.isNull(uid, "Uid must not be null");
-        Enrollment enrollment = enrollmentStore.query(uid);
+        Enrollment enrollment = enrollmentStore.queryByUid(uid);
         Action action = stateStore.queryActionForModel(enrollment);
 
         if (!Action.TO_DELETE.equals(action)) {
@@ -115,7 +115,8 @@ public class EnrollmentService implements IEnrollmentService {
         List<Event> events = new ArrayList<>();
         for (ProgramStage programStage : program.getProgramStages()) {
             if (programStage.isAutoGenerateEvent()) {
-                Event event = eventService.create(trackedEntityInstance, enrollment, organisationUnit, program, programStage, Event.STATUS_FUTURE_VISIT);
+                Event event = eventService.create(trackedEntityInstance, enrollment,
+                        organisationUnit, program, programStage, Event.STATUS_FUTURE_VISIT);
                 events.add(event);
             }
         }
@@ -124,7 +125,8 @@ public class EnrollmentService implements IEnrollmentService {
     }
 
     @Override
-    public Enrollment getActiveEnrollment(TrackedEntityInstance trackedEntityInstance, OrganisationUnit organisationUnit, Program program) {
+    public Enrollment getActiveEnrollment(TrackedEntityInstance trackedEntityInstance,
+                                          OrganisationUnit organisationUnit, Program program) {
         return enrollmentStore.queryActiveEnrollment(trackedEntityInstance, organisationUnit, program);
     }
 
