@@ -32,8 +32,7 @@ import org.hisp.dhis.java.sdk.common.IFailedItemStore;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.common.controllers.PushableDataController;
 import org.hisp.dhis.java.sdk.common.network.ApiException;
-import org.hisp.dhis.java.sdk.common.persistence.DbOperation;
-import org.hisp.dhis.java.sdk.common.persistence.IStore;
+import org.hisp.dhis.java.sdk.common.persistence.*;
 import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.event.IEventController;
@@ -46,8 +45,6 @@ import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.java.sdk.systeminfo.ISystemInfoApiClient;
 import org.hisp.dhis.java.sdk.utils.IModelUtils;
-import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
-import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -90,20 +87,11 @@ public final class EnrollmentController extends PushableDataController implement
                 .get(ResourceType.ENROLLMENTS, trackedEntityInstance.getTrackedEntityInstanceUid());
         DateTime serverDateTime = systemInfoApiClient.getSystemInfo().getServerDate();
 
-        List<Enrollment> allExistingEnrollments = enrollmentApiClient
-                .getBasicEnrollments(trackedEntityInstance.getTrackedEntityInstanceUid(), null);
-        List<Enrollment> updatedEnrollments = enrollmentApiClient
-                .getFullEnrollments(trackedEntityInstance.getTrackedEntityInstanceUid(), lastUpdated);
+        List<Enrollment> existingUpdatedAndPersistedEnrollments = updateEnrollments(trackedEntityInstance, lastUpdated);
 
-        List<Enrollment> existingUpdatedAndPersistedEnrollments =
-                modelUtils.merge(allExistingEnrollments, updatedEnrollments, enrollmentStore.query(trackedEntityInstance));
         for (Enrollment enrollment : existingUpdatedAndPersistedEnrollments) {
             enrollment.setTrackedEntityInstance(trackedEntityInstance);
         }
-
-        saveResourceDataFromServer(ResourceType.ENROLLMENTS,
-                trackedEntityInstance.getTrackedEntityInstanceUid(), enrollmentStore,
-                existingUpdatedAndPersistedEnrollments, enrollmentStore.query(trackedEntityInstance), serverDateTime);
 
         for (Enrollment enrollment : existingUpdatedAndPersistedEnrollments) {
             try {
@@ -114,6 +102,12 @@ public final class EnrollmentController extends PushableDataController implement
                 e.printStackTrace();
             }
         }
+
+        saveResourceDataFromServer(ResourceType.ENROLLMENTS,
+                trackedEntityInstance.getTrackedEntityInstanceUid(), enrollmentStore,
+                existingUpdatedAndPersistedEnrollments, enrollmentStore.query(trackedEntityInstance), serverDateTime);
+
+
         return existingUpdatedAndPersistedEnrollments;
     }
 
@@ -125,7 +119,7 @@ public final class EnrollmentController extends PushableDataController implement
         //todo: if the updatedEnrollment is deleted on the server, delete it also locally
         //todo: be sure to check if the enrollment has ever been on the server, or if it is still pending first time registration sync
 
-        Enrollment persistedEnrollment = enrollmentStore.query(uid);
+        Enrollment persistedEnrollment = enrollmentStore.queryByUid(uid);
         if (updatedEnrollment.getUId() == null) {
             //either the uid provided was invalid, or the enrollment has not been updated since lastUpdated
             return persistedEnrollment;
@@ -145,75 +139,49 @@ public final class EnrollmentController extends PushableDataController implement
         return updatedEnrollment;
     }
 
+    public List<Enrollment> updateEnrollments(TrackedEntityInstance trackedEntityInstance, DateTime lastUpdated) {
+
+        List<Enrollment> allExistingEnrollments = enrollmentApiClient
+                .getBasicEnrollments(trackedEntityInstance.getTrackedEntityInstanceUid(), null);
+
+        // retrieve all enrollments, with all fields based on lastUpdated parameter
+        List<Enrollment> updatedEnrollments = enrollmentApiClient
+                .getFullEnrollments(trackedEntityInstance.getTrackedEntityInstanceUid(), lastUpdated);
+
+
+        // query enrollment store for all enrollments for the tracked entity instance
+        List<Enrollment> enrollmentsForTrackedEntityInstance = enrollmentStore.query(trackedEntityInstance);
+
+        // get action map for all enrollments in state store
+        Map<Long, Action> actionMap = stateStore.queryActionsForModel(Enrollment.class);
+
+        // create a new list that filters out the enrollments that has Action.TO_POST (meaning it is saved locally), from enrollment store
+        List<Enrollment> filteredEnrollments = new ArrayList<>();
+
+        for(Enrollment enrollment : enrollmentsForTrackedEntityInstance) {
+            if(!(Action.TO_POST.equals(actionMap.get(enrollment.getId())))) {
+                filteredEnrollments.add(enrollment);
+            }
+        }
+
+        // List<Enrollment> existingUpdatedAndPersistedEnrollments =
+        //        modelUtils.merge(allExistingEnrollments, updatedEnrollments, enrollmentStore.query(trackedEntityInstance));
+
+        List<Enrollment> existingUpdatedAndPersistedEnrollments =
+                modelUtils.merge(allExistingEnrollments, updatedEnrollments, filteredEnrollments);
+
+        return existingUpdatedAndPersistedEnrollments;
+    }
+
     private void saveResourceDataFromServer(ResourceType resourceType, String extraIdentifier,
-                                            IStore<Enrollment> store, List<Enrollment> updatedItems,
+                                            IIdentifiableObjectStore<Enrollment> store, List<Enrollment> updatedItems,
                                             List<Enrollment> persistedItems, DateTime serverDateTime) {
         Queue<IDbOperation> operations = new LinkedList<>();
-        operations.addAll(createOperations(store, persistedItems, updatedItems));
+        operations.addAll(transactionManager.createOperations(store, persistedItems, updatedItems));
         transactionManager.transact(operations);
         lastUpdatedPreferences.save(resourceType, serverDateTime, extraIdentifier);
     }
-
-    /**
-     * This utility method allows to determine which type of operation to apply to
-     * each BaseIdentifiableObject$Flow depending on TimeStamp.
-     *
-     * @param oldModels List of models from local storage.
-     * @param newModels List of models of distance instance of DHIS.
-     */
-    private List<DbOperation> createOperations(IStore<Enrollment> store, List<Enrollment> oldModels,
-                                               List<Enrollment> newModels) {
-        List<DbOperation> ops = new ArrayList<>();
-
-        Map<String, Enrollment> newModelsMap = modelUtils.toMap(newModels);
-        Map<String, Enrollment> oldModelsMap = modelUtils.toMap(oldModels);
-
-        // As we will go through map of persisted items, we will try to update existing data.
-        // Also, during each iteration we will remove old model key from list of new models.
-        // As the result, the list of remaining items in newModelsMap,
-        // will contain only those items which were not inserted before.
-        for (String oldModelKey : oldModelsMap.keySet()) {
-            Enrollment newModel = newModelsMap.get(oldModelKey);
-            Enrollment oldModel = oldModelsMap.get(oldModelKey);
-
-            // if there is no particular model with given uid in list of
-            // actual (up to date) items, it means it was removed on the server side
-            if (newModel == null) {
-                Action action = stateStore.queryActionForModel(oldModel);
-                if (!Action.TO_POST.equals(action) && !Action.TO_UPDATE.equals(action)) {
-                    ops.add(DbOperation.with(store)
-                            .delete(oldModel));
-                }
-
-                // in case if there is no new model object,
-                // we can jump to next iteration.
-                continue;
-            }
-
-            // if the last updated field in up to date model is after the same
-            // field in persisted model, it means we need to update it.
-            if (newModel.getLastUpdated().isAfter(oldModel.getLastUpdated())) {
-                // note, we need to pass database primary id to updated model
-                // in order to avoid creation of new object.
-                newModel.setId(oldModel.getId());
-                ops.add(DbOperation.with(store)
-                        .update(newModel));
-            }
-
-            // as we have processed given old (persisted) model,
-            // we can remove it from map of new models.
-            newModelsMap.remove(oldModelKey);
-        }
-
-        // Inserting new items.
-        for (String newModelKey : newModelsMap.keySet()) {
-            Enrollment item = newModelsMap.get(newModelKey);
-            ops.add(DbOperation.with(enrollmentStore)
-                    .insert(item));
-        }
-
-        return ops;
-    }
+    
 
     private void sendEnrollmentChanges(boolean sendEvents) throws ApiException {
         List<Enrollment> enrollments = getLocallyChangedEnrollments();
