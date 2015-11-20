@@ -304,7 +304,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         }
         if (sendEnrollments) {
             List<Enrollment> enrollments = enrollmentStore.query(trackedEntityInstance);
-            enrollmentController.sendEnrollmentChanges(enrollments, sendEnrollments);
+            enrollmentController.sendEnrollmentChanges(enrollments);
         }
     }
 
