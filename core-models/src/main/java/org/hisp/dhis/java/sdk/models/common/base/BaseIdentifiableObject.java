@@ -38,7 +38,7 @@ import org.joda.time.DateTime;
 import static org.hisp.dhis.java.sdk.models.utils.Preconditions.isNull;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject, IMerge<BaseIdentifiableObject> {
+public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject, IMerge<IdentifiableObject> {
 
     @JsonProperty("id")
     private String uId;
@@ -119,9 +119,13 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
     }
 
     @Override
-    public void mergeWith(BaseIdentifiableObject that, MergeStrategy strategy) {
+    public void mergeWith(IdentifiableObject that, MergeStrategy strategy) {
         isNull(that, "BaseIdentifiableObject should not be null");
         isNull(strategy, "MergeStrategy should not be null");
+
+        if (!this.getClass().isInstance(that)) {
+            return;
+        }
 
         switch (strategy) {
             case REPLACE: {
@@ -135,7 +139,7 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
         }
     }
 
-    private void replace(BaseIdentifiableObject that) {
+    private void replace(IdentifiableObject that) {
         this.setId(that.getId());
         this.setUId(that.getUId());
         this.setName(that.getName());
@@ -145,7 +149,7 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
         this.setAccess(that.getAccess());
     }
 
-    private void merge(BaseIdentifiableObject that) {
+    private void merge(IdentifiableObject that) {
         if (getLastUpdated() == null || that.getLastUpdated() == null) {
             return;
         }

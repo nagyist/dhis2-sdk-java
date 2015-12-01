@@ -30,8 +30,9 @@ package org.hisp.dhis.java.sdk.models.dashboard;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.base.BaseIdentifiableObject;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 import java.util.List;
 
@@ -54,5 +55,40 @@ public final class Dashboard extends BaseIdentifiableObject {
 
     public void setDashboardItems(List<DashboardItem> dashboardItems) {
         this.dashboardItems = dashboardItems;
+    }
+
+    @Override
+    public void mergeWith(IdentifiableObject thatObject, MergeStrategy strategy) {
+        super.mergeWith(thatObject, strategy);
+
+        if (!this.getClass().isInstance(thatObject)) {
+            return;
+        }
+
+        Dashboard that = (Dashboard) thatObject;
+        switch (strategy) {
+            case REPLACE: {
+                replace(that);
+                break;
+            }
+            case MERGE: {
+                merge(that);
+                break;
+            }
+        }
+    }
+
+    private void replace(Dashboard dashboard) {
+        this.setDashboardItems(dashboard.getDashboardItems());
+    }
+
+    private void merge(Dashboard that) {
+        if (this.getLastUpdated() == null || that.getLastUpdated() == null) {
+            return;
+        }
+
+        if (that.getLastUpdated().isAfter(this.getLastUpdated())) {
+            this.setDashboardItems(that.getDashboardItems());
+        }
     }
 }
