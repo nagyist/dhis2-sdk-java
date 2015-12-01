@@ -29,7 +29,7 @@
 package org.hisp.dhis.java.sdk.common.persistence;
 
 import org.hisp.dhis.java.sdk.models.common.base.IModel;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 
 /**
  * This class is intended to implement partial

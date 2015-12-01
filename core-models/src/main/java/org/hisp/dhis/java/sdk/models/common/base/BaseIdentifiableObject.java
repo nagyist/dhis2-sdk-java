@@ -31,10 +31,14 @@ package org.hisp.dhis.java.sdk.models.common.base;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.IMerge;
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.joda.time.DateTime;
 
+import static org.hisp.dhis.java.sdk.models.utils.Preconditions.isNull;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject {
+public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject, IMerge<BaseIdentifiableObject> {
 
     @JsonProperty("id")
     private String uId;
@@ -112,5 +116,48 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
     @Override
     public void setAccess(Access access) {
         this.access = access;
+    }
+
+    @Override
+    public void mergeWith(BaseIdentifiableObject that, MergeStrategy strategy) {
+        isNull(that, "BaseIdentifiableObject should not be null");
+        isNull(strategy, "MergeStrategy should not be null");
+
+        switch (strategy) {
+            case REPLACE: {
+                replace(that);
+                break;
+            }
+            case MERGE: {
+                merge(that);
+                break;
+            }
+        }
+    }
+
+    private void replace(BaseIdentifiableObject that) {
+        this.setId(that.getId());
+        this.setUId(that.getUId());
+        this.setName(that.getName());
+        this.setDisplayName(that.getDisplayName());
+        this.setCreated(that.getCreated());
+        this.setLastUpdated(that.getLastUpdated());
+        this.setAccess(that.getAccess());
+    }
+
+    private void merge(BaseIdentifiableObject that) {
+        if (getLastUpdated() == null || that.getLastUpdated() == null) {
+            return;
+        }
+
+        if (that.getLastUpdated().isAfter(this.getLastUpdated())) {
+            this.setId(that.getId());
+            this.setUId(that.getUId());
+            this.setName(that.getName());
+            this.setDisplayName(that.getDisplayName());
+            this.setCreated(that.getCreated());
+            this.setLastUpdated(that.getLastUpdated());
+            this.setAccess(that.getAccess());
+        }
     }
 }

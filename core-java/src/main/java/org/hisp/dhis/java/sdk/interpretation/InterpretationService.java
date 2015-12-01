@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
 import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.joda.time.DateTime;
 
 public class InterpretationService implements IInterpretationService {

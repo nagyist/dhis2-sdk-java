@@ -28,7 +28,7 @@
 
 package org.hisp.dhis.java.sdk.common.services;
 
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.common.persistence.IPersistenceModule;
 import org.hisp.dhis.java.sdk.dashboard.DashboardService;
 import org.hisp.dhis.java.sdk.dashboard.IDashboardService;

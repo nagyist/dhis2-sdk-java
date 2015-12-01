@@ -29,7 +29,7 @@
 package org.hisp.dhis.java.sdk.user;
 
 import org.hisp.dhis.java.sdk.common.IModelsStore;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.models.user.*;
 
 import java.util.List;

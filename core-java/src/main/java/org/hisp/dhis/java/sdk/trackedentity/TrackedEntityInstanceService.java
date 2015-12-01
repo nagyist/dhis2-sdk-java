@@ -34,7 +34,7 @@ import org.hisp.dhis.java.sdk.models.relationship.Relationship;
 import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntity;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.relationship.IRelationshipStore;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;

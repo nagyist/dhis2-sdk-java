@@ -38,7 +38,7 @@ import org.hisp.dhis.java.sdk.models.program.ProgramStage;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityDataValue;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;

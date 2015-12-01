@@ -33,7 +33,7 @@ import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;
 

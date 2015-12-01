@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.java.sdk.utils;
+package org.hisp.dhis.java.sdk.models.utils;
 
 public class Preconditions {
     private Preconditions() {

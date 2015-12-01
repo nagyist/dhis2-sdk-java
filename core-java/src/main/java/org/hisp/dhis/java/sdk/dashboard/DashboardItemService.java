@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;

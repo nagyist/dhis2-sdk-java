@@ -26,47 +26,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.java.sdk.program;
+package org.hisp.dhis.java.sdk.models.common;
 
-import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.models.program.ProgramRuleVariable;
-import org.hisp.dhis.java.sdk.models.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
-import java.util.List;
-
-public final class ProgramRuleVariableService implements IProgramRuleVariableService {
-
-    private final IProgramRuleVariableStore programRuleVariableStore;
-
-    public ProgramRuleVariableService(IProgramRuleVariableStore programRuleVariableStore) {
-        this.programRuleVariableStore = programRuleVariableStore;
-    }
-
-    @Override
-    public ProgramRuleVariable get(long id) {
-        return programRuleVariableStore.queryById(id);
-    }
-
-    @Override
-    public ProgramRuleVariable get(String uid) {
-        return programRuleVariableStore.queryByUid(uid);
-    }
-
-    @Override
-    public List<ProgramRuleVariable> list() {
-        return programRuleVariableStore.queryAll();
-    }
-
-    @Override
-    public ProgramRuleVariable getByName(Program program, String programRuleVariableName) {
-        Preconditions.isNull(programRuleVariableName, "programRuleVariableName cannot be null!");
-
-        List<ProgramRuleVariable> programRuleVariables = programRuleVariableStore.query(program);
-        for(ProgramRuleVariable programRuleVariable : programRuleVariables) {
-            if(programRuleVariable.getName().equals(programRuleVariableName)) {
-                return programRuleVariable;
-            }
-        }
-        return null;
-    }
+public interface IMerge<T extends IdentifiableObject> {
+    void mergeWith(T that, MergeStrategy strategy);
 }

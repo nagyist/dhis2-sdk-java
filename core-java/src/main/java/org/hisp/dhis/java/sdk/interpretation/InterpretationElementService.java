@@ -32,7 +32,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
 import org.hisp.dhis.java.sdk.models.interpretation.InterpretationElement;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 
 public class InterpretationElementService implements IInterpretationElementService {
 
