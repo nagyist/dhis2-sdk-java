@@ -122,10 +122,10 @@ public final class DashboardController implements IDataController<Dashboard> {
     private List<Dashboard> updateDashboards(DateTime lastUpdated) {
         // List of dashboards with UUIDs (without content). This list is used
         // only to determine what was removed on server.
-        List<Dashboard> actualDashboards = dashboardApiClient.getBasicDashboards(null);
+        List<Dashboard> actualDashboards = dashboardApiClient.getDashboardUids(null);
 
         // List of updated dashboards with content.
-        List<Dashboard> updatedDashboards = dashboardApiClient.getFullDashboards(lastUpdated);
+        List<Dashboard> updatedDashboards = dashboardApiClient.getDashboards(lastUpdated);
 
         // List of persisted dashboards.
         List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class,
@@ -164,7 +164,7 @@ public final class DashboardController implements IDataController<Dashboard> {
 
         // List of updated dashboard items. We need this only to get
         // information about updates of item shape.
-        List<DashboardItem> updatedItems = dashboardApiClient.getBasicDashboardItems(lastUpdated);
+        List<DashboardItem> updatedItems = dashboardApiClient.getBaseDashboardItems(lastUpdated);
 
         // Map of items where keys are UUIDs.
         Map<String, DashboardItem> updatedItemsMap = modelUtils.toMap(updatedItems);
@@ -627,7 +627,7 @@ public final class DashboardController implements IDataController<Dashboard> {
 
     private void updateDashboardTimeStamp(Dashboard dashboard) {
         try {
-            Dashboard updatedDashboard = dashboardApiClient.getBasicDashboardByUid(dashboard.getUId());
+            Dashboard updatedDashboard = dashboardApiClient.getBaseDashboardByUid(dashboard.getUId());
 
             // merging updated timestamp to local dashboard model
             dashboard.setCreated(updatedDashboard.getCreated());
@@ -710,21 +710,21 @@ public final class DashboardController implements IDataController<Dashboard> {
     private List<DashboardContent> getApiResourceByType(String type, Map<String, String> queryParams) {
         switch (type) {
             case DashboardContent.TYPE_CHART:
-                return dashboardApiClient.getBasicCharts();
+                return dashboardApiClient.getBaseCharts();
             case DashboardContent.TYPE_EVENT_CHART:
-                return dashboardApiClient.getBasicEventCharts();
+                return dashboardApiClient.getBaseEventCharts();
             case DashboardContent.TYPE_MAP:
-                return dashboardApiClient.getBasicMaps();
+                return dashboardApiClient.getBaseMaps();
             case DashboardContent.TYPE_REPORT_TABLE:
-                return dashboardApiClient.getBasicReportTables();
+                return dashboardApiClient.getBaseReportTables();
             case DashboardContent.TYPE_EVENT_REPORT:
-                return dashboardApiClient.getBasicEventReports();
+                return dashboardApiClient.getBaseEventReports();
             case DashboardContent.TYPE_USERS:
-                return dashboardApiClient.getBasicUsers();
+                return dashboardApiClient.getBaseUsers();
             case DashboardContent.TYPE_REPORTS:
-                return dashboardApiClient.getBasicReports();
+                return dashboardApiClient.getBaseReports();
             case DashboardContent.TYPE_RESOURCES:
-                return dashboardApiClient.getBasicResources();
+                return dashboardApiClient.getBaseResources();
             default:
                 throw new IllegalArgumentException("Unsupported DashboardContent type");
         }

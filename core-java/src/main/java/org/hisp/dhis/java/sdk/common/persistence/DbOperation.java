@@ -93,19 +93,19 @@ public final class DbOperation<T extends IModel> implements IDbOperation<T> {
             mStore = store;
         }
 
-        public DbOperation insert(T model) {
+        public DbOperation<T> insert(T model) {
             return new DbOperation<>(DbAction.INSERT, model, mStore);
         }
 
-        public DbOperation update(T model) {
+        public DbOperation<T> update(T model) {
             return new DbOperation<>(DbAction.UPDATE, model, mStore);
         }
 
-        public DbOperation save(T model) {
+        public DbOperation<T> save(T model) {
             return new DbOperation<>(DbAction.SAVE, model, mStore);
         }
 
-        public DbOperation delete(T model) {
+        public DbOperation<T> delete(T model) {
             return new DbOperation<>(DbAction.DELETE, model, mStore);
         }
     }

@@ -28,9 +28,8 @@
 
 package org.hisp.dhis.java.sdk.common.controllers;
 
-import org.hisp.dhis.java.sdk.common.network.ApiException;
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 public interface IDataController<T extends IdentifiableObject> extends IController<T> {
-    void sync() throws ApiException;
+    void sync();
 }

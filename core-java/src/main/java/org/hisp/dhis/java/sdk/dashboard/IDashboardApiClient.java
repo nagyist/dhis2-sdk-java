@@ -42,13 +42,15 @@ import java.util.List;
 // TODO do not return null collections.
 public interface IDashboardApiClient {
 
-    List<Dashboard> getBasicDashboards(DateTime lastUpdated);
+    List<Dashboard> getDashboardUids(DateTime lastUpdated);
 
-    List<Dashboard> getFullDashboards(DateTime lastUpdated);
+    List<Dashboard> getDashboards(DateTime lastUpdated);
 
-    List<DashboardItem> getBasicDashboardItems(DateTime lastUpdated);
+    List<DashboardItem> getBaseDashboardItems(DateTime lastUpdated);
 
-    Dashboard getBasicDashboardByUid(String uid);
+    List<DashboardItem> getDashboardItems(DateTime lastUpdated);
+
+    Dashboard getBaseDashboardByUid(String uid);
 
     Response postDashboard(Dashboard dashboard);
 
@@ -62,21 +64,21 @@ public interface IDashboardApiClient {
 
     Response deleteDashboardItemContent(DashboardElement dashboardElement);
 
-    List<DashboardContent> getBasicCharts();
+    List<DashboardContent> getBaseCharts();
 
-    List<DashboardContent> getBasicEventCharts();
+    List<DashboardContent> getBaseEventCharts();
 
-    List<DashboardContent> getBasicMaps();
+    List<DashboardContent> getBaseMaps();
 
-    List<DashboardContent> getBasicReportTables();
+    List<DashboardContent> getBaseReportTables();
 
-    List<DashboardContent> getBasicEventReports();
+    List<DashboardContent> getBaseEventReports();
 
-    List<DashboardContent> getBasicUsers();
+    List<DashboardContent> getBaseUsers();
 
-    List<DashboardContent> getBasicReports();
+    List<DashboardContent> getBaseReports();
 
-    List<DashboardContent> getBasicResources();
+    List<DashboardContent> getBaseResources();
 
     Response getReportTableDataByUid(String uid);
 }

@@ -80,8 +80,7 @@ public class ModelUtils implements IModelUtils {
      * included.
      */
     @Override
-    public <T extends IdentifiableObject> List<T> merge(List<T> existingItems,
-                                                        List<T> updatedItems,
+    public <T extends IdentifiableObject> List<T> merge(List<T> existingItems, List<T> updatedItems,
                                                         List<T> persistedItems) {
         Map<String, T> updatedItemsMap = toMap(updatedItems);
         Map<String, T> persistedItemsMap = toMap(persistedItems);

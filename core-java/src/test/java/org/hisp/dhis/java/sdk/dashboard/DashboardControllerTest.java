@@ -29,36 +29,34 @@
 package org.hisp.dhis.java.sdk.dashboard;
 
 import org.hisp.dhis.java.sdk.common.IStateStore;
+import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
+import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.utils.ModelUtils;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class DashboardControllerTest {
-
-    @Captor
-    private ArgumentCaptor<List<?>> dashboardCaptor;
-
-    private IDashboardApiClient dashboardApiClientMock;
-    private IDashboardStore dashboardStoreMock;
     private IStateStore stateStoreMock;
+    private IDashboardStore dashboardStoreMock;
+    private IDashboardApiClient dashboardApiClientMock;
 
-    private ILastUpdatedPreferences lastUpdatedPreferencesMock;
     private ModelUtils modelUtilsMock;
+    private ILastUpdatedPreferences lastUpdatedPreferencesMock;
+    private ITransactionManager transactionManagerMock;
 
     private Dashboard dashboard;
     private DashboardItem dashboardItem;
@@ -70,18 +68,13 @@ public class DashboardControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
-        dashboardApiClientMock = mock(IDashboardApiClient.class);
-        dashboardStoreMock = mock(IDashboardStore.class);
         stateStoreMock = mock(IStateStore.class);
-        modelUtilsMock = mock(ModelUtils.class);
+        dashboardStoreMock = mock(IDashboardStore.class);
+        dashboardApiClientMock = mock(IDashboardApiClient.class);
 
-        dashboardController = new DashboardController2(
-                lastUpdatedPreferencesMock,
-                dashboardApiClientMock,
-                dashboardStoreMock,
-                stateStoreMock,
-                modelUtilsMock);
+        modelUtilsMock = mock(ModelUtils.class);
+        lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
+        transactionManagerMock = mock(ITransactionManager.class);
 
         dashboard = new Dashboard();
         dashboardItem = new DashboardItem();
@@ -95,14 +88,104 @@ public class DashboardControllerTest {
 
         dashboardItem.setDashboard(dashboard);
         dashboardElement.setDashboardItem(dashboardItem);
+
+        dashboardController = spy(new DashboardController2(
+                stateStoreMock,
+                dashboardStoreMock,
+                dashboardApiClientMock,
+                modelUtilsMock,
+                lastUpdatedPreferencesMock,
+                transactionManagerMock));
     }
 
     @Test
+    public void syncShouldCallBothUpdateAndSync() {
+        dashboardController.sync();
+
+        verify(dashboardController, times(1)).update();
+        verify(dashboardController, times(1)).send();
+    }
+
+    @Test
+    public void updateShouldCallUpdateMethodsOnController() {
+        dashboardController.update();
+
+        verify(dashboardController, times(1)).updateDashboards(any(DateTime.class));
+        verify(dashboardController, times(1)).updateDashboardItems(any(DateTime.class));
+        /* verify(dashboardController, times(1)).updateDashboardElements(anyListOf(
+                DashboardItem.class), any(DateTime.class)); */
+    }
+
+    @Test
+    public void updateDashboardsShouldCallApiClientWithLastUpdatedField() {
+        DateTime lastUpdated = DateTime.now();
+
+        when(lastUpdatedPreferencesMock.get(ResourceType.DASHBOARDS)).thenReturn(lastUpdated);
+
+        dashboardController.updateDashboards(lastUpdated);
+
+        verify(dashboardApiClientMock, times(1)).getDashboardUids(lastUpdated);
+        verify(dashboardApiClientMock, times(1)).getDashboards(lastUpdated);
+    }
+
+    @Test
+    public void updateDashboardsShouldQueryStore() {
+        DateTime lastUpdated = DateTime.now();
+
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboard));
+
+        dashboardController.updateDashboards(lastUpdated);
+
+        verify(stateStoreMock, times(1)).queryModelsWithActions(Dashboard.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+    }
+
+    @Test
+    public void updateDashboardsShouldMergeUpdatedWithPersistedData() {
+        DateTime lastUpdated = DateTime.now();
+
+        List<Dashboard> actualDashboards = Arrays.asList(dashboard);
+        List<Dashboard> updatedDashboards = Arrays.asList(dashboard);
+        List<Dashboard> persistedDashboards = Arrays.asList(dashboard);
+
+        when(dashboardApiClientMock.getDashboardUids(any(DateTime.class))).thenReturn(actualDashboards);
+        when(dashboardApiClientMock.getDashboards(any(DateTime.class))).thenReturn(updatedDashboards);
+        when(stateStoreMock.queryModelsWithActions(Dashboard.class, Action.SYNCED, Action.TO_UPDATE,
+                Action.TO_DELETE)).thenReturn(persistedDashboards);
+
+        dashboardController.updateDashboards(lastUpdated);
+
+        verify(modelUtilsMock, times(1)).merge(actualDashboards, updatedDashboards, persistedDashboards);
+    }
+
+    @Test
+    public void updateDashboardItemsShouldCallApiClient() {
+        DateTime lastUpdated = DateTime.now();
+
+        List<DashboardItem> actualDashboardItems = Arrays.asList(dashboardItem);
+        List<DashboardItem> updatedDashboardItems = Arrays.asList(dashboardItem);
+        List<DashboardItem> persistedDashboardItems = Arrays.asList(dashboardItem);
+
+        when(dashboardApiClientMock.getBaseDashboardItems(lastUpdated)).thenReturn(actualDashboardItems);
+        when(dashboardApiClientMock.getDashboardItems(lastUpdated)).thenReturn(updatedDashboardItems);
+        when(stateStoreMock.queryModelsWithActions(DashboardItem.class, Action.SYNCED,
+                Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(persistedDashboardItems);
+
+        dashboardController.updateDashboardItems(lastUpdated);
+
+        verify(dashboardApiClientMock, times(1)).getBaseDashboardItems(lastUpdated);
+        verify(dashboardApiClientMock, times(1)).getDashboardItems(lastUpdated);
+        verify(stateStoreMock, times(1)).queryModelsWithActions(DashboardItem.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+    }
+
+    /* @Test
     public void testUpdateShouldPullNewDashboardsFromServer() {
         dashboardController.update();
 
-        verify(dashboardApiClientMock, times(1)).getBasicDashboards(null);
-        verify(dashboardApiClientMock, times(1)).getFullDashboards(null);
+        verify(dashboardApiClientMock, times(1)).getDashboardUids(null);
+        verify(dashboardApiClientMock, times(1)).getDashboards(null);
     }
 
     @Test
@@ -184,13 +267,36 @@ public class DashboardControllerTest {
         assertEquals(dashboardItem.getDashboardElements().get(0), dashboardElement);
     }
 
-    /* @Test
-    public void testUpdateShouldUpdateDashboardItemsShape() {
-        when(dashboardApiClientMock.getBasicDashboardItems(any(DateTime.class)))
-                .thenReturn(Arrays.asList(dashboardItem));
-        when(stateStoreMock.queryModelsWithActions(DashboardItem.class,
-                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE)).thenReturn(Arrays.asList(dashboardItem));
+    @Test
+    public void testUpdateShouldGetBasicFieldsForUpdatedDashboardItems() {
+        List<Dashboard> dashboards = new ArrayList<>();
+        List<DashboardItem> dashboardItems = new ArrayList<>();
+        List<DashboardElement> dashboardElements = new ArrayList<>();
+
+        dashboardElements.add(dashboardElement);
+        dashboardItems.add(dashboardItem);
+        dashboards.add(dashboard);
+
+        dashboard.setDashboardItems(dashboardItems);
+        dashboardItem.setDashboardElements(dashboardElements);
+
+        when(modelUtilsMock.merge(anyListOf(Dashboard.class), anyListOf(Dashboard.class),
+                anyListOf(Dashboard.class))).thenReturn(dashboards);
 
         dashboardController.update();
+
+        verify(dashboardApiClientMock, times(1)).getBaseDashboardItems(any(DateTime.class));
+        verify(stateStoreMock, atLeastOnce()).queryModelsWithActions(DashboardItem.class,
+                Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
+    }
+
+    @Test
+    public void testUpdateShouldCheckForLocalItemsAndSetId() {
+
+    }
+
+    @Test
+    public void testUpdateShouldUpdateShapeOfDashboardItem() {
+
     } */
 }

@@ -28,11 +28,21 @@
 
 package org.hisp.dhis.java.sdk.dashboard;
 
-public interface IDashboardController {
+import org.hisp.dhis.java.sdk.common.controllers.IDataController;
+import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
+import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
+import org.joda.time.DateTime;
+
+import java.util.List;
+
+public interface IDashboardController extends IDataController<Dashboard> {
 
     void update();
 
     void send();
 
-    void sync();
+    List<IDbOperation<Dashboard>> updateDashboards(DateTime lastUpdated);
+
+    List<IDbOperation<DashboardItem>> updateDashboardItems(DateTime lastUpdated);
 }
