@@ -34,7 +34,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.common.network.INetworkModule;
 import org.hisp.dhis.java.sdk.common.persistence.IPersistenceModule;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 
 public class ControllersModule implements IControllersModule {
     private final IDataController<Dashboard> dashboardController;

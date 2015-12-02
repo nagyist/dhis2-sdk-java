@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.base.IModel;
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
@@ -291,5 +292,10 @@ public final class Event implements Serializable, IdentifiableObject {
 
     public void setAccess(Access access) {
         this.access = access;
+    }
+
+    @Override
+    public void mergeWith(IdentifiableObject that, MergeStrategy strategy) {
+
     }
 }

@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttributeValue;
@@ -253,4 +254,8 @@ public final class Enrollment implements Serializable, IdentifiableObject {
         this.events = events;
     }
 
+    @Override
+    public void mergeWith(IdentifiableObject that, MergeStrategy strategy) {
+
+    }
 }

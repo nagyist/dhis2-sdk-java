@@ -31,14 +31,13 @@ package org.hisp.dhis.java.sdk.models.common.base;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hisp.dhis.java.sdk.models.common.Access;
-import org.hisp.dhis.java.sdk.models.common.IMerge;
 import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.joda.time.DateTime;
 
 import static org.hisp.dhis.java.sdk.models.utils.Preconditions.isNull;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject, IMerge<IdentifiableObject> {
+public class BaseIdentifiableObject extends BaseModel implements IdentifiableObject {
 
     @JsonProperty("id")
     private String uId;
@@ -132,7 +131,7 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
                 replace(that);
                 break;
             }
-            case MERGE: {
+            case REPLACE_IF_UPDATED: {
                 merge(that);
                 break;
             }
@@ -150,7 +149,7 @@ public class BaseIdentifiableObject extends BaseModel implements IdentifiableObj
     }
 
     private void merge(IdentifiableObject that) {
-        if (getLastUpdated() == null || that.getLastUpdated() == null) {
+        if (this.getLastUpdated() == null || that.getLastUpdated() == null) {
             return;
         }
 

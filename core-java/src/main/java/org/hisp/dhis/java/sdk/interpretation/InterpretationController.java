@@ -40,7 +40,7 @@ import org.hisp.dhis.java.sdk.common.persistence.DbOperation;
 import org.hisp.dhis.java.sdk.common.persistence.IIdentifiableObjectStore;
 import org.hisp.dhis.java.sdk.user.IUserAccountService;
 import org.hisp.dhis.java.sdk.user.IUserStore;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;

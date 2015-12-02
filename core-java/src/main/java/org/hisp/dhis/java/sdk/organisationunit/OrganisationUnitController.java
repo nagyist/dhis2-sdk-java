@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.common.network.ApiException;
 import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;

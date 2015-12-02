@@ -33,10 +33,11 @@ import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
 import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
-import org.hisp.dhis.java.sdk.utils.ModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.ModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -88,8 +89,14 @@ public class DashboardController2 implements IDashboardController {
         List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class,
                 Action.SYNCED, Action.TO_UPDATE, Action.TO_DELETE);
 
-        List<Dashboard> mergedDashboards = modelUtils.merge(actualDashboards, updatedDashboards, persistedDashboards);
-        return transactionManager.createOperations(dashboardStore, persistedDashboards, mergedDashboards);
+        // List<Dashboard> mergedDashboards = modelUtils.merge(actualDashboards, updatedDashboards, persistedDashboards);
+        // return transactionManager.createOperations(dashboardStore, persistedDashboards, mergedDashboards);
+
+        List<Dashboard> newAndUpdatedDashboards = modelUtils.mergeWith(
+                actualDashboards, updatedDashboards, MergeStrategy.REPLACE);
+        List<Dashboard> allDashboards = modelUtils.mergeWith(
+                persistedDashboards, newAndUpdatedDashboards, MergeStrategy.REPLACE_IF_UPDATED);
+        return transactionManager.createOperations(dashboardStore, allDashboards, persistedDashboards);
     }
 
     @Override

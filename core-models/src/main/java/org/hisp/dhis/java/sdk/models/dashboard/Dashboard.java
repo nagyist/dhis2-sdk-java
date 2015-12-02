@@ -71,7 +71,7 @@ public final class Dashboard extends BaseIdentifiableObject {
                 replace(that);
                 break;
             }
-            case MERGE: {
+            case REPLACE_IF_UPDATED: {
                 merge(that);
                 break;
             }

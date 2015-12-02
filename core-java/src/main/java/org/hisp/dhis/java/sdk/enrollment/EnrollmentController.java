@@ -44,7 +44,7 @@ import org.hisp.dhis.java.sdk.models.enrollment.Enrollment;
 import org.hisp.dhis.java.sdk.models.event.Event;
 import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.java.sdk.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.*;

@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hisp.dhis.java.sdk.models.common.Access;
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.joda.time.DateTime;
@@ -279,5 +280,10 @@ public class UserAccount implements IdentifiableObject {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    public void mergeWith(IdentifiableObject that, MergeStrategy strategy) {
+
     }
 }

@@ -39,7 +39,7 @@ import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.java.sdk.organisationunit.IOrganisationUnitController;
 import org.hisp.dhis.java.sdk.organisationunit.IOrganisationUnitStore;
 import org.hisp.dhis.java.sdk.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;

@@ -37,7 +37,7 @@ import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.java.sdk.systeminfo.ISystemInfoApiClient;
 import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.hisp.dhis.java.sdk.event.IEventController;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.junit.Before;
 import org.junit.Test;
 

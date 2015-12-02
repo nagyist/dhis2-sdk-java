@@ -41,5 +41,5 @@ public enum MergeStrategy {
      * Fields in A will be replaced with fields from B,
      * only if lastUpdated field on B is newer compared to A.
      */
-    MERGE
+    REPLACE_IF_UPDATED
 }

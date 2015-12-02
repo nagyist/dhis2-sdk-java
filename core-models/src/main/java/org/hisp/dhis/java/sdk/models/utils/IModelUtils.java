@@ -26,8 +26,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.java.sdk.utils;
+package org.hisp.dhis.java.sdk.models.utils;
 
+import org.hisp.dhis.java.sdk.models.common.MergeStrategy;
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
 
 import java.util.Collection;
@@ -43,4 +44,6 @@ public interface IModelUtils {
     <T extends IdentifiableObject> Set<String> toUidSet(Collection<T> items);
 
     <T extends IdentifiableObject> List<T> merge(List<T> existingItems, List<T> updatedItems, List<T> persistedItems);
+
+    <T extends IdentifiableObject> List<T> mergeWith(Collection<T> one, Collection<T> two, MergeStrategy strategy);
 }

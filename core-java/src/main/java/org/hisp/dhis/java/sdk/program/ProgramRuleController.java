@@ -36,7 +36,7 @@ import org.hisp.dhis.java.sdk.common.preferences.ResourceType;
 import org.hisp.dhis.java.sdk.models.program.IProgramRuleApiClient;
 import org.hisp.dhis.java.sdk.models.program.ProgramRule;
 import org.hisp.dhis.java.sdk.systeminfo.ISystemInfoApiClient;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.joda.time.DateTime;

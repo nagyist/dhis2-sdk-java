@@ -37,7 +37,7 @@ import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
-import org.hisp.dhis.java.sdk.utils.ModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.ModelUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;

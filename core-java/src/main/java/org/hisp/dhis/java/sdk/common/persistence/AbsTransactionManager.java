@@ -29,7 +29,7 @@
 package org.hisp.dhis.java.sdk.common.persistence;
 
 import org.hisp.dhis.java.sdk.models.common.base.IdentifiableObject;
-import org.hisp.dhis.java.sdk.utils.IModelUtils;
+import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 
 import java.util.ArrayList;
 import java.util.List;
