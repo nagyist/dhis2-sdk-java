@@ -28,39 +28,40 @@
 
 package org.hisp.dhis.java.sdk.common.controllers;
 
-import org.hisp.dhis.java.sdk.common.preferences.IPreferencesModule;
-import org.hisp.dhis.java.sdk.dashboard.DashboardController;
-import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
-import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.hisp.dhis.java.sdk.common.network.INetworkModule;
 import org.hisp.dhis.java.sdk.common.persistence.IPersistenceModule;
+import org.hisp.dhis.java.sdk.common.preferences.IPreferencesModule;
+import org.hisp.dhis.java.sdk.dashboard.IDashboardController;
 import org.hisp.dhis.java.sdk.models.utils.IModelUtils;
 
+import static org.hisp.dhis.java.sdk.models.utils.Preconditions.isNull;
+
 public class ControllersModule implements IControllersModule {
-    private final IDataController<Dashboard> dashboardController;
+    private final IDashboardController dashboardController;
 
     public ControllersModule(INetworkModule networkModule,
                              IPersistenceModule persistenceModule,
                              IPreferencesModule preferencesModule, IModelUtils modelUtils) {
-        Preconditions.isNull(networkModule, "networkModule must not be null");
-        Preconditions.isNull(persistenceModule, "persistenceModule must not be null");
-        Preconditions.isNull(preferencesModule, "preferencesModule must not be null");
-        Preconditions.isNull(modelUtils, "modelUtils must not be null");
-
-        dashboardController = new DashboardController(
-                persistenceModule.getDashboardStore(),
-                persistenceModule.getDashboardItemStore(),
-                persistenceModule.getDashboardElementStore(),
-                persistenceModule.getDashboardContentStore(),
-                persistenceModule.getStateStore(),
-                networkModule.getDashboardApiClient(),
-                networkModule.getSystemInfoApiClient(),
-                preferencesModule.getLastUpdatedPreferences(),
-                persistenceModule.getTransactionManager(), modelUtils);
+        isNull(networkModule, "networkModule must not be null");
+        isNull(persistenceModule, "persistenceModule must not be null");
+        isNull(preferencesModule, "preferencesModule must not be null");
+        isNull(modelUtils, "modelUtils must not be null");
+//
+//        dashboardController = new DashboardController2(
+//                persistenceModule.getDashboardStore(),
+//                persistenceModule.getDashboardItemStore(),
+//                persistenceModule.getDashboardElementStore(),
+//                persistenceModule.getDashboardContentStore(),
+//                persistenceModule.getStateStore(),
+//                networkModule.getDashboardApiClient(),
+//                networkModule.getSystemInfoApiClient(),
+//                preferencesModule.getLastUpdatedPreferences(),
+//                persistenceModule.getTransactionManager(), modelUtils);
+        dashboardController = null;
     }
 
     @Override
-    public IDataController<Dashboard> getDashboardController() {
+    public IDashboardController getDashboardController() {
         return dashboardController;
     }
 }

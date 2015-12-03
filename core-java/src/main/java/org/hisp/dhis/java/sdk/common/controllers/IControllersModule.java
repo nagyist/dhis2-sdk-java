@@ -28,8 +28,8 @@
 
 package org.hisp.dhis.java.sdk.common.controllers;
 
-import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
+import org.hisp.dhis.java.sdk.dashboard.IDashboardController;
 
 public interface IControllersModule {
-    IDataController<Dashboard> getDashboardController();
+    IDashboardController getDashboardController();
 }

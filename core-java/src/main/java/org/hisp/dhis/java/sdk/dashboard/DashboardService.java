@@ -36,10 +36,11 @@ import org.hisp.dhis.java.sdk.models.dashboard.DashboardContent;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardElement;
 import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.hisp.dhis.java.sdk.utils.CodeGenerator;
-import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 import org.joda.time.DateTime;
 
 import java.util.List;
+
+import static org.hisp.dhis.java.sdk.models.utils.Preconditions.isNull;
 
 public class DashboardService implements IDashboardService {
     private final IDashboardStore dashboardStore;
@@ -63,7 +64,7 @@ public class DashboardService implements IDashboardService {
 
     @Override
     public Dashboard create(String name) {
-        Preconditions.isNull(name, "Name must not be null");
+        isNull(name, "Name must not be null");
 
         DateTime dateTime = DateTime.now();
         Access access = Access.createDefaultAccess();
@@ -81,7 +82,7 @@ public class DashboardService implements IDashboardService {
 
     @Override
     public boolean save(Dashboard object) {
-        Preconditions.isNull(object, "Dashboard object must not be null");
+        isNull(object, "Dashboard object must not be null");
 
         Action action = stateStore.queryActionForModel(object);
         if (action == null) {
@@ -121,7 +122,7 @@ public class DashboardService implements IDashboardService {
 
     @Override
     public boolean remove(Dashboard object) {
-        Preconditions.isNull(object, "Dashboard object must not be null");
+        isNull(object, "Dashboard object must not be null");
 
         Action action = stateStore.queryActionForModel(object);
         if (action == null) {
@@ -184,7 +185,7 @@ public class DashboardService implements IDashboardService {
 
     @Override
     public int countItems(Dashboard dashboard) {
-        Preconditions.isNull(dashboard, "Dashboard object must not be null");
+        isNull(dashboard, "Dashboard object must not be null");
 
         List<DashboardItem> dashboardItems = dashboardItemService.list(dashboard);
         return dashboardItems != null ? dashboardItems.size() : 0;
@@ -192,8 +193,8 @@ public class DashboardService implements IDashboardService {
 
     @Override
     public boolean addContent(Dashboard dashboard, DashboardContent content) {
-        Preconditions.isNull(dashboard, "Dashboard object must not be null");
-        Preconditions.isNull(content, "DashboardContent object must not be null");
+        isNull(dashboard, "Dashboard object must not be null");
+        isNull(content, "DashboardContent object must not be null");
 
         DashboardItem item;
         DashboardElement element;
