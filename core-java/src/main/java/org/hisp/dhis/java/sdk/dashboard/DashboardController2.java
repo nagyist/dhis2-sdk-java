@@ -72,18 +72,18 @@ public class DashboardController2 implements IDashboardController {
     public void update() {
         DateTime lastUpdated = lastUpdatedPreferences.get(ResourceType.DASHBOARDS);
 
-        List<IDbOperation<Dashboard>> updatedDashboards = updateDashboards(lastUpdated);
-        List<IDbOperation<DashboardItem>> updateDashboardItems = updateDashboardItems(lastUpdated);
+        List<IDbOperation> updatedDashboards = updateDashboards(lastUpdated);
+        List<IDbOperation> updateDashboardItems = updateDashboardItems(lastUpdated);
         // List<DashboardElement> updateDashboardElements = updateDashboardElements(updateDashboardItems, lastUpdated);
     }
 
     @Override
     public void send() {
-        
+
     }
 
     @Override
-    public List<IDbOperation<Dashboard>> updateDashboards(DateTime lastUpdated) {
+    public List<IDbOperation> updateDashboards(DateTime lastUpdated) {
         List<Dashboard> actualDashboards = dashboardApiClient.getDashboardUids(lastUpdated);
         List<Dashboard> updatedDashboards = dashboardApiClient.getDashboards(lastUpdated);
         List<Dashboard> persistedDashboards = stateStore.queryModelsWithActions(Dashboard.class,
@@ -100,7 +100,7 @@ public class DashboardController2 implements IDashboardController {
     }
 
     @Override
-    public List<IDbOperation<DashboardItem>> updateDashboardItems(DateTime lastUpdated) {
+    public List<IDbOperation> updateDashboardItems(DateTime lastUpdated) {
         List<DashboardItem> existingDashboardItems = dashboardApiClient.getBaseDashboardItems(lastUpdated);
         List<DashboardItem> updatedDashboardItems = dashboardApiClient.getDashboardItems(lastUpdated);
         List<DashboardItem> persistedDashboardItems = stateStore.queryModelsWithActions(DashboardItem.class,

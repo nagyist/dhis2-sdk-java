@@ -31,7 +31,6 @@ package org.hisp.dhis.java.sdk.dashboard;
 import org.hisp.dhis.java.sdk.common.controllers.IDataController;
 import org.hisp.dhis.java.sdk.common.persistence.IDbOperation;
 import org.hisp.dhis.java.sdk.models.dashboard.Dashboard;
-import org.hisp.dhis.java.sdk.models.dashboard.DashboardItem;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public interface IDashboardController extends IDataController<Dashboard> {
 
     void send();
 
-    List<IDbOperation<Dashboard>> updateDashboards(DateTime lastUpdated);
+    List<IDbOperation> updateDashboards(DateTime lastUpdated);
 
-    List<IDbOperation<DashboardItem>> updateDashboardItems(DateTime lastUpdated);
+    List<IDbOperation> updateDashboardItems(DateTime lastUpdated);
 }

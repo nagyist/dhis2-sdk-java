@@ -43,6 +43,6 @@ public interface ITransactionManager {
      * @param oldModels List of models from local storage.
      * @param newModels List of models of distance instance of DHIS.
      */
-    <T extends IdentifiableObject> List<IDbOperation<T>> createOperations(IIdentifiableObjectStore<T> modelStore,
-                                                                          List<T> oldModels, List<T> newModels);
+    <T extends IdentifiableObject> List<IDbOperation> createOperations(IIdentifiableObjectStore<T> modelStore,
+                                                                       List<T> oldModels, List<T> newModels);
 }

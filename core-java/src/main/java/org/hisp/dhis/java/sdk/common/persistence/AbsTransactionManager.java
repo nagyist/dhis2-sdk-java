@@ -45,9 +45,9 @@ public abstract class AbsTransactionManager implements ITransactionManager {
     /**
      * {@inheritDoc}
      */
-    public <T extends IdentifiableObject> List<IDbOperation<T>> createOperations(IIdentifiableObjectStore<T> modelStore,
+    public <T extends IdentifiableObject> List<IDbOperation> createOperations(IIdentifiableObjectStore<T> modelStore,
                                                                               List<T> oldModels, List<T> newModels) {
-        List<IDbOperation<T>> ops = new ArrayList<>();
+        List<IDbOperation> ops = new ArrayList<>();
 
         Map<String, T> newModelsMap = modelUtils.toMap(newModels);
         Map<String, T> oldModelsMap = modelUtils.toMap(oldModels);
