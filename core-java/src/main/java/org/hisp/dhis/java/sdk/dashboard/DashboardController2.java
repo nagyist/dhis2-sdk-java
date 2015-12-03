@@ -79,7 +79,7 @@ public class DashboardController2 implements IDashboardController {
 
     @Override
     public void send() {
-
+        
     }
 
     @Override
