@@ -91,7 +91,7 @@ public final class TrackedEntityAttributeController implements IDataController<T
                 existingPersistedAndUpdatedTrackedEntityAttributes, trackedEntityAttributeStore.queryAll()));
 
         transactionManager.transact(operations);
-        lastUpdatedPreferences.save(resource, serverTime, null);
+        lastUpdatedPreferences.save(resource, serverTime);
     }
 
     @Override

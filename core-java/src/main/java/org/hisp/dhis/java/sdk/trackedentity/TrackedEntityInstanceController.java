@@ -53,7 +53,7 @@ import org.joda.time.DateTime;
 
 import java.util.*;
 
-public final class TrackedEntityInstanceController extends PushableDataController implements ITrackedEntityInstanceController {
+public class TrackedEntityInstanceController extends PushableDataController implements ITrackedEntityInstanceController {
     private final ITrackedEntityInstanceApiClient trackedEntityInstanceApiClient;
     private final ISystemInfoApiClient systemInfoApiClient;
     private final ITrackedEntityInstanceStore trackedEntityInstanceStore;
@@ -159,7 +159,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         TrackedEntityInstance updatedTrackedEntityInstance =
                 trackedEntityInstanceApiClient.getFullTrackedEntityInstance(uid, null);
         TrackedEntityInstance persistedTrackedEntityInstance =
-                trackedEntityInstanceStore.query(uid);
+                trackedEntityInstanceStore.queryByUid(uid);
 
         if (persistedTrackedEntityInstance != null) {
             updatedTrackedEntityInstance.setId(persistedTrackedEntityInstance.getId());
@@ -268,7 +268,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
 
     private void sendTrackedEntityInstanceChanges(boolean sendEnrollments) {
         List<TrackedEntityInstance> trackedEntityInstances = getLocallyChangedTrackedEntityInstances();
-        sendTrackedEntityInstanceChanges(trackedEntityInstances, sendEnrollments);
+        sendTrackedEntityInstancesChanges(trackedEntityInstances, sendEnrollments);
     }
 
     private List<TrackedEntityInstance> getLocallyChangedTrackedEntityInstances() {
@@ -280,7 +280,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         return trackedEntityInstances;
     }
 
-    private void sendTrackedEntityInstanceChanges(List<TrackedEntityInstance> trackedEntityInstances, boolean sendEnrollments) {
+    public void sendTrackedEntityInstancesChanges(List<TrackedEntityInstance> trackedEntityInstances, boolean sendEnrollments) {
         if (trackedEntityInstances == null || trackedEntityInstances.isEmpty()) {
             return;
         }
@@ -293,7 +293,7 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         }
     }
 
-    private void sendTrackedEntityInstanceChanges(TrackedEntityInstance trackedEntityInstance, Action action, boolean sendEnrollments) {
+    public void sendTrackedEntityInstanceChanges(TrackedEntityInstance trackedEntityInstance, Action action, boolean sendEnrollments) {
         if (trackedEntityInstance == null) {
             return;
         }
@@ -308,39 +308,56 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
         }
     }
 
-    private void postTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
+    /**
+     * Updates a TrackedEntityInstance on the server with a POST request
+     * @param trackedEntityInstance
+     */
+    public void postTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
         try {
             ImportSummary importSummary = trackedEntityInstanceApiClient.postTrackedEntityInstance(trackedEntityInstance);
-            handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
-            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
-
-                stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
-                clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
-                UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
-            }
+            handleImportSummary(trackedEntityInstance, importSummary);
         } catch (ApiException apiException) {
             handleTrackedEntityInstanceSendException(apiException, failedItemStore, trackedEntityInstance);
         }
     }
 
-    private void putTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
+    /**
+     * Registers a TrackedEntityInstance on the server with a PUT request
+     * @param trackedEntityInstance
+     */
+    public void putTrackedEntityInstance(TrackedEntityInstance trackedEntityInstance) {
         try {
             ImportSummary importSummary = trackedEntityInstanceApiClient.putTrackedEntityInstance(trackedEntityInstance);
-            handleImportSummary(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
-            if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
-                    ImportSummary.Status.OK.equals(importSummary.getStatus())) {
-                stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
-                trackedEntityInstanceStore.save(trackedEntityInstance);
-                clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
-                UpdateTrackedEntityInstanceTimestamp(trackedEntityInstance);
-        }
+            handleImportSummary(trackedEntityInstance, importSummary);
         } catch (ApiException apiException) {
             handleTrackedEntityInstanceSendException(apiException, failedItemStore, trackedEntityInstance);
         }
     }
 
-    private void UpdateTrackedEntityInstanceTimestamp(TrackedEntityInstance trackedEntityInstance) {
+    /**
+     * Handles an ImportSummary typically from a post or put request to server by {@link #putTrackedEntityInstance(TrackedEntityInstance)} or
+     * {@link #postTrackedEntityInstance(TrackedEntityInstance)}. Handling includes updating the State for the object and
+     * FailedItem for the object, and triggers fetching of lastUpdated and created timestamps
+     * @param trackedEntityInstance
+     * @param importSummary
+     */
+    public void handleImportSummary(TrackedEntityInstance trackedEntityInstance, ImportSummary importSummary) {
+        if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
+                ImportSummary.Status.OK.equals(importSummary.getStatus())) {
+            stateStore.saveActionForModel(trackedEntityInstance, Action.SYNCED);
+            clearFailedItem(FailedItemType.TRACKED_ENTITY_INSTANCE, failedItemStore, trackedEntityInstance.getId());
+            updateTrackedEntityInstanceTimestamp(trackedEntityInstance);
+        } else {
+            handleImportSummaryWithError(importSummary, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
+        }
+    }
+
+    /**
+     * Updates the timestamps of created and lastUpdated for the given TrackedEntityInstance based on the values
+     * stored on the online server
+     * @param trackedEntityInstance
+     */
+    public void updateTrackedEntityInstanceTimestamp(TrackedEntityInstance trackedEntityInstance) {
         try {
             final Map<String, String> QUERY_PARAMS = new HashMap<>();
             QUERY_PARAMS.put("fields", "created,lastUpdated");
@@ -353,7 +370,8 @@ public final class TrackedEntityInstanceController extends PushableDataControlle
             trackedEntityInstanceStore.save(trackedEntityInstance);
         } catch (ApiException apiException) {
             apiException.printStackTrace();
-            // NetworkUtils.handleApiException(apiException);
+            trackedEntityInstance.setLastUpdated(new DateTime(1970, 1, 1, 0, 0));
+            trackedEntityInstanceStore.save(trackedEntityInstance);
         }
     }
 

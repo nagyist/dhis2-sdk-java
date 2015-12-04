@@ -42,98 +42,97 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class ConstantControllerTest {
-    private IConstantApiClient constantApiClientMock;
+    private IConstantApiClient constantApiClient;
     private ITransactionManager transactionManagerMock;
-    private ISystemInfoApiClient systemInfoApiClientMock;
     private ILastUpdatedPreferences lastUpdatedPreferencesMock;
+    private ISystemInfoApiClient systemInfoApiClient;
+    private IIdentifiableObjectStore<Constant> constantStore;
     private IModelUtils modelUtilsMock;
-    private IIdentifiableObjectStore<Constant> constantStoreMock;
     private ConstantController constantController;
+    private List<Constant> constantList;
+    private List<Constant> constantListLastUpdated;
+    private Constant constant1;
+    private Constant constant2;
+    private Constant constant3;
+    private Constant constant4;
+    private Constant constant5;
+    private SystemInfo systemInfo;
+    private DateTime lastUpdated;
 
     @Before
     public void setUp() {
-        constantApiClientMock = mock(IConstantApiClient.class);
+        constantApiClient = mock(IConstantApiClient.class);
+        constantStore = mock(IIdentifiableObjectStore.class);
         transactionManagerMock = mock(ITransactionManager.class);
-        systemInfoApiClientMock = mock(ISystemInfoApiClient.class);
         lastUpdatedPreferencesMock = mock(ILastUpdatedPreferences.class);
+        systemInfoApiClient = mock(ISystemInfoApiClient.class);
         modelUtilsMock = mock(IModelUtils.class);
-        constantStoreMock = mock(IIdentifiableObjectStore.class);
-        constantController = new ConstantController(constantApiClientMock, transactionManagerMock,
-                systemInfoApiClientMock, lastUpdatedPreferencesMock, constantStoreMock, modelUtilsMock);
+
+        constant1 = new Constant();
+        constant2 = new Constant();
+        constant3 = new Constant();
+        constant4 = new Constant();
+        constant5 = new Constant();
+        constant1.setLastUpdated(new DateTime());
+        constant2.setLastUpdated(new DateTime());
+        constant3.setLastUpdated(new DateTime());
+        constant4.setLastUpdated(new DateTime());
+        constant5.setLastUpdated(new DateTime());
+
+        constantList = new ArrayList<>();
+
+        constantList.add(constant1);
+        constantList.add(constant2);
+        constantList.add(constant3);
+        constantList.add(constant4);
+
+        constantListLastUpdated = new ArrayList<>();
+        constantListLastUpdated.add(constant5);
+
+        systemInfo = new SystemInfo();
+        systemInfo.setServerDate(new DateTime());
+        lastUpdated = new DateTime(2015, 10, 15, 0, 0);
+
+        when(systemInfoApiClient.getSystemInfo()).thenReturn(systemInfo);
+        when(lastUpdatedPreferencesMock.get(ResourceType.CONSTANTS)).thenReturn(lastUpdated);
+        when(constantApiClient.getBasicConstants(null)).thenReturn(constantList);
+        when(constantApiClient.getFullConstants(lastUpdated)).thenReturn(constantListLastUpdated);
+        constantController = new ConstantController(constantApiClient, transactionManagerMock,
+                systemInfoApiClient, lastUpdatedPreferencesMock, constantStore, modelUtilsMock);
     }
 
+    /**
+     * This test synchronizes with the server and tests that the mock methods is
+     * being called. This includes data(locally and from server) is being merged,
+     * being saved in store and updating lastUpdated fields
+     */
+
     @Test
-    public void testAllConstantsFromServerShouldBeSavedInStoreWhenNoConstantsHaveBeenLoadedBefore() {
-        Constant constant1 = new Constant();
-        constant1.setUId("aaaaaaaa");
-
-        Constant constant2 = new Constant();
-        constant2.setUId("bbbbbbbb");
-
-        Constant constant3 = new Constant();
-        constant3.setUId("cccccccc");
-
-        List<Constant> updatedConstantsFromServer = new ArrayList<>();
-        updatedConstantsFromServer.add(constant1);
-        updatedConstantsFromServer.add(constant2);
-        updatedConstantsFromServer.add(constant3);
-
-        List<Constant> persistedConstants = new ArrayList<>();
-
-        SystemInfo systemInfo = new SystemInfo();
-        DateTime dateTime = new DateTime(2015, 1, 1, 12, 30);
-        systemInfo.setServerDate(dateTime);
-        when(systemInfoApiClientMock.getSystemInfo()).thenReturn(systemInfo);
-        when(lastUpdatedPreferencesMock.get(ResourceType.CONSTANTS)).thenReturn(null);
-
-        when(constantApiClientMock.getBasicConstants(null)).thenReturn(updatedConstantsFromServer);
-        when(constantApiClientMock.getFullConstants(null)).thenReturn(updatedConstantsFromServer);
-
-        when(modelUtilsMock.merge(updatedConstantsFromServer, updatedConstantsFromServer,
-                persistedConstants)).thenReturn(updatedConstantsFromServer);
+    public void testGetConstantsFromServer() {
+        constantController.sync();
+        List<Constant> mergedLists = new ArrayList<>();
+        mergedLists.addAll(constantList);
+        mergedLists.addAll(constantListLastUpdated);
 
         List<IDbOperation> operations = new ArrayList<>();
 
-        when(transactionManagerMock.createOperations(constantStoreMock,
-                updatedConstantsFromServer, persistedConstants)).thenReturn(operations);
+        when(transactionManagerMock.createOperations(constantStore,
+                mergedLists, constantStore.queryAll())).thenReturn(operations);
 
-        when(lastUpdatedPreferencesMock.save(ResourceType.CONSTANTS, systemInfo.getServerDate(), null)).thenReturn(true);
-
-        constantController.sync();
-
-        verify(systemInfoApiClientMock, times(1)).getSystemInfo();
-        verify(lastUpdatedPreferencesMock, times(1)).get(ResourceType.CONSTANTS);
-        verify(constantApiClientMock, times(1)).getBasicConstants(null);
-        verify(constantApiClientMock, times(1)).getFullConstants(null);
-        verify(modelUtilsMock, times(1)).merge(updatedConstantsFromServer,
-                updatedConstantsFromServer, persistedConstants);
-        verify(constantStoreMock, atLeastOnce()).queryAll();
+        verify(modelUtilsMock, times(1)).merge(constantList, constantListLastUpdated, constantStore.queryAll());
+        verify(constantApiClient, times(1)).getBasicConstants(null);
+        verify(constantApiClient, times(1)).getFullConstants(lastUpdated);
+        assertEquals(constantApiClient.getFullConstants(lastUpdated), constantListLastUpdated);
+        assertEquals(constantApiClient.getBasicConstants(null), constantList);
+        verify(transactionManagerMock, atLeastOnce()).transact(any(Collection.class));
         verify(transactionManagerMock, times(1)).transact(operations);
-        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.CONSTANTS, dateTime);
-    }
-
-    @Test
-    public void testUpdatedConstantsFromServerShouldUpdateLocallySavedConstants() {
-
-    }
-
-    @Test
-    public void testNewConstantsOnServerShouldBeSavedLocallyWhenConstantsHavePreviouslyBeenLoaded() {
-
-    }
-
-    @Test
-    public void testNonUpdatedConstantsOnServerThatAlreadyHaveBeenSavedLocallyShouldNotBeLoaded() {
-
-    }
-
-    @Test
-    public void deletedConstantsOnServerShouldDeleteLocallySavedConstants() {
-
+        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.CONSTANTS, systemInfo.getServerDate());
     }
 }

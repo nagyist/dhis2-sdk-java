@@ -117,8 +117,8 @@ public class TrackedEntityInstanceServiceTest {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceToDelete)).thenReturn(Action.TO_DELETE);
         when(stateStoreMock.saveActionForModel(any(TrackedEntityInstance.class), any(Action.class))).thenReturn(true);
 
-        when(trackedEntityInstanceStoreMock.query(TRACKED_ENTITY_INSTANCE_ID_MOCK)).thenReturn(trackedEntityInstanceMock);
-        when(trackedEntityInstanceStoreMock.query(TRACKED_ENTITY_INSTANCE_UID_MOCK)).thenReturn(trackedEntityInstanceMock);
+        when(trackedEntityInstanceStoreMock.queryById(TRACKED_ENTITY_INSTANCE_ID_MOCK)).thenReturn(trackedEntityInstanceMock);
+        when(trackedEntityInstanceStoreMock.queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK)).thenReturn(trackedEntityInstanceMock);
         when(trackedEntityInstanceStoreMock.delete(any(TrackedEntityInstance.class))).thenReturn(true);
 
         trackedEntityInstanceService = new TrackedEntityInstanceService(trackedEntityInstanceStoreMock, relationshipStoreMock, stateStoreMock);
@@ -126,13 +126,13 @@ public class TrackedEntityInstanceServiceTest {
 
     @Test
     public void testGetTrackedEntityInstanceByLongId() {
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStoreMock.query(TRACKED_ENTITY_INSTANCE_ID_MOCK);
+        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStoreMock.queryById(TRACKED_ENTITY_INSTANCE_ID_MOCK);
         assertEquals(trackedEntityInstance, trackedEntityInstanceMock);
     }
 
     @Test
     public void testGetTrackedEntityInstanceByStringUID() {
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStoreMock.query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStoreMock.queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
         assertEquals(trackedEntityInstance, trackedEntityInstanceMock);
     }
 
@@ -192,14 +192,14 @@ public class TrackedEntityInstanceServiceTest {
     public void testGetSyncedTrackedEntityInstanceById() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.SYNCED);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetToPostTrackedEntityInstanceById() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_POST);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
 
@@ -207,54 +207,54 @@ public class TrackedEntityInstanceServiceTest {
     public void testGetToUpdateTrackedEntityInstanceById() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_UPDATE);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetToDeleteTrackedEntityInstanceById() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_DELETE);
         assertTrue(null == trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetTrackedEntityInstanceByIdThatDoesntExistInDatabase() {
         assertTrue(null == trackedEntityInstanceService.get(INVALID_TRACKED_ENTITY_INSTANCE_ID));
-        verify(trackedEntityInstanceStoreMock).query(INVALID_TRACKED_ENTITY_INSTANCE_ID);
+        verify(trackedEntityInstanceStoreMock).queryById(INVALID_TRACKED_ENTITY_INSTANCE_ID);
     }
 
     @Test
     public void testGetToPostTrackedEntityInstanceByUid() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_POST);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetToUpdateTrackedEntityInstanceByUid() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_UPDATE);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetSyncedTrackedEntityInstanceByUid() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.SYNCED);
         assertTrue(trackedEntityInstanceMock.equals(trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK)));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetToDeleteTrackedEntityInstanceByUid() {
         when(stateStoreMock.queryActionForModel(trackedEntityInstanceMock)).thenReturn(Action.TO_DELETE);
         assertTrue(null == trackedEntityInstanceService.get(TRACKED_ENTITY_INSTANCE_UID_MOCK));
-        verify(trackedEntityInstanceStoreMock).query(TRACKED_ENTITY_INSTANCE_UID_MOCK);
+        verify(trackedEntityInstanceStoreMock).queryByUid(TRACKED_ENTITY_INSTANCE_UID_MOCK);
     }
 
     @Test
     public void testGetTrackedEntityInstanceByUidThatDoesntExistInDatabase() {
         assertTrue(null == trackedEntityInstanceService.get(INVALID_TRACKED_ENTITY_INSTANCE_ID));
-        verify(trackedEntityInstanceStoreMock).query(INVALID_TRACKED_ENTITY_INSTANCE_ID);
+        verify(trackedEntityInstanceStoreMock).queryById(INVALID_TRACKED_ENTITY_INSTANCE_ID);
     }
 
     @Test

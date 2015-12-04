@@ -87,7 +87,6 @@ public class TrackedEntityAttributeControllerTest {
         trackedEntityAttribute4.setLastUpdated(new DateTime());
         trackedEntityAttribute5.setLastUpdated(new DateTime());
 
-
         trackedEntityAttributeList = new ArrayList<>();
 
         trackedEntityAttributeList.add(trackedEntityAttribute1);
@@ -135,7 +134,7 @@ public class TrackedEntityAttributeControllerTest {
         assertEquals(trackedEntityAttributeApiClient.getBasicTrackedEntityAttributes(null), trackedEntityAttributeList);
         verify(transactionManagerMock, atLeastOnce()).transact(any(Collection.class));
         verify(transactionManagerMock, times(1)).transact(operations);
-        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.TRACKED_ENTITY_ATTRIBUTES, systemInfo.getServerDate(), null);
+        verify(lastUpdatedPreferencesMock, times(1)).save(ResourceType.TRACKED_ENTITY_ATTRIBUTES, systemInfo.getServerDate());
     }
 
 }
