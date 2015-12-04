@@ -32,5 +32,4 @@ import org.hisp.dhis.java.sdk.common.controllers.IController;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
 
 public class UserController implements IController<UserAccount> {
-
 }

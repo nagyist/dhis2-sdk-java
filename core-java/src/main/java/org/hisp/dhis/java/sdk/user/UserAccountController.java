@@ -28,8 +28,8 @@
 
 package org.hisp.dhis.java.sdk.user;
 
-import org.hisp.dhis.java.sdk.models.user.UserAccount;
 import org.hisp.dhis.java.sdk.common.network.ApiException;
+import org.hisp.dhis.java.sdk.models.user.UserAccount;
 
 public final class UserAccountController implements IUserAccountController {
     private final IUserApiClient userApiClient;
