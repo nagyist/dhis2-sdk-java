@@ -44,25 +44,25 @@ import java.io.StringWriter;
 public abstract class PushableDataController {
     public static final String TAG = PushableDataController.class.getSimpleName();
 
-    public static void handleImportSummary(ImportSummary importSummary, IFailedItemStore failedItemStore, FailedItemType type, long id) {
+    public void handleImportSummaryWithError(ImportSummary importSummary, IFailedItemStore failedItemStore, FailedItemType type, long id) {
         if ( ImportSummary.Status.ERROR.equals(importSummary.getStatus()) ){
             handleImportSummaryError(importSummary, failedItemStore, type, 200, id);
         }
     }
 
-    public static void handleTrackedEntityInstanceSendException(ApiException apiException, IFailedItemStore failedItemStore, TrackedEntityInstance trackedEntityInstance) {
+    public void handleTrackedEntityInstanceSendException(ApiException apiException, IFailedItemStore failedItemStore, TrackedEntityInstance trackedEntityInstance) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.TRACKED_ENTITY_INSTANCE, trackedEntityInstance.getId());
     }
 
-    public static void handleEnrollmentSendException(ApiException apiException, IFailedItemStore failedItemStore, Enrollment enrollment) {
+    public void handleEnrollmentSendException(ApiException apiException, IFailedItemStore failedItemStore, Enrollment enrollment) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
     }
 
-    public static void handleEventSendException(ApiException apiException, IFailedItemStore failedItemStore, Event event) {
+    public void handleEventSendException(ApiException apiException, IFailedItemStore failedItemStore, Event event) {
         handleSerializableItemException(apiException, failedItemStore, FailedItemType.EVENT, event.getId());
     }
 
-    private static void handleSerializableItemException(ApiException apiException, IFailedItemStore failedItemStore, FailedItemType type, long id) {
+    private void handleSerializableItemException(ApiException apiException, IFailedItemStore failedItemStore, FailedItemType type, long id) {
         switch (apiException.getKind()) {
             case NETWORK: {
                 FailedItem failedItem = new FailedItem();
@@ -93,7 +93,7 @@ public abstract class PushableDataController {
         }
     }
 
-    public static void handleImportSummaryError(ImportSummary importSummary, IFailedItemStore failedItemStore, FailedItemType type, int code, long id) {
+    public void handleImportSummaryError(ImportSummary importSummary, IFailedItemStore failedItemStore, FailedItemType type, int code, long id) {
         FailedItem failedItem = new FailedItem();
         failedItem.setImportSummary(importSummary);
         failedItem.setItemId(id);
@@ -107,7 +107,7 @@ public abstract class PushableDataController {
         failedItemStore.save(failedItem);
     }
 
-    public static void clearFailedItem(FailedItemType type, IFailedItemStore failedItemStore, long id) {
+    public void clearFailedItem(FailedItemType type, IFailedItemStore failedItemStore, long id) {
         FailedItem item = failedItemStore.query(type, id);
         if (item != null) {
             failedItemStore.delete(item);

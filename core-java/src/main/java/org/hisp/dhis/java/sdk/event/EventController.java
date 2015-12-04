@@ -345,7 +345,7 @@ public final class EventController extends PushableDataController implements IEv
         event.setUId(null);
         try {
             ImportSummary importSummary = eventApiClient.postEvent(event);
-            handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
+            handleImportSummaryWithError(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
                 if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                         ImportSummary.Status.OK.equals(importSummary.getStatus())) {
                     stateStore.saveActionForModel(event, Action.SYNCED);
@@ -368,7 +368,7 @@ public final class EventController extends PushableDataController implements IEv
     private void putEvent(Event event) throws ApiException {
         try {
             ImportSummary importSummary = eventApiClient.putEvent(event);
-                handleImportSummary(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
+                handleImportSummaryWithError(importSummary, failedItemStore, FailedItemType.EVENT, event.getId());
                 if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                         ImportSummary.Status.OK.equals(importSummary.getStatus())) {
 
