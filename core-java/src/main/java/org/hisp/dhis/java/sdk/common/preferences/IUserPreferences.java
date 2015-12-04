@@ -33,9 +33,11 @@ import org.hisp.dhis.java.sdk.common.network.UserCredentials;
 public interface IUserPreferences {
     boolean save(UserCredentials credentials);
 
-    boolean invalidateUserCredentials();
+    boolean confirmUser();
 
-    boolean isUserSignedIn();
+    boolean isUserConfirmed();
+
+    boolean invalidateUser();
 
     boolean isUserInvalidated();
 
