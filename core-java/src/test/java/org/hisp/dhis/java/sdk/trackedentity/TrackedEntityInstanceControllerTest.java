@@ -30,6 +30,7 @@ package org.hisp.dhis.java.sdk.trackedentity;
 import org.hisp.dhis.java.sdk.common.IFailedItemStore;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.common.network.ApiException;
+import org.hisp.dhis.java.sdk.common.network.Header;
 import org.hisp.dhis.java.sdk.common.network.Response;
 import org.hisp.dhis.java.sdk.common.persistence.ITransactionManager;
 import org.hisp.dhis.java.sdk.common.preferences.ILastUpdatedPreferences;
@@ -55,8 +56,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 
 public class TrackedEntityInstanceControllerTest {
@@ -111,7 +110,7 @@ public class TrackedEntityInstanceControllerTest {
 
     @Test
     public void testPutTrackedEntityInstanceWithThrownApiException() {
-        Response response = new Response("", 200, "", new ArrayList<>(), null);
+        Response response = new Response("", 200, "", new ArrayList<Header>(), null);
         ApiException apiException = ApiException.httpError("", response);
         when(trackedEntityInstanceApiClient.putTrackedEntityInstance(trackedEntityInstance)).
                 thenThrow(apiException);
@@ -137,7 +136,7 @@ public class TrackedEntityInstanceControllerTest {
 
     @Test
     public void testPostTrackedEntityInstanceWithThrownApiException() {
-        Response response = new Response("", 200, "", new ArrayList<>(), null);
+        Response response = new Response("", 200, "", new ArrayList<Header>(), null);
         ApiException apiException = ApiException.httpError("", response);
         when(trackedEntityInstanceApiClient.postTrackedEntityInstance(trackedEntityInstance)).
                 thenThrow(apiException);
@@ -213,7 +212,7 @@ public class TrackedEntityInstanceControllerTest {
 
     @Test
     public void testUpdateTrackedEntityInstanceTimestampWithApiException() {
-        Response response = new Response("", 200, "", new ArrayList<>(), null);
+        Response response = new Response("", 200, "", new ArrayList<Header>(), null);
         ApiException apiException = ApiException.httpError("", response);
         when(trackedEntityInstanceApiClient.getFullTrackedEntityInstance(trackedEntityInstance.
                 getTrackedEntityInstanceUid(), null)).thenThrow(apiException);
@@ -283,7 +282,8 @@ public class TrackedEntityInstanceControllerTest {
         actionMap.put(new Long(2), Action.TO_POST);
 
         when(stateStore.queryActionsForModel(TrackedEntityInstance.class)).thenReturn(actionMap);
-        doNothing().when(trackedEntityInstanceController).sendTrackedEntityInstanceChanges(any(), any(), anyBoolean());
+        doNothing().when(trackedEntityInstanceController).sendTrackedEntityInstanceChanges(
+                any(TrackedEntityInstance.class), any(Action.class), anyBoolean());
 
         trackedEntityInstanceController.sendTrackedEntityInstancesChanges(trackedEntityInstanceList, true);
 
@@ -306,7 +306,8 @@ public class TrackedEntityInstanceControllerTest {
         actionMap.put(new Long(2), Action.TO_POST);
 
         when(stateStore.queryActionsForModel(TrackedEntityInstance.class)).thenReturn(actionMap);
-        doNothing().when(trackedEntityInstanceController).sendTrackedEntityInstanceChanges(any(), any(), anyBoolean());
+        doNothing().when(trackedEntityInstanceController).sendTrackedEntityInstanceChanges(
+                any(TrackedEntityInstance.class), any(Action.class), anyBoolean());
 
         trackedEntityInstanceController.sendTrackedEntityInstancesChanges(trackedEntityInstanceList, false);
 
