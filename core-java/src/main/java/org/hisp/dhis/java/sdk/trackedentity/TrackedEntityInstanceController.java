@@ -159,7 +159,7 @@ public class TrackedEntityInstanceController extends PushableDataController impl
         TrackedEntityInstance updatedTrackedEntityInstance =
                 trackedEntityInstanceApiClient.getFullTrackedEntityInstance(uid, null);
         TrackedEntityInstance persistedTrackedEntityInstance =
-                trackedEntityInstanceStore.query(uid);
+                trackedEntityInstanceStore.queryByUid(uid);
 
         if (persistedTrackedEntityInstance != null) {
             updatedTrackedEntityInstance.setId(persistedTrackedEntityInstance.getId());
