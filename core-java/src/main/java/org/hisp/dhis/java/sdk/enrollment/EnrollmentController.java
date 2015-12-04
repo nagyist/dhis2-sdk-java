@@ -254,7 +254,7 @@ public final class EnrollmentController extends PushableDataController implement
     private void postEnrollment(Enrollment enrollment) throws ApiException {
         try {
             ImportSummary importSummary = enrollmentApiClient.postEnrollment(enrollment);
-            handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
+            handleImportSummaryWithError(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
 
             if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                     ImportSummary.Status.OK.equals(importSummary.getStatus())) {
@@ -272,7 +272,7 @@ public final class EnrollmentController extends PushableDataController implement
     private void putEnrollment(Enrollment enrollment) throws ApiException {
         try {
             ImportSummary importSummary = enrollmentApiClient.putEnrollment(enrollment);
-            handleImportSummary(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
+            handleImportSummaryWithError(importSummary, failedItemStore, FailedItemType.ENROLLMENT, enrollment.getId());
 
             if (ImportSummary.Status.SUCCESS.equals(importSummary.getStatus()) ||
                     ImportSummary.Status.OK.equals(importSummary.getStatus())) {

@@ -28,11 +28,33 @@
 
 package org.hisp.dhis.java.sdk.common.persistence;
 
+import org.hisp.dhis.java.sdk.common.IFailedItemStore;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.dashboard.IDashboardItemContentStore;
 import org.hisp.dhis.java.sdk.dashboard.IDashboardItemStore;
 import org.hisp.dhis.java.sdk.dashboard.IDashboardStore;
 import org.hisp.dhis.java.sdk.dashboard.IDashboardElementStore;
+import org.hisp.dhis.java.sdk.dataset.IDataSetStore;
+import org.hisp.dhis.java.sdk.enrollment.IEnrollmentStore;
+import org.hisp.dhis.java.sdk.event.IEventStore;
+import org.hisp.dhis.java.sdk.interpretation.IInterpretationCommentStore;
+import org.hisp.dhis.java.sdk.interpretation.IInterpretationElementStore;
+import org.hisp.dhis.java.sdk.models.constant.Constant;
+import org.hisp.dhis.java.sdk.models.dataelement.DataElement;
+import org.hisp.dhis.java.sdk.models.interpretation.Interpretation;
+import org.hisp.dhis.java.sdk.models.optionset.OptionSet;
+import org.hisp.dhis.java.sdk.models.relationship.RelationshipType;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntity;
+import org.hisp.dhis.java.sdk.models.trackedentity.TrackedEntityAttribute;
+import org.hisp.dhis.java.sdk.optionset.IOptionStore;
+import org.hisp.dhis.java.sdk.organisationunit.IOrganisationUnitStore;
+import org.hisp.dhis.java.sdk.program.*;
+import org.hisp.dhis.java.sdk.relationship.IRelationshipStore;
+import org.hisp.dhis.java.sdk.trackedentity.ITrackedEntityAttributeValueStore;
+import org.hisp.dhis.java.sdk.trackedentity.ITrackedEntityDataValueStore;
+import org.hisp.dhis.java.sdk.trackedentity.ITrackedEntityInstanceStore;
+import org.hisp.dhis.java.sdk.user.IUserAccountStore;
+import org.hisp.dhis.java.sdk.user.IUserStore;
 
 public interface IPersistenceModule {
     ITransactionManager getTransactionManager();
@@ -46,4 +68,68 @@ public interface IPersistenceModule {
     IDashboardElementStore getDashboardElementStore();
 
     IDashboardItemContentStore getDashboardContentStore();
+
+    IIdentifiableObjectStore<Constant> getConstantStore();
+
+    IIdentifiableObjectStore<DataElement> getDataElementStore();
+
+    IOptionStore getOptionStore();
+
+    IIdentifiableObjectStore<OptionSet> getOptionSetStore();
+
+    IOrganisationUnitStore getOrganisationUnitStore();
+
+    IProgramStore getProgramStore();
+
+    IIdentifiableObjectStore<TrackedEntity> getTrackedEntityStore();
+
+    IIdentifiableObjectStore<TrackedEntityAttribute> getTrackedEntityAttributeStore();
+
+    IProgramTrackedEntityAttributeStore getProgramTrackedEntityAttributeStore();
+
+    IProgramStageDataElementStore getProgramStageDataElementStore();
+
+    IProgramIndicatorStore getProgramIndicatorStore();
+
+    IProgramStageSectionStore getProgramStageSectionStore();
+
+    IProgramStageStore getProgramStageStore();
+
+    IProgramRuleStore getProgramRuleStore();
+
+    IProgramRuleActionStore getProgramRuleActionStore();
+
+    IProgramRuleVariableStore getProgramRuleVariableStore();
+
+    IIdentifiableObjectStore<RelationshipType> getRelationshipTypeStore();
+
+    IDataSetStore getDataStore();
+
+    //Tracker store objects
+    ITrackedEntityAttributeValueStore getTrackedEntityAttributeValueStore();
+
+    IRelationshipStore getRelationshipStore();
+
+    ITrackedEntityInstanceStore getTrackedEntityInstanceStore();
+
+    ITrackedEntityDataValueStore getTrackedEntityDataValueStore();
+
+    IEventStore getEventStore();
+
+    IEnrollmentStore getEnrollmentStore();
+
+    // Interpretation store objects
+    IIdentifiableObjectStore<Interpretation> getInterpretationStore();
+
+    IInterpretationCommentStore getInterpretationCommentStore();
+
+    IInterpretationElementStore getInterpretationElementStore();
+
+    // User store object
+    IUserAccountStore getUserAccountStore();
+
+    IUserStore getUserStore();
+
+    IFailedItemStore getFailedItemStore();
+
 }

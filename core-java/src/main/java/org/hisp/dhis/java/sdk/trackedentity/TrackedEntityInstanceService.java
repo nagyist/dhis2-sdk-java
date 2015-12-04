@@ -55,7 +55,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public TrackedEntityInstance get(String uid) {
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.query(uid);
+        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.queryByUid(uid);
         Action action = stateStore.queryActionForModel(trackedEntityInstance);
 
         if (!Action.TO_DELETE.equals(action)) {
@@ -118,7 +118,7 @@ public final class TrackedEntityInstanceService implements ITrackedEntityInstanc
 
     @Override
     public TrackedEntityInstance get(long id) {
-        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.query(id);
+        TrackedEntityInstance trackedEntityInstance = trackedEntityInstanceStore.queryById(id);
         Action action = stateStore.queryActionForModel(trackedEntityInstance);
 
         if (!Action.TO_DELETE.equals(action)) {
