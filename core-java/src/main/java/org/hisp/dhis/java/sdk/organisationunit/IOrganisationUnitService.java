@@ -26,14 +26,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.hisp.dhis.java.sdk.program;
+package org.hisp.dhis.java.sdk.organisationunit;
 
 import org.hisp.dhis.java.sdk.common.services.*;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
-import org.hisp.dhis.java.sdk.models.program.Program;
 
-import java.util.List;
-
-public interface IProgramService extends IService, ISave<Program>, IRemove<Program>, IGet<Program>, IGetUid<Program>, IList<Program> {
-    List<Program> list(OrganisationUnit organisationUnit, Program.ProgramType... programTypes);
+public interface IOrganisationUnitService extends IService, ISave<OrganisationUnit>, IRemove<OrganisationUnit>,
+        IGet<OrganisationUnit>, IGetUid<OrganisationUnit>, IList<OrganisationUnit> {
 }

@@ -60,4 +60,14 @@ public final class ProgramService implements IProgramService {
     public List<Program> list(OrganisationUnit organisationUnit, Program.ProgramType... programTypes) {
         return programStore.query(organisationUnit, programTypes);
     }
+
+    @Override
+    public boolean remove(Program object) {
+        return programStore.delete(object);
+    }
+
+    @Override
+    public boolean save(Program object) {
+        return programStore.save(object);
+    }
 }
