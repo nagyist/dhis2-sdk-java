@@ -28,15 +28,12 @@
 
 package org.hisp.dhis.java.sdk.program;
 
+import org.hisp.dhis.java.sdk.common.services.*;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.program.Program;
-import org.hisp.dhis.java.sdk.common.services.IGet;
-import org.hisp.dhis.java.sdk.common.services.IGetUid;
-import org.hisp.dhis.java.sdk.common.services.IList;
-import org.hisp.dhis.java.sdk.common.services.IService;
 
 import java.util.List;
 
-public interface IProgramService extends IService, IGet<Program>, IGetUid<Program>, IList<Program> {
+public interface IProgramService extends IService, ISave<Program>, IRemove<Program>, IGet<Program>, IGetUid<Program>, IList<Program> {
     List<Program> list(OrganisationUnit organisationUnit, Program.ProgramType... programTypes);
 }
