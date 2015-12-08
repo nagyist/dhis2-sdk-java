@@ -31,7 +31,7 @@ package org.hisp.dhis.java.sdk.organisationunit;
 import org.hisp.dhis.java.sdk.common.IStateStore;
 import org.hisp.dhis.java.sdk.models.common.state.Action;
 import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
-import org.hisp.dhis.java.sdk.utils.Preconditions;
+import org.hisp.dhis.java.sdk.models.utils.Preconditions;
 
 import java.util.List;
 
