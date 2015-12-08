@@ -28,8 +28,11 @@
 
 package org.hisp.dhis.java.sdk.user;
 
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
 import org.hisp.dhis.java.sdk.common.network.ApiException;
+
+import java.util.List;
 
 public final class UserAccountController implements IUserAccountController {
     private final IUserApiClient userApiClient;
@@ -47,5 +50,10 @@ public final class UserAccountController implements IUserAccountController {
         // update userAccount in database
         userAccountStore.save(userAccount);
         return userAccount;
+    }
+
+    @Override
+    public List<OrganisationUnit> updateAssignedPrograms() {
+        return null;
     }
 }

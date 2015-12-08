@@ -29,6 +29,8 @@
 package org.hisp.dhis.java.sdk.user;
 
 import org.hisp.dhis.java.sdk.common.IModelsStore;
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.java.sdk.utils.Preconditions;
 import org.hisp.dhis.java.sdk.models.user.*;
 
@@ -71,5 +73,15 @@ public class UserAccountService implements IUserAccountService {
     public void logOut() {
         // removing all existing data
         modelsStore.deleteAllTables();
+    }
+
+    @Override
+    public List<Program> listAssignedPrograms(OrganisationUnit organisationUnit) {
+        return null;
+    }
+
+    @Override
+    public List<OrganisationUnit> listAssignedOrganisationUnits() {
+        return null;
     }
 }

@@ -28,9 +28,13 @@
 
 package org.hisp.dhis.java.sdk.user;
 
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
 import org.hisp.dhis.java.sdk.common.controllers.IController;
 
+import java.util.List;
+
 public interface IUserAccountController extends IController<UserAccount> {
     UserAccount updateAccount();
+    List<OrganisationUnit> updateAssignedPrograms();
 }
