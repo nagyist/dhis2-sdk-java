@@ -29,8 +29,12 @@
 package org.hisp.dhis.java.sdk.user;
 
 import org.hisp.dhis.java.sdk.common.services.IService;
+import org.hisp.dhis.java.sdk.models.organisationunit.OrganisationUnit;
+import org.hisp.dhis.java.sdk.models.program.Program;
 import org.hisp.dhis.java.sdk.models.user.User;
 import org.hisp.dhis.java.sdk.models.user.UserAccount;
+
+import java.util.List;
 
 public interface IUserAccountService extends IService {
     UserAccount getCurrentUserAccount();
@@ -38,4 +42,8 @@ public interface IUserAccountService extends IService {
     User toUser(UserAccount userAccount);
 
     void logOut();
+
+    List<Program> listAssignedPrograms(OrganisationUnit organisationUnit);
+
+    List<OrganisationUnit> listAssignedOrganisationUnits();
 }
